@@ -18,57 +18,79 @@ export type {
   DayActivity,
   DayPlan,
   ItineraryResponse,
-} from '@/app/api/itinerary/route';
+} from '@/lib/contracts';
 
 export type {
   WeatherData,
   ForecastDay,
-} from '@/app/api/weather/route';
+} from '@/lib/contracts';
 
-import type { ItineraryResponse } from '@/app/api/itinerary/route';
-import type { WeatherData } from '@/app/api/weather/route';
+import type { ItineraryResponse, WeatherData } from '@/lib/contracts';
+import type { PartyType } from '@/lib/domain';
+
+export class ApiError extends Error {
+  constructor(message: string, readonly status: number) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+export function isAuthenticationError(error: unknown): boolean {
+  return error instanceof ApiError && (error.status === 401 || error.status === 403);
+}
+
+type TripOptions = { travelers?: number; partyType?: PartyType; startDate?: string; endDate?: string; latitude?: number; longitude?: number; interests?: string[]; preferredActivities?: string[]; travelStyle?: string; accommodationPreference?: string; transportationPreference?: string; weatherContext?: Array<{ date: string; description: string; precipitationProbability: number; tempMax: number }>; accommodationListingId?: string; externalAccommodation?: { hotelId: string; offerId: string; name: string; address: string; nightlyRate: number; isLive: boolean; selectionToken: string } };
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
-async function handleResponse<T>(res: Response): Promise<T> {
-  if (!res.ok) {
-    let message = `API error ${res.status}`;
-    try {
-      const json = await res.json();
-      if (json?.error) message = json.error;
-    } catch {
-      // ignore parse error
+export async function handleResponse<T>(res: Response): Promise<T> {
+  const text = await res.text();
+  let data: unknown = null;
+  if (text) {
+    try { data = JSON.parse(text); }
+    catch {
+      throw new Error(res.ok ? 'The server returned an invalid response.' : 'TravelMate could not reach a required service. Please try again.');
     }
-    throw new Error(message);
   }
-  return res.json() as Promise<T>;
+  if (!res.ok) {
+    const error = data && typeof data === 'object' && 'error' in data ? String((data as { error?: unknown }).error || '') : '';
+    throw new ApiError(error || `Request failed (${res.status}).`, res.status);
+  }
+  return data as T;
 }
 
 // ─── Itinerary ─────────────────────────────────────────────────────────────────
 
 /**
- * Fetch a 7-day AI-generated itinerary from OpenAI (via our server-side proxy).
+ * Fetch a date-range AI-generated itinerary from the configured provider.
  *
  * Falls back to realistic mock data automatically when:
  *  - OPENAI_API_KEY is not configured on the server
  *  - The OpenAI request fails for any reason
  *
  * @param destination  City / region name e.g. "Tokyo, Japan"
- * @param budget       Total trip budget in USD (positive integer)
- * @returns            Parsed ItineraryResponse ready to drive the 7-day panel UI
+ * @param budget       Total group trip budget in PHP
+ * @returns            Parsed ItineraryResponse ready to drive the itinerary UI
  */
 export async function fetchItineraryFromAI(
   destination: string,
   budget: number,
+  options?: TripOptions,
 ): Promise<ItineraryResponse> {
   if (!destination?.trim()) throw new Error('destination must not be empty.');
   if (!Number.isFinite(budget) || budget <= 0) throw new Error('budget must be a positive number.');
 
-  const res = await fetch('/api/itinerary', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ destination: destination.trim(), budget }),
-  });
+  let res: Response;
+  try {
+    res = await fetch('/api/itinerary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ destination: destination.trim(), budget, ...options }),
+      signal: AbortSignal.timeout(90_000),
+    });
+  } catch (error) {
+    throw new Error(error instanceof DOMException && error.name === 'TimeoutError' ? 'Itinerary generation timed out. Please try again.' : 'Cannot connect to TravelMate services. Check that the backend is running.');
+  }
 
   return handleResponse<ItineraryResponse>(res);
 }
@@ -76,7 +98,7 @@ export async function fetchItineraryFromAI(
 // ─── Weather ───────────────────────────────────────────────────────────────────
 
 /**
- * Fetch current weather + 7-day forecast for a city (via our server-side proxy).
+ * Fetch current weather plus any forecast available for the selected dates.
  *
  * Falls back to mock weather data automatically when:
  *  - OPENWEATHER_API_KEY is not configured on the server
@@ -85,11 +107,20 @@ export async function fetchItineraryFromAI(
  * @param city  City name e.g. "Tokyo" or "Paris, FR"
  * @returns     WeatherData including alerts and daily forecast array
  */
-export async function fetchWeather(city: string): Promise<WeatherData> {
+export async function fetchWeather(city: string, startDate?: string, endDate?: string, coordinates?: { latitude?: number; longitude?: number }): Promise<WeatherData> {
   if (!city?.trim()) throw new Error('city must not be empty.');
 
-  const url = `/api/weather?city=${encodeURIComponent(city.trim())}`;
-  const res = await fetch(url, { method: 'GET' });
+  const params = new URLSearchParams({ city: city.trim() });
+  if (startDate) params.set('startDate', startDate);
+  if (endDate) params.set('endDate', endDate);
+  if (Number.isFinite(coordinates?.latitude) && Number.isFinite(coordinates?.longitude)) {
+    params.set('latitude', String(coordinates!.latitude));
+    params.set('longitude', String(coordinates!.longitude));
+  }
+  const url = `/api/weather?${params}`;
+  let res: Response;
+  try { res = await fetch(url, { method: 'GET', signal: AbortSignal.timeout(20_000) }); }
+  catch { throw new Error('Weather service is currently unavailable.'); }
 
   return handleResponse<WeatherData>(res);
 }
@@ -103,10 +134,10 @@ export async function fetchWeather(city: string): Promise<WeatherData> {
 export async function fetchTripData(
   destination: string,
   budget: number,
+  options?: TripOptions,
 ): Promise<{ itinerary: ItineraryResponse; weather: WeatherData }> {
-  const [itinerary, weather] = await Promise.all([
-    fetchItineraryFromAI(destination, budget),
-    fetchWeather(destination),
-  ]);
+  const weather = await fetchWeather(destination, options?.startDate, options?.endDate, options);
+  const weatherContext = weather.forecast.map((day) => ({ date: day.date, description: day.description, precipitationProbability: day.precipitationProbability, tempMax: day.tempMax }));
+  const itinerary = await fetchItineraryFromAI(destination, budget, { ...options, weatherContext });
   return { itinerary, weather };
 }

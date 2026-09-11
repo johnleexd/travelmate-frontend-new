@@ -1,3207 +1,395 @@
 'use client';
 
-import React, { useState } from 'react';
-import styled, { keyframes } from 'styled-components';
+import Image from 'next/image';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-
-// --- Keyframes & Animations ---
-
-
-// --- Custom SVGs ---
-const TravelMateLogo = () => (
-  <svg width="34" height="34" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="20" cy="20" r="18" fill="#F59E0B" />
-    <path d="M14 11V7C14 5.89543 14.8954 5 16 5H24C25.1046 5 26 5.89543 26 7V11" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" />
-    <rect x="8" y="11" width="24" height="18" rx="4" stroke="#0f172a" strokeWidth="2.2" fill="rgba(255,255,255,0.1)" />
-    <circle cx="20" cy="20" r="5" fill="#0f172a" />
-    <circle cx="20" cy="20" r="2" fill="#F59E0B" />
-  </svg>
-);
-
-const SparkleIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12 3c0 4.5 3.5 8 8 8-4.5 0-8 3.5-8 8 0-4.5-3.5-8-8-8 4.5 0 8-3.5 8-8z" fill="currentColor" />
-  </svg>
-);
-
-const ChevronDownIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
-);
-
-// --- Styled Components ---
-
-const fadeUp = keyframes`
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-const fadeIn = keyframes`
-  from { opacity: 0; }
-  to { opacity: 1; }
-`;
-
-const float = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-8px); }
-  100% { transform: translateY(0px); }
-`;
-
-const pulseGlow = keyframes`
-  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.45); }
-  70% { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
-`;
-
-const scrollBounce = keyframes`
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(6px); }
-`;
-
-const counterUp = keyframes`
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
-`;
-
-const PageContainer = styled.div`
-  min-height: 100vh;
-  font-family: ${props => props.theme.fonts.main};
-  background-color: #020617;
-  color: #1e293b;
-  overflow-x: hidden;
-`;
-
-// --- Dark Glassmorphism Navbar ---
-const Header = styled.header`
-  width: 100%;
-  padding: 18px 40px;
-  background: rgba(2, 6, 23, 0.75);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  position: fixed;
-  top: 0;
-  z-index: 200;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  transition: background 0.3s ease;
-
-  @media (max-width: 768px) {
-    padding: 14px 20px;
-  }
-`;
-
-const HeaderInner = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const LogoContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  flex-shrink: 0;
-`;
-
-const LogoText = styled.span`
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #ffffff;
-  letter-spacing: -0.5px;
-`;
-
-const NavCenter = styled.nav`
-  display: flex;
-  gap: 32px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-
-  @media (max-width: 900px) {
-    display: none;
-  }
-`;
-
-const NavLink = styled.a`
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.75);
-  text-decoration: none;
-  transition: color 0.2s ease;
-  cursor: pointer;
-  &:hover {
-    color: #ffffff;
-  }
-`;
-
-const NavActions = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const NavSignInBtn = styled.button`
-  font-size: 0.875rem;
-  font-weight: 600;
-  padding: 9px 20px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(8px);
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-  }
-  &:active { transform: translateY(0); }
-`;
-
-const NavTryFreeBtn = styled.button`
-  font-size: 0.875rem;
-  font-weight: 700;
-  padding: 9px 20px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  background: #F59E0B;
-  color: #0f172a;
-  border: none;
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);
-
-  &:hover {
-    background: #FBBF24;
-    transform: translateY(-1.5px);
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.45);
-  }
-  &:active { transform: translateY(0); }
-`;
-
-// Legacy Button kept for sections below the hero
-const Button = styled.button<{ $variant?: 'primary' | 'secondary' | 'outline' }>`
-  font-size: 0.875rem;
-  font-weight: 700;
-  padding: ${props => props.$variant === 'primary' ? '12px 24px' : '10px 20px'};
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-
-  @keyframes pulseGlowAmber {
-    0%   { box-shadow: 0 0 0 0   rgba(245, 158, 11, 0.45); }
-    70%  { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
-    100% { box-shadow: 0 0 0 0   rgba(245, 158, 11, 0); }
-  }
-
-  ${props => {
-    switch (props.$variant) {
-      case 'primary':
-        return `
-          background: #F59E0B;
-          color: #0f172a;
-          border: none;
-          box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
-          animation: pulseGlowAmber 2.5s infinite;
-          &:hover {
-            background: #FBBF24;
-            transform: translateY(-1.5px);
-          }
-        `;
-      case 'outline':
-        return `
-          background: rgba(255, 255, 255, 0.08);
-          color: #ffffff;
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(8px);
-          &:hover {
-            background: rgba(255, 255, 255, 0.14);
-            border-color: rgba(255, 255, 255, 0.4);
-            transform: translateY(-1.5px);
-          }
-        `;
-      default:
-        return `
-          background: #ffffff;
-          color: #1a73e8;
-          border: 1.5px solid #e8f0fe;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-          &:hover {
-            background: #e8f0fe;
-            transform: translateY(-1px);
-          }
-        `;
-    }
-  }}
-`;
-
-// kept for backward compat in CTA section
-const SignUpNavButton = NavTryFreeBtn;
-
-
-// ============================================================
-// Section 2: Hero — New Cinematic Dark Design
-// ============================================================
-const HeroContainer = styled.section`
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-  background:
-    linear-gradient(180deg,
-      rgba(2, 6, 23, 0.55) 0%,
-      rgba(2, 6, 23, 0.40) 40%,
-      rgba(2, 6, 23, 0.72) 80%,
-      rgba(2, 6, 23, 0.92) 100%
-    ),
-    url('/mountain-hero-bg.png') no-repeat center center;
-  background-size: cover;
-  background-attachment: fixed;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 120px;
-  overflow: hidden;
-
-  @media (max-width: 768px) {
-    padding-top: 100px;
-    background-attachment: scroll;
-  }
-`;
-
-const HeroContent = styled.div`
-  max-width: 820px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 0 32px;
-  flex: 1;
-  justify-content: center;
-  animation: ${fadeUp} 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-
-  @media (max-width: 768px) {
-    padding: 0 20px;
-  }
-`;
-
-const HeroBadge = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.35);
-  border-radius: 9999px;
-  padding: 7px 18px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #FCD34D;
-  letter-spacing: 0.5px;
-  margin-bottom: 32px;
-  backdrop-filter: blur(8px);
-`;
-
-const HeroBadgeDot = styled.span`
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #F59E0B;
-  display: inline-block;
-  flex-shrink: 0;
-`;
-
-const HeroTitle = styled.h1`
-  font-size: clamp(3rem, 7vw, 5.5rem);
-  font-weight: 900;
-  line-height: 1.08;
-  color: #ffffff;
-  letter-spacing: -2px;
-  margin-bottom: 0;
-  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
-
-  @media (max-width: 768px) {
-    font-size: 2.8rem;
-    letter-spacing: -1.5px;
-  }
-`;
-
-const HeroTitleAccent = styled.div`
-  font-size: clamp(3rem, 7vw, 5.5rem);
-  font-weight: 900;
-  line-height: 1.08;
-  letter-spacing: -2px;
-  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 50%, #FCD34D 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 28px;
-
-  @media (max-width: 768px) {
-    font-size: 2.8rem;
-    letter-spacing: -1.5px;
-  }
-`;
-
-const HeroSubtitle = styled.p`
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.72);
-  line-height: 1.65;
-  max-width: 600px;
-  margin-bottom: 40px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-
-  @media (max-width: 768px) {
-    font-size: 1rem;
-  }
-`;
-
-const HeroButtons = styled.div`
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 80px;
-
-  @media (max-width: 576px) {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 360px;
-  }
-`;
-
-const HeroPrimaryBtn = styled.button`
-  font-size: 1rem;
-  font-weight: 700;
-  padding: 14px 28px;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #F59E0B;
-  color: #0f172a;
-  border: none;
-  box-shadow: 0 6px 24px rgba(245, 158, 11, 0.45);
-  animation: ${pulseGlow} 2.5s infinite;
-  white-space: nowrap;
-
-  &:hover {
-    background: #FBBF24;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 32px rgba(245, 158, 11, 0.55);
-  }
-  &:active { transform: translateY(0); }
-
-  @media (max-width: 576px) {
-    width: 100%;
-    justify-content: center;
-  }
-`;
-
-const HeroSecondaryBtn = styled.button`
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 14px 28px;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: rgba(255, 255, 255, 0.06);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  white-space: nowrap;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.12);
-    border-color: rgba(255, 255, 255, 0.35);
-    transform: translateY(-2px);
-  }
-  &:active { transform: translateY(0); }
-
-  @media (max-width: 576px) {
-    width: 100%;
-    justify-content: center;
-  }
-`;
-
-// --- Metrics Row ---
-const HeroMetricsBar = styled.div`
-  width: 100%;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(2, 6, 23, 0.6);
-  backdrop-filter: blur(20px);
-  padding: 28px 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-
-  @media (max-width: 768px) {
-    padding: 20px 16px;
-    flex-wrap: wrap;
-    gap: 0;
-  }
-`;
-
-const MetricItem = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 24px;
-  position: relative;
-  animation: ${counterUp} 0.8s ease both;
-
-  &:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 10%;
-    height: 80%;
-    width: 1px;
-    background: rgba(255, 255, 255, 0.1);
-  }
-
-  @media (max-width: 768px) {
-    flex: 0 0 50%;
-    padding: 12px 0;
-    &:not(:last-child)::after { display: none; }
-  }
-`;
-
-const MetricValue = styled.div`
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #F59E0B;
-  letter-spacing: -0.5px;
-  line-height: 1.1;
-
-  @media (max-width: 768px) {
-    font-size: 1.5rem;
-  }
-`;
-
-const MetricLabel = styled.div`
-  font-size: 0.72rem;
-  color: rgba(255, 255, 255, 0.5);
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  font-weight: 500;
-  margin-top: 4px;
-`;
-
-const ScrollIndicator = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const ScrollLabel = styled.span`
-  font-size: 0.65rem;
-  letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.4);
-  text-transform: uppercase;
-  font-weight: 600;
-`;
-
-const ScrollChevron = styled.div`
-  color: rgba(255, 255, 255, 0.4);
-  animation: ${scrollBounce} 1.8s ease-in-out infinite;
-`;
-
-// Spacer for keeping older styled-component HeroLeft references in budget section
-const HeroLeft = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  @media (max-width: 1024px) {
-    align-items: center;
-  }
-`;
-
-// ============================================================
-// Three Portals Section Styled Components
-// ============================================================
-const PortalsSection = styled.section`
-  background: #020617;
-  padding: 96px 32px 80px 32px;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.08) 30%,
-      rgba(255, 255, 255, 0.12) 50%,
-      rgba(255, 255, 255, 0.08) 70%,
-      transparent 100%
-    );
-  }
-
-  @media (max-width: 768px) {
-    padding: 64px 20px 56px 20px;
-  }
-`;
-
-const PortalsInner = styled.div`
-  max-width: 1100px;
-  margin: 0 auto;
-`;
-
-const PortalsSectionBadge = styled.div`
-  text-align: center;
-  margin-bottom: 16px;
-`;
-
-const PortalsRoleBadge = styled.span`
-  display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.4);
-  padding: 5px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 9999px;
-  backdrop-filter: blur(8px);
-`;
-
-const PortalsSectionTitle = styled.h2`
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
-  font-weight: 800;
-  color: #f1f5f9;
-  text-align: center;
-  letter-spacing: -0.75px;
-  margin-bottom: 56px;
-  margin-top: 14px;
-
-  @media (max-width: 768px) {
-    margin-bottom: 36px;
-  }
-`;
-
-const PortalsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-    max-width: 480px;
-    margin: 0 auto;
-  }
-`;
-
-const PortalCard = styled.div<{ $accent: 'teal' | 'teal-active' | 'purple' }>`
-  background: rgba(15, 23, 42, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: 20px;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  cursor: default;
-
-  border: 1px solid ${
-    props =>
-      props.$accent === 'purple'
-        ? 'rgba(139, 92, 246, 0.3)'
-        : props.$accent === 'teal-active'
-        ? 'rgba(20, 184, 166, 0.55)'
-        : 'rgba(20, 184, 166, 0.2)'
-  };
-
-  box-shadow: ${
-    props =>
-      props.$accent === 'purple'
-        ? '0 0 0 1px rgba(139, 92, 246, 0.08), inset 0 1px 0 rgba(139, 92, 246, 0.06)'
-        : props.$accent === 'teal-active'
-        ? '0 0 24px rgba(20, 184, 166, 0.12), 0 0 0 1px rgba(20, 184, 166, 0.1)'
-        : '0 0 0 1px rgba(20, 184, 166, 0.04), inset 0 1px 0 rgba(20, 184, 166, 0.04)'
-  };
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: ${
-      props =>
-        props.$accent === 'purple'
-          ? '0 20px 40px rgba(139, 92, 246, 0.15), 0 0 0 1px rgba(139, 92, 246, 0.2)'
-          : '0 20px 40px rgba(20, 184, 166, 0.15), 0 0 0 1px rgba(20, 184, 166, 0.25)'
-    };
-  }
-`;
-
-const PortalIconBox = styled.div<{ $accent: 'teal' | 'teal-active' | 'purple' }>`
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.6rem;
-  background: ${
-    props =>
-      props.$accent === 'purple'
-        ? 'rgba(139, 92, 246, 0.08)'
-        : 'rgba(20, 184, 166, 0.08)'
-  };
-  border: 1px solid ${
-    props =>
-      props.$accent === 'purple'
-        ? 'rgba(139, 92, 246, 0.18)'
-        : 'rgba(20, 184, 166, 0.18)'
-  };
-  flex-shrink: 0;
-`;
-
-const PortalCardTitle = styled.h3`
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin: 0;
-  letter-spacing: -0.25px;
-`;
-
-const PortalCardDesc = styled.p`
-  font-size: 0.875rem;
-  color: rgba(148, 163, 184, 0.85);
-  line-height: 1.55;
-  margin: 0;
-  flex: 1;
-`;
-
-const PortalEnterBtn = styled.button<{ $accent: 'teal' | 'teal-active' | 'purple' }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 9px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.22s ease;
-  align-self: flex-start;
-  margin-top: 4px;
-
-  background: ${
-    props =>
-      props.$accent === 'purple'
-        ? 'rgba(139, 92, 246, 0.12)'
-        : props.$accent === 'teal-active'
-        ? 'rgba(20, 184, 166, 0.18)'
-        : 'rgba(255, 255, 255, 0.05)'
-  };
-  color: ${
-    props =>
-      props.$accent === 'purple'
-        ? '#a78bfa'
-        : props.$accent === 'teal-active'
-        ? '#5eead4'
-        : 'rgba(255,255,255,0.6)'
-  };
-  border: 1px solid ${
-    props =>
-      props.$accent === 'purple'
-        ? 'rgba(139, 92, 246, 0.3)'
-        : props.$accent === 'teal-active'
-        ? 'rgba(20, 184, 166, 0.4)'
-        : 'rgba(255, 255, 255, 0.12)'
-  };
-
-  &:hover {
-    background: ${
-      props =>
-        props.$accent === 'purple'
-          ? 'rgba(139, 92, 246, 0.22)'
-          : props.$accent === 'teal-active'
-          ? 'rgba(20, 184, 166, 0.28)'
-          : 'rgba(255, 255, 255, 0.1)'
-    };
-    transform: translateY(-1px);
-  }
-  &:active { transform: translateY(0); }
-`;
-
-// Common Layout components
-const SectionWrapper = styled.section`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 100px 32px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  @media (max-width: 768px) {
-    padding: 60px 20px;
-  }
-`;
-
-// ============================================================
-// Core Features Section
-// ============================================================
-const CoreFeaturesSection = styled.section`
-  background: #020617;
-  padding: 96px 32px 80px;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255,255,255,0.07) 30%,
-      rgba(255,255,255,0.11) 50%,
-      rgba(255,255,255,0.07) 70%,
-      transparent 100%
-    );
-  }
-
-  @media (max-width: 768px) {
-    padding: 64px 20px 56px;
-  }
-`;
-
-const CoreFeaturesInner = styled.div`
-  max-width: 1100px;
-  margin: 0 auto;
-`;
-
-const CoreFeaturesHeader = styled.div`
-  text-align: center;
-  margin-bottom: 56px;
-
-  @media (max-width: 768px) {
-    margin-bottom: 36px;
-  }
-`;
-
-const CoreFeaturesBadge = styled.span`
-  display: inline-block;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 3.5px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
-  margin-bottom: 16px;
-`;
-
-const CoreFeaturesTitle = styled.h2`
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  font-weight: 800;
-  color: #f1f5f9;
-  letter-spacing: -0.75px;
-  line-height: 1.2;
-  margin: 0;
-`;
-
-const CoreFeaturesGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const FeatureCard = styled.div`
-  background: rgba(15, 23, 42, 0.60);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 20px;
-  padding: 36px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    border-color: rgba(255,255,255,0.13);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.25);
-  }
-`;
-
-const FeatureIconBadge = styled.div<{ $color: 'amber' | 'teal' | 'blue' | 'purple' }>`
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.2rem;
-  flex-shrink: 0;
-
-  background: ${
-    props => {
-      if (props.$color === 'amber')  return 'rgba(245,158,11,0.12)';
-      if (props.$color === 'teal')   return 'rgba(20,184,166,0.12)';
-      if (props.$color === 'blue')   return 'rgba(99,102,241,0.12)';
-      return 'rgba(139,92,246,0.12)';
-    }
-  };
-  border: 1px solid ${
-    props => {
-      if (props.$color === 'amber')  return 'rgba(245,158,11,0.25)';
-      if (props.$color === 'teal')   return 'rgba(20,184,166,0.25)';
-      if (props.$color === 'blue')   return 'rgba(99,102,241,0.25)';
-      return 'rgba(139,92,246,0.25)';
-    }
-  };
-`;
-
-const FeatureCardTitle = styled.h3`
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin: 0;
-  letter-spacing: -0.2px;
-`;
-
-const FeatureCardDesc = styled.p`
-  font-size: 0.875rem;
-  color: rgba(148,163,184,0.8);
-  line-height: 1.6;
-  margin: 0;
-`;
-
-const SectionHeader = styled.div`
-  text-align: center;
-  max-width: 700px;
-  margin-bottom: 56px;
-`;
-
-// ============================================================
-// How It Works Section
-// ============================================================
-const HowItWorksSection = styled.section`
-  background: #020617;
-  padding: 96px 32px 88px;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255,255,255,0.07) 30%,
-      rgba(255,255,255,0.11) 50%,
-      rgba(255,255,255,0.07) 70%,
-      transparent 100%
-    );
-  }
-
-  @media (max-width: 768px) {
-    padding: 64px 20px 56px;
-  }
-`;
-
-const HowItWorksInner = styled.div`
-  max-width: 1000px;
-  margin: 0 auto;
-`;
-
-const HowItWorksHeader = styled.div`
-  text-align: center;
-  margin-bottom: 64px;
-
-  @media (max-width: 768px) {
-    margin-bottom: 40px;
-  }
-`;
-
-const HowItWorksBadge = styled.span`
-  display: inline-block;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.32);
-  font-family: 'Courier New', Courier, monospace;
-  margin-bottom: 18px;
-`;
-
-const HowItWorksTitle = styled.h2`
-  font-size: clamp(1.7rem, 4vw, 2.5rem);
-  font-weight: 800;
-  color: #f1f5f9;
-  letter-spacing: -0.75px;
-  line-height: 1.2;
-  margin: 0;
-`;
-
-const HowItWorksGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-  position: relative;
-
-  /* subtle connector lines between steps on desktop */
-  @media (min-width: 769px) {
-    &::before {
-      content: '';
-      position: absolute;
-      top: 36px;
-      left: calc(16.66% + 22px);
-      right: calc(16.66% + 22px);
-      height: 1px;
-      background: linear-gradient(
-        90deg,
-        rgba(245,158,11,0.25) 0%,
-        rgba(245,158,11,0.5) 50%,
-        rgba(245,158,11,0.25) 100%
-      );
-      pointer-events: none;
-    }
-  }
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 48px;
-  }
-`;
-
-const HowItWorksStep = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 14px;
-  position: relative;
-  z-index: 1;
-`;
-
-const StepIconBadge = styled.div`
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1.5px solid rgba(245, 158, 11, 0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  box-shadow:
-    0 0 0 6px rgba(245,158,11,0.05),
-    0 8px 24px rgba(0,0,0,0.3);
-  flex-shrink: 0;
-  transition: border-color 0.25s ease, box-shadow 0.25s ease;
-
-  ${HowItWorksStep}:hover & {
-    border-color: rgba(245,158,11,0.75);
-    box-shadow:
-      0 0 0 6px rgba(245,158,11,0.1),
-      0 12px 32px rgba(0,0,0,0.35);
-  }
-`;
-
-const StepNumber = styled.span`
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: rgba(245,158,11,0.5);
-  font-family: 'Courier New', Courier, monospace;
-`;
-
-const HowItWorksStepTitle = styled.h3`
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin: 0;
-  letter-spacing: -0.15px;
-`;
-
-const HowItWorksStepDesc = styled.p`
-  font-size: 0.875rem;
-  color: rgba(148,163,184,0.78);
-  line-height: 1.6;
-  margin: 0;
-  max-width: 260px;
-`;
-
-// ============================================================
-// User Reviews Section
-// ============================================================
-const UserReviewsSection = styled.section`
-  background: #020617;
-  padding: 96px 32px 88px;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255,255,255,0.07) 30%,
-      rgba(255,255,255,0.11) 50%,
-      rgba(255,255,255,0.07) 70%,
-      transparent 100%
-    );
-  }
-
-  @media (max-width: 768px) {
-    padding: 64px 20px 56px;
-  }
-`;
-
-const UserReviewsInner = styled.div`
-  max-width: 1100px;
-  margin: 0 auto;
-`;
-
-const UserReviewsHeader = styled.div`
-  text-align: center;
-  margin-bottom: 56px;
-
-  @media (max-width: 768px) {
-    margin-bottom: 36px;
-  }
-`;
-
-const UserReviewsBadge = styled.span`
-  display: inline-block;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.32);
-  font-family: 'Courier New', Courier, monospace;
-  margin-bottom: 18px;
-`;
-
-const UserReviewsTitle = styled.h2`
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  font-weight: 800;
-  color: #f1f5f9;
-  letter-spacing: -0.75px;
-  line-height: 1.2;
-  margin: 0;
-`;
-
-const UserReviewsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 24px;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const ReviewCard = styled.div`
-  background: rgba(15, 23, 42, 0.60);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 20px;
-  padding: 32px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 24px;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    border-color: rgba(245, 158, 11, 0.25);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-  }
-`;
-
-const RatingStars = styled.div`
-  display: flex;
-  gap: 4px;
-  color: #fbbf24;
-  font-size: 1.1rem;
-`;
-
-const ReviewQuote = styled.p`
-  font-size: 0.925rem;
-  color: rgba(148, 163, 184, 0.85);
-  line-height: 1.65;
-  margin: 0;
-  flex: 1;
-`;
-
-const UserMeta = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 8px;
-`;
-
-const UserAvatar = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(245, 158, 11, 0.15);
-  color: #F59E0B;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.825rem;
-  flex-shrink: 0;
-`;
-
-const UserInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const UserName = styled.span`
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #f1f5f9;
-`;
-
-const UserRole = styled.span`
-  font-size: 0.78rem;
-  color: rgba(148, 163, 184, 0.7);
-`;
-
-// ============================================================
-// Final CTA Banner & Minimal Footer
-// ============================================================
-const FinalCtaSection = styled.section`
-  background: #020617;
-  padding: 96px 32px 80px;
-  text-align: center;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255,255,255,0.07) 30%,
-      rgba(255,255,255,0.11) 50%,
-      rgba(255,255,255,0.07) 70%,
-      transparent 100%
-    );
-  }
-
-  @media (max-width: 768px) {
-    padding: 64px 20px 56px;
-  }
-`;
-
-const FinalCtaInner = styled.div`
-  max-width: 720px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const FinalCtaTitle = styled.h2`
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  font-weight: 800;
-  color: #f1f5f9;
-  letter-spacing: -0.75px;
-  line-height: 1.25;
-  margin: 0 0 16px 0;
-`;
-
-const FinalCtaSubtitle = styled.p`
-  font-size: clamp(0.95rem, 2vw, 1.1rem);
-  color: rgba(148, 163, 184, 0.85);
-  line-height: 1.6;
-  max-width: 600px;
-  margin: 0 auto 36px auto;
-`;
-
-const FinalCtaButton = styled.button`
-  font-size: 1rem;
-  font-weight: 700;
-  padding: 16px 32px;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #F59E0B;
-  color: #0f172a;
-  border: none;
-  box-shadow: 0 6px 24px rgba(245, 158, 11, 0.35);
-
-  &:hover {
-    background: #FBBF24;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 32px rgba(245, 158, 11, 0.45);
-  }
-  &:active { transform: translateY(0); }
-`;
-
-const BottomFooterBar = styled.footer`
-  background: #020617;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 24px 32px;
-`;
-
-const BottomFooterInner = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  @media (max-width: 640px) {
-    flex-direction: column;
-    gap: 16px;
-    text-align: center;
-  }
-`;
-
-const BottomFooterCopyright = styled.span`
-  font-size: 0.75rem;
-  color: rgba(148, 163, 184, 0.5);
-  font-family: 'Courier New', Courier, monospace;
-`;
-
-const SectionPreTitle = styled.span`
-  color: #F59E0B;
-  font-weight: 700;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 2.5px;
-  display: block;
-  margin-bottom: 12px;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: #f1f5f9;
-  letter-spacing: -0.5px;
-  margin-bottom: 16px;
-
-  @media (max-width: 768px) {
-    font-size: 1.85rem;
-  }
-`;
-
-const SectionDesc = styled.p`
-  font-size: 1rem;
-  color: rgba(148, 163, 184, 0.85);
-  line-height: 1.6;
-`;
-
-// Section 3: Problem Section
-const ProblemGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-  width: 100%;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-`;
-
-const ProblemCard = styled.div`
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  padding: 36px;
-  backdrop-filter: blur(12px);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
-    border-color: rgba(245, 158, 11, 0.2);
-  }
-`;
-
-const ProblemIcon = styled.div`
-  width: 48px;
-  height: 48px;
-  background: rgba(245, 158, 11, 0.1);
-  color: #F59E0B;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 24px;
-  font-size: 1.25rem;
-  border: 1px solid rgba(245, 158, 11, 0.2);
-`;
-
-const ProblemCardTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 12px;
-`;
-
-const ProblemCardDesc = styled.p`
-  font-size: 0.95rem;
-  color: rgba(148, 163, 184, 0.8);
-  line-height: 1.5;
-`;
-
-// Section 4 & 5: How It Works Paths
-const StepsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 20px;
-  width: 100%;
-  margin-top: 20px;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const StepItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  position: relative;
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  padding: 24px;
-  backdrop-filter: blur(12px);
-  transition: border-color 0.25s ease, transform 0.25s ease;
-
-  &:hover {
-    border-color: rgba(245, 158, 11, 0.25);
-    transform: translateY(-2px);
-  }
-`;
-
-const StepNumberBadge = styled.div<{ $isHost?: boolean }>`
-  width: 32px;
-  height: 32px;
-  background: ${props => props.$isHost ? 'rgba(20,184,166,0.15)' : 'rgba(245,158,11,0.15)'};
-  color: ${props => props.$isHost ? '#5eead4' : '#F59E0B'};
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 0.9rem;
-  margin-bottom: 16px;
-  border: 1px solid ${props => props.$isHost ? 'rgba(20,184,166,0.3)' : 'rgba(245,158,11,0.3)'};
-`;
-
-const StepTitle = styled.h4`
-  font-size: 1rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 8px;
-`;
-
-const StepDesc = styled.p`
-  font-size: 0.85rem;
-  color: rgba(148, 163, 184, 0.8);
-  line-height: 1.45;
-`;
-
-// Section 6: Budget Engine Explainer
-const BudgetExplainerGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  gap: 48px;
-  width: 100%;
-  align-items: center;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const BudgetPanelMock = styled.div`
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(245, 158, 11, 0.18);
-  border-radius: 20px;
-  padding: 28px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
-`;
-
-const MockInputHeader = styled.div`
-  background: rgba(2, 6, 23, 0.6);
-  border-radius: 12px;
-  padding: 16px 20px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #94a3b8;
-  border: 1px solid rgba(255,255,255,0.08);
-`;
-
-const MockPanelList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const MockDayRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(2, 6, 23, 0.5);
-  padding: 12px 18px;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.06);
-  font-size: 0.9rem;
-`;
-
-const MockDayLabel = styled.span`
-  font-weight: 700;
-  color: #f1f5f9;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const MockDayActivity = styled.span`
-  color: rgba(148,163,184,0.8);
-  font-size: 0.85rem;
-`;
-
-const MockDayBudget = styled.span`
-  font-weight: 700;
-  color: #F59E0B;
-`;
-
-const WeatherAlertMock = styled.div`
-  background: #fffbeb;
-  border: 1px solid #fde68a;
-  border-radius: 12px;
-  padding: 16px 20px;
-  margin-top: 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-`;
-
-const WeatherIcon = styled.div`
-  font-size: 1.5rem;
-`;
-
-const WeatherContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-`;
-
-const WeatherTitle = styled.span`
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #b45309;
-`;
-
-const WeatherDesc = styled.p`
-  font-size: 0.8rem;
-  color: #d97706;
-  margin: 0;
-  line-height: 1.4;
-`;
-
-// Section 7: Trust & Safety
-const TrustGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
-  width: 100%;
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const TrustCard = styled.div`
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  padding: 32px;
-  text-align: center;
-  backdrop-filter: blur(12px);
-  transition: border-color 0.25s ease, transform 0.25s ease;
-
-  &:hover {
-    border-color: rgba(245, 158, 11, 0.2);
-    transform: translateY(-2px);
-  }
-`;
-
-const TrustTitle = styled.h3`
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 12px;
-`;
-
-const TrustDesc = styled.p`
-  font-size: 0.9rem;
-  color: rgba(148, 163, 184, 0.8);
-  line-height: 1.55;
-`;
-
-const TrustIcon = styled.div<{ $variant: 'green' | 'blue' | 'purple' }>`
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.35rem;
-  margin: 0 auto 20px auto;
-  background: ${props => {
-    if (props.$variant === 'green') return '#ecfdf5';
-    if (props.$variant === 'purple') return '#faf5ff';
-    return '#eff6ff';
-  }};
-  color: ${props => {
-    if (props.$variant === 'green') return '#10b981';
-    if (props.$variant === 'purple') return '#a855f7';
-    return '#3b82f6';
-  }};
-`;
-
-// Section 8: Comparison Table
-const TableContainer = styled.div`
-  width: 100%;
-  overflow-x: auto;
-  background: rgba(15, 23, 42, 0.7);
-  border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 16px;
-  backdrop-filter: blur(12px);
-`;
-
-const CompareTable = styled.table`
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  min-width: 600px;
-`;
-
-const Th = styled.th`
-  background: rgba(2, 6, 23, 0.5);
-  padding: 18px 24px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-`;
-
-const Td = styled.td`
-  padding: 18px 24px;
-  font-size: 0.9rem;
-  color: rgba(148,163,184,0.85);
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-`;
-
-const CheckIcon = styled.span`
-  color: #34d399;
-  font-weight: bold;
-  margin-right: 6px;
-`;
-
-// Section 9: Platform Preview
-const PreviewGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1.25fr 0.75fr;
-  gap: 32px;
-  width: 100%;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const PreviewCard = styled.div`
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  padding: 24px;
-  backdrop-filter: blur(12px);
-`;
-
-const PreviewTitle = styled.h4`
-  font-size: 1rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 16px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.07);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const MockBadge = styled.span<{ $status?: string }>`
-  font-size: 0.75rem;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-weight: 700;
-  background: ${props => props.$status === 'ONGOING' ? 'rgba(59,130,246,0.15)' : 'rgba(16,185,129,0.15)'};
-  color: ${props => props.$status === 'ONGOING' ? '#60a5fa' : '#34d399'};
-`;
-
-const ChatBubble = styled.div<{ $isSender?: boolean }>`
-  background: ${props => props.$isSender ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.05)'};
-  color: ${props => props.$isSender ? '#FCD34D' : 'rgba(226,232,240,0.85)'};
-  border: 1px solid ${props => props.$isSender ? 'rgba(245,158,11,0.25)' : 'rgba(255,255,255,0.07)'};
-  padding: 12px 16px;
-  border-radius: 12px;
-  max-width: 80%;
-  align-self: ${props => props.$isSender ? 'flex-end' : 'flex-start'};
-  font-size: 0.85rem;
-  line-height: 1.4;
-  margin-bottom: 10px;
-`;
-
-const ChatContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  min-height: 200px;
-`;
-
-const SystemMessage = styled.div`
-  font-size: 0.75rem;
-  color: rgba(148,163,184,0.6);
-  align-self: center;
-  margin: 12px 0;
-  background: rgba(255,255,255,0.04);
-  padding: 4px 12px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255,255,255,0.07);
-  font-weight: 600;
-`;
-
-// Section 10: FAQ Accordion
-const FaqList = styled.div`
-  width: 100%;
-  max-width: 800px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const FaqItem = styled.div`
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 12px;
-  overflow: hidden;
-  backdrop-filter: blur(12px);
-  transition: border-color 0.25s ease;
-  &:hover {
-    border-color: rgba(245, 158, 11, 0.25);
-  }
-`;
-
-const FaqQuestion = styled.button`
-  width: 100%;
-  padding: 20px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: none;
-  border: none;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #f1f5f9;
-  text-align: left;
-  cursor: pointer;
-  outline: none;
-`;
-
-const FaqAnswer = styled.div<{ $isOpen: boolean }>`
-  max-height: ${props => props.$isOpen ? '200px' : '0px'};
-  padding: ${props => props.$isOpen ? '0 24px 24px 24px' : '0 24px'};
-  overflow: hidden;
-  transition: all 0.25s ease;
-  font-size: 0.95rem;
-  color: rgba(148, 163, 184, 0.85);
-  line-height: 1.55;
-`;
-
-// Section 11: Dual CTA
-const CtaContainer = styled.section`
-  max-width: 1200px;
-  margin: 0 auto 60px auto;
-  padding: 0 32px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    padding: 0 20px;
-  }
-`;
-
-const CtaBox = styled.div<{ $variant?: 'blue' | 'light' }>`
-  border-radius: 24px;
-  padding: 48px;
-  color: #ffffff;
-  background: ${props => props.$variant === 'light'
-    ? 'rgba(15, 23, 42, 0.7)'
-    : 'linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(245,158,11,0.06) 100%)'};
-  border: 1px solid ${props => props.$variant === 'light'
-    ? 'rgba(255,255,255,0.08)'
-    : 'rgba(245, 158, 11, 0.35)'};
-  backdrop-filter: blur(12px);
-  box-shadow: ${props => props.$variant !== 'light' ? '0 0 40px rgba(245,158,11,0.08)' : 'none'};
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 20px;
-`;
-
-const CtaTitle = styled.h3`
-  font-size: 1.75rem;
-  font-weight: 800;
-  margin: 0;
-  letter-spacing: -0.5px;
-  color: #f1f5f9;
-`;
-
-const CtaDesc = styled.p`
-  font-size: 1rem;
-  line-height: 1.55;
-  margin: 0;
-  color: rgba(148, 163, 184, 0.85);
-`;
-
-// Section 12: Footer
-const FooterContainer = styled.footer`
-  background: #0f172a;
-  color: #94a3b8;
-  padding: 80px 32px 40px 32px;
-  border-top: 1px solid #1e293b;
-
-  @media (max-width: 768px) {
-    padding: 60px 20px 30px 20px;
-  }
-`;
-
-const FooterInner = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-`;
-
-const FooterMain = styled.div`
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
-  gap: 48px;
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-`;
-
-const FooterBrand = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const FooterLogoText = styled.span`
-  font-size: 1.3rem;
-  font-weight: 800;
-  color: #ffffff;
-  span {
-    color: #3b82f6;
-  }
-`;
-
-const FooterRegionsText = styled.p`
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: #64748b;
-  margin: 0;
-`;
-
-const FooterLinksCol = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const FooterColTitle = styled.span`
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #ffffff;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-`;
-
-const FooterLink = styled.a`
-  font-size: 0.85rem;
-  color: #94a3b8;
-  text-decoration: none;
-  transition: color 0.2s ease;
-  &:hover {
-    color: #ffffff;
-  }
-`;
-
-const FooterBottom = styled.div`
-  border-top: 1px solid #1e293b;
-  padding-top: 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.8rem;
-  color: #64748b;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
-  }
-`;
-
-const GoogleIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"/>
-  </svg>
-);
-
-const ModalBackdrop = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-`;
-
-// ============================================================
-// Redesigned Auth Modal Styled Components
-// ============================================================
-const ModalBackdropNew = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-  animation: ${fadeIn} 0.25s ease;
-`;
-
-const ModalCardNew = styled.div`
-  width: 100%;
-  max-width: 440px;
-  background: #0d1322;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 24px;
-  padding: 32px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-  position: relative;
-  display: flex;
-  flex-direction: column;
-`;
-
-const ModalHeaderNew = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-`;
-
-const ModalCloseBtnNew = styled.button`
-  background: none;
-  border: none;
-  color: #94a3b8;
-  font-size: 1.25rem;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: #f1f5f9;
-  }
-`;
-
-const TabPillContainer = styled.div`
-  background: #151c2e;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 14px;
-  padding: 4px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  margin-top: 24px;
-  margin-bottom: 24px;
-`;
-
-const TabPillBtn = styled.button<{ $active: boolean }>`
-  background: ${props => props.$active ? '#232d42' : 'transparent'};
-  color: ${props => props.$active ? '#ffffff' : '#94a3b8'};
-  font-weight: ${props => props.$active ? '700' : '600'};
-  border-radius: 10px;
-  padding: 10px 0;
-  font-size: 0.9rem;
-  border: none;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.2s ease;
-
-  &:hover {
-    color: #ffffff;
-  }
-`;
-
-const RoleLabel = styled.span`
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  color: #94a3b8;
-  text-transform: uppercase;
-  font-family: 'Courier New', Courier, monospace;
-  margin-bottom: 10px;
-  display: block;
-`;
-
-const RoleGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 24px;
-`;
-
-const RoleCardBtn = styled.button<{ $selected: boolean }>`
-  background: #151c2e;
-  border: 1.5px solid ${props => props.$selected ? '#f59e0b' : 'rgba(255, 255, 255, 0.06)'};
-  color: ${props => props.$selected ? '#f59e0b' : '#94a3b8'};
-  padding: 14px 8px;
-  border-radius: 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: ${props => props.$selected ? '0 0 16px rgba(245, 158, 11, 0.15)' : 'none'};
-
-  &:hover {
-    border-color: ${props => props.$selected ? '#f59e0b' : 'rgba(255, 255, 255, 0.15)'};
-    color: ${props => props.$selected ? '#f59e0b' : '#f1f5f9'};
-  }
-`;
-
-const RoleIcon = styled.span`
-  font-size: 1.2rem;
-`;
-
-const RoleName = styled.span`
-  font-size: 0.78rem;
-  font-weight: 700;
-`;
-
-const FormLabelNew = styled.label`
-  font-size: 0.825rem;
-  font-weight: 600;
-  color: #94a3b8;
-  margin-bottom: 6px;
-  display: block;
-`;
-
-const FormInputNew = styled.input`
-  width: 100%;
-  background: #151c2e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #f1f5f9;
-  font-size: 0.9rem;
-  border-radius: 12px;
-  padding: 12px 16px;
-  outline: none;
-  transition: border-color 0.2s ease;
-
-  &:focus {
-    border-color: #f59e0b;
-  }
-
-  &::placeholder {
-    color: #64748b;
-  }
-`;
-
-const PrimarySubmitBtnNew = styled.button`
-  width: 100%;
-  background: #f59e0b;
-  color: #0f172a;
-  font-weight: 700;
-  font-size: 1rem;
-  border-radius: 12px;
-  padding: 14px 0;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.3);
-
-  &:hover {
-    background: #fbbf24;
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-    transform: translateY(-1px);
-  }
-  &:active {
-    transform: translateY(0);
-  }
-`;
-
-const BottomSwitchText = styled.p`
-  text-align: center;
-  font-size: 0.85rem;
-  color: #94a3b8;
-  margin: 0;
-
-  span {
-    color: #f59e0b;
-    font-weight: 700;
-    cursor: pointer;
-    margin-left: 4px;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
-
-const ModalCard = styled.div`
-  width: 100%;
-  max-width: 900px;
-  background: #ffffff;
-  border-radius: 24px;
-  overflow: hidden;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  min-height: 580px;
-  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    max-width: 480px;
-    min-height: auto;
-  }
-`;
-
-const ModalLeft = styled.div`
-  background: linear-gradient(135deg, #1a73e8 0%, #0d5bb5 100%);
-  color: #ffffff;
-  padding: 48px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const ModalLeftContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const VerifiedBadge = styled.div`
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  padding: 6px 12px;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  align-self: flex-start;
-`;
-
-const ModalLeftTitle = styled.h3`
-  font-size: 2rem;
-  font-weight: 800;
-  line-height: 1.25;
-  margin: 0;
-  letter-spacing: -0.5px;
-`;
-
-const ModalLeftDesc = styled.p`
-  font-size: 0.95rem;
-  line-height: 1.5;
-  opacity: 0.9;
-  margin: 0;
-`;
-
-const ModalRight = styled.div`
-  padding: 48px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-
-  @media (max-width: 768px) {
-    padding: 32px 24px;
-  }
-`;
-
-const CloseButton = styled.button`
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  color: #94a3b8;
-  cursor: pointer;
-  line-height: 1;
-  padding: 4px;
-  transition: color 0.2s ease;
-  &:hover {
-    color: #475569;
-  }
-`;
-
-const FormTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0 0 8px 0;
-  letter-spacing: -0.5px;
-`;
-
-const FormSubtitle = styled.p`
-  font-size: 0.875rem;
-  color: #64748b;
-  margin: 0 0 24px 0;
-  a {
-    color: #1a73e8;
-    font-weight: 700;
-    text-decoration: none;
-    cursor: pointer;
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-`;
-
-const FormContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  width: 100%;
-`;
-
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
-const Label = styled.label`
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #475569;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  font-size: 0.9rem;
-  color: #1e293b;
-  outline: none;
-  transition: border-color 0.2s ease;
-  &:focus {
-    border-color: #1a73e8;
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  font-size: 0.9rem;
-  color: #1e293b;
-  outline: none;
-  background-color: #ffffff;
-  transition: border-color 0.2s ease;
-  &:focus {
-    border-color: #1a73e8;
-  }
-`;
-
-const Textarea = styled.textarea`
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  font-size: 0.9rem;
-  color: #1e293b;
-  outline: none;
-  resize: none;
-  height: 80px;
-  transition: border-color 0.2s ease;
-  &:focus {
-    border-color: #1a73e8;
-  }
-`;
-
-const StepperHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  background: #f8fafc;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-`;
-
-const StepperTitle = styled.span`
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-`;
-
-const StepperDots = styled.div`
-  display: flex;
-  gap: 6px;
-`;
-
-const StepperDot = styled.div<{ active: boolean }>`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: ${props => props.active ? '#1a73e8' : '#e2e8f0'};
-`;
-
-const GoogleButton = styled.button`
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  background: #ffffff;
-  color: #475569;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-
-  &:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-  }
-`;
-
-const Divider = styled.div`
-  display: flex;
-  align-items: center;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 0.75rem;
-  font-weight: 600;
-  margin: 10px 0;
-  &::before, &::after {
-    content: '';
-    flex: 1;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  &:not(:empty)::before {
-    margin-right: .5em;
-  }
-  &:not(:empty)::after {
-    margin-left: .5em;
-  }
-`;
-
-const AvatarContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-top: 4px;
-`;
-
-const AvatarOption = styled.div<{ selected: boolean }>`
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 3px solid ${props => props.selected ? '#1a73e8' : 'transparent'};
-  background: #f1f5f9;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.8rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-  &:hover {
-    transform: scale(1.05);
-    background: #e2e8f0;
-  }
-`;
-
-const ErrorMsg = styled.span`
-  font-size: 0.75rem;
-  color: #ef4444;
-  font-weight: 600;
-`;
-
-const SuccessPanel = styled.div`
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  padding: 24px 0;
-`;
-
-const SuccessIcon = styled.div`
-  width: 56px;
-  height: 56px;
-  background: #ecfdf5;
-  color: #10b981;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.75rem;
-`;
+import {
+  ArrowRight,
+  Bot,
+  CalendarRange,
+  Check,
+  ChevronDown,
+  CloudSun,
+  Compass,
+  Gauge,
+  Hotel,
+  Layers3,
+  LockKeyhole,
+  MapPinned,
+  Menu,
+  PlaneTakeoff,
+  Route,
+  ShieldCheck,
+  Sparkles,
+  Users,
+  WalletCards,
+  WandSparkles,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
+import { handleResponse } from '@/lib/apiService';
+
+type AuthMode = 'login' | 'register' | 'verify' | 'forgot';
+type AuthRole = 'traveler' | 'owner';
+
+const travelerSteps = [
+  ['Tell us the essentials', 'Choose a destination, travel dates, budget, and interests.'],
+  ['Shape your preferences', 'Add your travel style, group size, and the experiences you care about.'],
+  ['Compare useful options', 'Review owner-listed stays, estimated local costs, and Amadeus hotel offers when that provider is configured.'],
+  ['Generate your itinerary', 'TravelMate combines your brief, budget, and conditions into a practical day-by-day plan.'],
+  ['Adjust and save', 'Refine the plan, monitor costs, and keep the trip available from your account.'],
+] as const;
+
+const hostSteps = [
+  ['Create an owner account', 'Set up an owner account for your Cebu-based travel business.'],
+  ['Complete verification', 'Submit the profile details needed for platform review.'],
+  ['Publish your offering', 'Describe your stay or activity, pricing, location, and capacity.'],
+  ['Manage availability', 'Keep listing information and traveler requests organized in one workspace.'],
+  ['Build traveler trust', 'Use transparent status updates and an auditable activity trail.'],
+] as const;
+
+const problemCards: Array<{ icon: LucideIcon; title: string; description: string }> = [
+  { icon: Layers3, title: 'Too many disconnected tabs', description: 'Flights, stays, activities, weather, and notes rarely live in one useful planning view.' },
+  { icon: WalletCards, title: 'Budgets drift quickly', description: 'A list of ideas is not enough when the combined cost no longer matches what you can spend.' },
+  { icon: Route, title: 'Recommendations lack structure', description: 'Search results still leave you to decide what fits each day, in what order, and under which conditions.' },
+];
+
+const featureCards: Array<{ icon: LucideIcon; title: string; description: string; className: string; label: string }> = [
+  { icon: WandSparkles, title: 'A plan built around you', description: 'Generate a structured itinerary from your destination, dates, interests, group, and travel style—not a generic city checklist.', className: 'lg:col-span-2 bg-[#0d2929] text-white', label: 'Personalized AI' },
+  { icon: Gauge, title: 'Budget-aware by design', description: 'See estimated spend, category breakdowns, remaining budget, and clear over-budget warnings.', className: 'bg-[#f4c765] text-[#142423]', label: 'Cost clarity' },
+  { icon: PlaneTakeoff, title: 'Comparable travel options', description: 'Provider results are normalized so source, price, and freshness remain understandable.', className: 'bg-white text-slate-950', label: 'Travel data' },
+  { icon: CloudSun, title: 'Conditions in context', description: 'Weather appears only for dates covered by the provider. Crowd levels are explicitly labeled as calendar-based estimates, not live foot traffic.', className: 'lg:col-span-2 bg-[#dcefeb] text-slate-950', label: 'Weather & crowds' },
+];
+
+const exampleDays = [
+  ['01', 'Arrival & orientation', 'Partly cloudy', '₱3,200'],
+  ['02', 'Old town & food trail', 'Clear', '₱4,150'],
+  ['03', 'Island nature day', 'Clear', '₱5,400'],
+  ['04', 'Museum & café route', 'Rain watch', '₱2,850'],
+  ['05', 'Regional day trip', 'Partly cloudy', '₱4,900'],
+  ['06', 'Open exploration', 'Clear', '₱3,100'],
+  ['07', 'Departure & reserve', 'Light rain', '₱1,600'],
+] as const;
+
+const comparisonRows = [
+  ['One personalized planning flow', false, false, true],
+  ['Day-by-day itinerary', true, false, true],
+  ['Budget status and breakdown', false, false, true],
+  ['Weather beside trip dates', false, true, true],
+  ['Saved plan you can revisit', true, true, true],
+  ['Live, test, and estimate labels', false, false, true],
+] as const;
+
+const faqs = [
+  ['What does TravelMate generate?', 'TravelMate creates a structured day-by-day itinerary using your destination, dates, budget, interests, preferences, and available condition data.'],
+  ['Are prices guaranteed?', 'No. Prices and activity costs are estimates unless a provider explicitly returns current availability. TravelMate labels provider and mock data so you can tell the difference.'],
+  ['What happens when a travel provider is unavailable?', 'Your saved itinerary remains accessible. TravelMate explains that fresh pricing is temporarily unavailable instead of presenting old or mock results as live.'],
+  ['Does TravelMate purchase flights or hotels?', 'No. Flight search and online payment are not currently integrated. TravelMate is a planning system; configured Amadeus hotel results are availability references, not completed bookings.'],
+  ['How are weather and crowd conditions handled?', 'Weather is matched to relevant dates when forecasts are available. Crowd information is displayed only with a valid source; otherwise it is clearly marked unavailable or estimated.'],
+  ['Why do I need to verify my email?', 'Email verification protects account access and must be completed before login. Profile verification is separate and does not prevent itinerary planning.'],
+] as const;
+
+async function auth(body: Record<string, unknown>) {
+  const response = await fetch('/api/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  return handleResponse<{ user?: { role?: string }; redirect?: string; verificationCode?: string; message?: string }>(response);
+}
 
 export default function TravelMateLanding() {
   const router = useRouter();
-  // FAQs State
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const closeButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const [mode, setMode] = useState<AuthMode>('login');
+  const [role, setRole] = useState<AuthRole>('traveler');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [code, setCode] = useState('');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  // Auth Modal State
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [authView, setAuthView] = useState<'login' | 'register' | 'forgot'>('login');
-  const [registerStep, setRegisterStep] = useState<1 | 2 | 3>(1);
-  const [selectedRole, setSelectedRole] = useState<'traveller' | 'destination' | 'system'>('traveller');
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', onKeyDown);
+      returnFocusRef.current?.focus();
+    };
+  }, [open]);
 
-  // Form Fields
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
-  const [regPhone, setRegPhone] = useState('');
-  const [regRegion, setRegRegion] = useState('Southeast Asia');
-  const [regAvatar, setRegAvatar] = useState('🌴');
-  const [regBio, setRegBio] = useState('');
-
-  const [forgotEmail, setForgotEmail] = useState('');
-
-  // UI States
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
-
-  // Handlers
-  const handleOpenAuth = (view: 'login' | 'register') => {
-    setAuthView(view);
-    setRegisterStep(1);
-    setIsAuthOpen(true);
-    setShowSuccess(false);
-    setErrors({});
-    // Reset inputs
-    setLoginEmail('');
-    setLoginPassword('');
-    setRegName('');
-    setRegEmail('');
-    setRegPassword('');
-    setRegPhone('');
-    setRegRegion('Southeast Asia');
-    setRegAvatar('🌴');
-    setRegBio('');
-    setForgotEmail('');
+  const show = (nextMode: AuthMode) => {
+    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    setMode(nextMode);
+    setMessage('');
+    setMenu(false);
+    setOpen(true);
   };
 
-  const handleCloseAuth = () => {
-    setIsAuthOpen(false);
-  };
-
-  const validateEmail = (email: string) => {
-    return /\S+@\S+\.\S+/.test(email);
-  };
-
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newErrors: Record<string, string> = {};
-    if (!loginEmail) newErrors.loginEmail = 'Email is required';
-    else if (!validateEmail(loginEmail)) newErrors.loginEmail = 'Please enter a valid email';
-    if (!loginPassword) newErrors.loginPassword = 'Password is required';
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    const roleCookie = selectedRole === 'destination' ? 'owner' : (selectedRole === 'system' ? 'admin' : 'traveler');
-    document.cookie = `auth_token=simulated_token_for_${loginEmail}; path=/; max-age=3600; SameSite=Lax`;
-    document.cookie = `user_role=${roleCookie}; path=/; max-age=3600; SameSite=Lax`;
-
-    setSuccessMsg(`Successfully logged in as ${selectedRole}! Redirecting...`);
-    setShowSuccess(true);
-    setTimeout(() => {
-      setIsAuthOpen(false);
-      if (selectedRole === 'system') {
-        router.push('/admin/dashboard');
-      } else if (selectedRole === 'destination') {
-        router.push('/owner/dashboard');
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setBusy(true);
+    setMessage('');
+    try {
+      if (mode === 'login') {
+        const data = await auth({ action: 'login', email, password });
+        if (!data.redirect) throw new Error('Login succeeded but no dashboard route was returned.');
+        router.push(data.redirect);
+      } else if (mode === 'register') {
+        const data = await auth({ action: 'register', name, email, password, role });
+        setCode(data.verificationCode || '');
+        setMode('verify');
+        setMessage(data.message || 'Account created. Enter the development activation code to verify your email.');
+      } else if (mode === 'verify') {
+        const data = await auth({ action: 'verify-email', email, code });
+        setMode('login');
+        setMessage(data.message || 'Email verified. You can now sign in.');
       } else {
-        router.push('/dashboard');
+        const data = await auth({ action: 'forgot-password', email });
+        setMessage(data.message || 'Password recovery is not configured yet.');
       }
-    }, 1200);
-  };
-
-  const handleRegisterNext = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (registerStep === 1) {
-      if (!regName) newErrors.regName = 'Name is required';
-      if (!regEmail) newErrors.regEmail = 'Email is required';
-      else if (!validateEmail(regEmail)) newErrors.regEmail = 'Please enter a valid email';
-      
-      // Password validation: min 8 characters, at least 1 number
-      if (!regPassword) {
-        newErrors.regPassword = 'Password is required';
-      } else {
-        if (regPassword.length < 8) {
-          newErrors.regPassword = 'Password must be at least 8 characters long';
-        }
-        if (!/\d/.test(regPassword)) {
-          newErrors.regPassword = (newErrors.regPassword ? newErrors.regPassword + '. ' : '') + 'Password must contain at least 1 number';
-        }
-      }
-    } else if (registerStep === 2) {
-      if (!regPhone) {
-        newErrors.regPhone = 'Phone number is required';
-      } else {
-        // Validation: simple local or international format
-        const phoneRegex = /^\+?[0-9\s\-()]{7,15}$/;
-        if (!phoneRegex.test(regPhone)) {
-          newErrors.regPhone = 'Please enter a valid phone number';
-        }
-      }
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Request failed.');
+    } finally {
+      setBusy(false);
     }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setErrors({});
-    setRegisterStep((prev) => (prev + 1) as 1 | 2 | 3);
-  };
-
-  const handleRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newErrors: Record<string, string> = {};
-    if (!regEmail) newErrors.regEmail = 'Email is required';
-    else if (!validateEmail(regEmail)) newErrors.regEmail = 'Please enter a valid email';
-    if (!regPassword) newErrors.regPassword = 'Password is required';
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    const roleCookie = selectedRole === 'destination' ? 'owner' : (selectedRole === 'system' ? 'admin' : 'traveler');
-    document.cookie = `auth_token=simulated_token_for_${regEmail}; path=/; max-age=3600; SameSite=Lax`;
-    document.cookie = `user_role=${roleCookie}; path=/; max-age=3600; SameSite=Lax`;
-
-    setSuccessMsg(`Account created as ${selectedRole}! Redirecting to dashboard...`);
-    setShowSuccess(true);
-    setTimeout(() => {
-      setIsAuthOpen(false);
-      if (selectedRole === 'system') {
-        router.push('/admin/dashboard');
-      } else if (selectedRole === 'destination') {
-        router.push('/owner/dashboard');
-      } else {
-        router.push('/dashboard');
-      }
-    }, 1200);
-  };
-
-  const handleForgotSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newErrors: Record<string, string> = {};
-    if (!forgotEmail) newErrors.forgotEmail = 'Email is required';
-    else if (!validateEmail(forgotEmail)) newErrors.forgotEmail = 'Please enter a valid email';
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    // Secure generic message to prevent email enumeration
-    setSuccessMsg('If the account exists, a reset link has been sent to your email.');
-    setShowSuccess(true);
-  };
-
-  const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index);
-  };
-
-  // Mock FAQ Data
-  const faqs = [
-    {
-      q: "How does the budget-splitting algorithm work?",
-      a: "Our algorithm takes your total input budget and automatically splits it proportionally across accommodation, activities, dining, transport, and a pre-calculated safety reserve. This ensures that you have a completely optimized plan with zero financial surprises."
-    },
-    {
-      q: "Is email verification mandatory for logging in?",
-      a: "Yes. For manual email/password registrations, you must verify your email address to confirm ownership and activate your dashboard. First-time Google Sign-In users are verified automatically by Google."
-    },
-    {
-      q: "Can I cancel my itinerary booking after the travel starts?",
-      a: "No direct cancellations are allowed once the trip began duration begins. At that stage, you can submit a Cancellation or Modification Request. If the destination owner declines, it escalates to the admin dispute review queue."
-    },
-    {
-      q: "What is the Profile Trust Score system?",
-      a: "The Trust Score is a dynamic system rating accounts from 0 to 100 (starting at 50). Successful verifications and bookings raise your trust score, while at-fault cancellations or user complaints will decrease it."
-    }
-  ];
+  }
 
   return (
-    <PageContainer>
-      {/* ── Dark Glass Navbar ── */}
-      <Header>
-        <HeaderInner>
-          <LogoContainer>
-            <TravelMateLogo />
-            <LogoText>TravelMate</LogoText>
-          </LogoContainer>
+    <div className="min-h-screen overflow-x-hidden bg-[#071817] text-white selection:bg-amber-300 selection:text-slate-950">
+      <a href="#main-content" className="sr-only z-[100] rounded-md bg-white px-4 py-2 text-slate-950 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
 
-          <NavCenter>
-            <NavLink href="#features">Features</NavLink>
-            <NavLink href="#how-it-works">How it works</NavLink>
-            <NavLink href="#reviews">Reviews</NavLink>
-          </NavCenter>
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#071817]/85 backdrop-blur-xl">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-5 lg:px-8">
+          <a href="#top" className="group flex items-center gap-2.5 font-black tracking-tight" aria-label="TravelMate home">
+            <span className="grid size-9 place-items-center rounded-xl bg-amber-300 text-[#071817] transition-transform group-hover:-rotate-6"><Compass size={21} strokeWidth={2.5} /></span>
+            <span className="text-xl">TravelMate</span>
+          </a>
 
-          <NavActions>
-            <NavSignInBtn id="nav-signin-btn" onClick={() => handleOpenAuth('login')}>Sign In</NavSignInBtn>
-            <NavTryFreeBtn id="nav-tryfree-btn" onClick={() => handleOpenAuth('register')}>Try Free</NavTryFreeBtn>
-          </NavActions>
-        </HeaderInner>
-      </Header>
+          <nav aria-label="Primary navigation" className="hidden items-center gap-8 text-sm font-medium text-white/70 lg:flex">
+            <a className="transition hover:text-white" href="#features">Features</a>
+            <a className="transition hover:text-white" href="#workflow">How it works</a>
+            <a className="transition hover:text-white" href="#budget">Budget</a>
+            <a className="transition hover:text-white" href="#preview">Preview</a>
+            <a className="transition hover:text-white" href="#faq">FAQ</a>
+          </nav>
 
-      {/* ── Cinematic Hero Section ── */}
-      <HeroContainer id="hero">
-        <HeroContent>
-          {/* Pill badge */}
-          <HeroBadge>
-            <HeroBadgeDot />
-            AI-Powered Travel Planning · 2026
-          </HeroBadge>
+          <div className="hidden items-center gap-2 md:flex">
+            <button type="button" onClick={() => show('login')} className="rounded-full px-4 py-2.5 text-sm font-semibold text-white/80 transition hover:bg-white/10 hover:text-white">Sign in</button>
+            <button type="button" onClick={() => show('register')} className="rounded-full bg-amber-300 px-5 py-2.5 text-sm font-extrabold text-[#102220] shadow-[0_10px_30px_rgba(252,211,77,.18)] transition hover:bg-amber-200">Plan a trip</button>
+          </div>
 
-          {/* Headline */}
-          <HeroTitle>Your AI</HeroTitle>
-          <HeroTitleAccent>Travel Companion</HeroTitleAccent>
+          <button type="button" aria-expanded={menu} aria-controls="mobile-navigation" aria-label={menu ? 'Close navigation' : 'Open navigation'} onClick={() => setMenu((current) => !current)} className="grid size-10 place-items-center rounded-full border border-white/15 md:hidden">
+            {menu ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
 
-          {/* Subtitle */}
-          <HeroSubtitle>
-            Generate personalised 7-day itineraries, split your budget mathematically, compare local prices, and get live weather alerts — all in one sleek platform.
-          </HeroSubtitle>
-
-          {/* CTA Buttons */}
-          <HeroButtons>
-            <HeroPrimaryBtn
-              id="hero-generate-itinerary-btn"
-              onClick={() => {
-                const el = document.getElementById('how-it-works');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-            >
-              ⚡ Generate My Itinerary
-            </HeroPrimaryBtn>
-            <HeroSecondaryBtn
-              id="hero-signin-dashboard-btn"
-              onClick={() => handleOpenAuth('login')}
-            >
-              Sign In to Dashboard →
-            </HeroSecondaryBtn>
-          </HeroButtons>
-        </HeroContent>
-
-        {/* Metrics bar pinned to bottom of hero */}
-        <HeroMetricsBar>
-          <MetricItem style={{ animationDelay: '0.1s' }}>
-            <MetricValue>4,912</MetricValue>
-            <MetricLabel>Trips Planned</MetricLabel>
-          </MetricItem>
-
-          <MetricItem style={{ animationDelay: '0.2s', position: 'relative' }}>
-            <MetricValue>1,248</MetricValue>
-            <MetricLabel>Active Users</MetricLabel>
-            <ScrollIndicator>
-              <ScrollLabel>Scroll to Explore</ScrollLabel>
-              <ScrollChevron>
-                <ChevronDownIcon />
-              </ScrollChevron>
-            </ScrollIndicator>
-          </MetricItem>
-
-          <MetricItem style={{ animationDelay: '0.3s' }}>
-            <MetricValue>98%</MetricValue>
-            <MetricLabel>Satisfaction</MetricLabel>
-          </MetricItem>
-
-          <MetricItem style={{ animationDelay: '0.4s' }}>
-            <MetricValue>28</MetricValue>
-            <MetricLabel>Destination Owners</MetricLabel>
-          </MetricItem>
-        </HeroMetricsBar>
-      </HeroContainer>
-
-      {/* ── Three Portals Section ── */}
-      <PortalsSection id="portals">
-        <PortalsInner>
-          <PortalsSectionBadge>
-            <PortalsRoleBadge>Choose Your Role</PortalsRoleBadge>
-          </PortalsSectionBadge>
-          <PortalsSectionTitle>One Platform, Three Portals</PortalsSectionTitle>
-
-          <PortalsGrid>
-            {/* Card 1: Traveller */}
-            <PortalCard $accent="teal">
-              <PortalIconBox $accent="teal">✈️</PortalIconBox>
-              <div>
-                <PortalCardTitle>Traveller</PortalCardTitle>
+        {menu && (
+          <nav id="mobile-navigation" aria-label="Mobile navigation" className="border-t border-white/10 bg-[#071817] px-5 py-5 md:hidden">
+            <div className="mx-auto grid max-w-7xl gap-1 text-sm font-semibold">
+              {([['Features', '#features'], ['How it works', '#workflow'], ['Budget', '#budget'], ['Preview', '#preview'], ['FAQ', '#faq']] as const).map(([label, href]) => <a key={href} href={href} onClick={() => setMenu(false)} className="rounded-lg px-3 py-3 text-white/75 hover:bg-white/5 hover:text-white">{label}</a>)}
+              <div className="mt-3 grid grid-cols-2 gap-2 border-t border-white/10 pt-4">
+                <button type="button" onClick={() => show('login')} className="rounded-full border border-white/20 px-4 py-3">Sign in</button>
+                <button type="button" onClick={() => show('register')} className="rounded-full bg-amber-300 px-4 py-3 font-extrabold text-[#102220]">Plan a trip</button>
               </div>
-              <PortalCardDesc>
-                AI planner, budget tools, weather &amp; price compare.
-              </PortalCardDesc>
-              <PortalEnterBtn
-                id="portal-traveller-btn"
-                $accent="teal"
-                onClick={() => {
-                  const token = document.cookie.includes('auth_token=');
-                  if (token) {
-                    router.push('/dashboard');
-                  } else {
-                    handleOpenAuth('login');
-                  }
-                }}
-              >
-                Enter Portal →
-              </PortalEnterBtn>
-            </PortalCard>
+            </div>
+          </nav>
+        )}
+      </header>
 
-            {/* Card 2: Destination Owner */}
-            <PortalCard $accent="teal-active">
-              <PortalIconBox $accent="teal-active">🏨</PortalIconBox>
-              <div>
-                <PortalCardTitle>Destination Owner</PortalCardTitle>
+      <main id="main-content">
+        <section id="top" className="relative isolate flex min-h-[780px] items-center overflow-hidden pt-[72px]">
+          <Image src="/mountain-hero-bg.png" alt="" fill priority sizes="100vw" className="-z-30 object-cover object-center" />
+          <div className="absolute inset-0 -z-20 bg-[linear-gradient(90deg,rgba(3,20,19,.97)_0%,rgba(3,20,19,.87)_45%,rgba(3,20,19,.38)_100%)]" />
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_72%_46%,rgba(251,191,36,.15),transparent_28%)]" />
+
+          <div className="mx-auto grid w-full max-w-7xl items-center gap-14 px-5 py-20 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:py-24">
+            <div className="max-w-3xl">
+              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/8 px-3 py-1.5 text-xs font-bold uppercase tracking-[.18em] text-amber-200 backdrop-blur">
+                <Sparkles size={14} /> One brief. One complete plan.
               </div>
-              <PortalCardDesc>
-                Manage listings, view analytics &amp; traveller traffic.
-              </PortalCardDesc>
-              <PortalEnterBtn
-                id="portal-owner-btn"
-                $accent="teal-active"
-                onClick={() => {
-                  const token = document.cookie.includes('auth_token=');
-                  if (token) {
-                    router.push('/owner/dashboard');
-                  } else {
-                    handleOpenAuth('login');
-                  }
-                }}
-              >
-                Enter Portal →
-              </PortalEnterBtn>
-            </PortalCard>
-
-            {/* Card 3: System Admin */}
-            <PortalCard $accent="purple">
-              <PortalIconBox $accent="purple">🛡️</PortalIconBox>
-              <div>
-                <PortalCardTitle>System Admin</PortalCardTitle>
+              <h1 className="text-balance text-5xl font-black leading-[.98] tracking-[-.045em] sm:text-6xl lg:text-7xl xl:text-[5.4rem]">AI Travel Planning Made Real</h1>
+              <p className="mt-7 max-w-2xl text-pretty text-lg leading-8 text-white/72 sm:text-xl">Turn your destination, dates, budget, and interests into a practical itinerary—with travel options, cost estimates, and conditions brought into one clear workspace.</p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <button type="button" onClick={() => show('register')} className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-amber-300 px-6 py-3 font-extrabold text-[#102220] transition hover:bg-amber-200">Create my itinerary <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" /></button>
+                <a href="#workflow" className="inline-flex min-h-12 items-center justify-center rounded-full border border-white/25 bg-white/5 px-6 py-3 font-bold backdrop-blur transition hover:bg-white/10">See how it works</a>
               </div>
-              <PortalCardDesc>
-                Oversee users, monitor APIs, and review feedback.
-              </PortalCardDesc>
-              <PortalEnterBtn
-                id="portal-admin-btn"
-                $accent="purple"
-                onClick={() => {
-                  const token = document.cookie.includes('auth_token=');
-                  if (token) {
-                    router.push('/admin/dashboard');
-                  } else {
-                    handleOpenAuth('login');
-                  }
-                }}
-              >
-                Enter Portal →
-              </PortalEnterBtn>
-            </PortalCard>
-          </PortalsGrid>
-        </PortalsInner>
-      </PortalsSection>
+              <ul className="mt-9 flex flex-wrap gap-x-6 gap-y-3 text-sm text-white/65" aria-label="TravelMate benefits">
+                {['Budget-aware plans', 'Weather context', 'Saved trip workspace'].map((item) => <li key={item} className="flex items-center gap-2"><span className="grid size-5 place-items-center rounded-full bg-emerald-300/15 text-emerald-200"><Check size={12} strokeWidth={3} /></span>{item}</li>)}
+              </ul>
+            </div>
 
-      {/* ── Core Features Section ── */}
-      <CoreFeaturesSection id="features">
-        <CoreFeaturesInner>
-          <CoreFeaturesHeader>
-            <CoreFeaturesBadge>Core Features</CoreFeaturesBadge>
-            <CoreFeaturesTitle>Everything you need to travel smarter</CoreFeaturesTitle>
-          </CoreFeaturesHeader>
-
-          <CoreFeaturesGrid>
-            {/* Card 1: AI Planner */}
-            <FeatureCard>
-              <FeatureIconBadge $color="amber">⚡</FeatureIconBadge>
-              <div>
-                <FeatureCardTitle>AI 7-Day Planner</FeatureCardTitle>
+            <div className="relative mx-auto hidden w-full max-w-[500px] lg:block" aria-label="TravelMate itinerary preview">
+              <div className="absolute -left-10 top-14 h-48 w-48 rounded-full bg-amber-300/15 blur-3xl" />
+              <div className="relative rotate-[1.5deg] overflow-hidden rounded-[28px] border border-white/20 bg-[#f7f4eb] text-slate-950 shadow-[0_35px_100px_rgba(0,0,0,.45)]">
+                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
+                  <div><p className="text-xs font-bold uppercase tracking-[.16em] text-emerald-800">Your next trip</p><h2 className="mt-1 text-xl font-black">Bohol escape</h2></div>
+                  <div className="grid size-11 place-items-center rounded-2xl bg-[#0d2929] text-white"><MapPinned size={20} /></div>
+                </div>
+                <div className="grid grid-cols-3 gap-2 px-6 py-4 text-xs">
+                  <div className="rounded-xl bg-white p-3"><span className="text-slate-500">Dates</span><strong className="mt-1 block">Oct 12–16</strong></div>
+                  <div className="rounded-xl bg-white p-3"><span className="text-slate-500">Travelers</span><strong className="mt-1 block">2 people</strong></div>
+                  <div className="rounded-xl bg-white p-3"><span className="text-slate-500">Budget</span><strong className="mt-1 block">₱28,000</strong></div>
+                </div>
+                <div className="px-6 pb-3">
+                  <div className="mb-3 flex items-center justify-between"><h3 className="font-extrabold">Itinerary</h3><span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-bold text-emerald-800">Within budget</span></div>
+                  {[['Day 1', 'Arrival & riverside walk', '₱2,800'], ['Day 2', 'Countryside highlights', '₱4,600'], ['Day 3', 'Island hopping', '₱5,200']].map(([day, title, cost], index) => <div key={day} className="flex items-center gap-3 border-t border-slate-200 py-3.5"><span className={`grid size-9 shrink-0 place-items-center rounded-xl ${index === 1 ? 'bg-amber-200' : 'bg-[#dcefeb]'} text-xs font-black`}>{index + 1}</span><div className="min-w-0 flex-1"><span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{day}</span><p className="truncate text-sm font-bold">{title}</p></div><strong className="text-xs">{cost}</strong></div>)}
+                </div>
+                <div className="mx-6 mb-6 flex items-center gap-3 rounded-2xl bg-[#0d2929] p-4 text-white"><CloudSun className="text-amber-200" /><div><strong className="text-sm">Good weather window</strong><p className="text-xs text-white/60">Move outdoor plans earlier on Day 4.</p></div></div>
               </div>
-              <FeatureCardDesc>
-                OpenAI generates a personalised day-by-day itinerary in seconds — activities, timings, and daily budget.
-              </FeatureCardDesc>
-            </FeatureCard>
+              <div className="absolute -bottom-8 -left-12 -rotate-3 rounded-2xl border border-white/20 bg-[#0d2929] px-4 py-3 shadow-2xl"><p className="text-[10px] font-bold uppercase tracking-widest text-white/45">Estimated remaining</p><strong className="mt-1 block text-xl text-amber-200">₱4,320</strong></div>
+            </div>
+          </div>
 
-            {/* Card 2: Budget Split */}
-            <FeatureCard>
-              <FeatureIconBadge $color="teal">$</FeatureIconBadge>
-              <div>
-                <FeatureCardTitle>Smart Budget Split</FeatureCardTitle>
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#f5f1e7] to-transparent" />
+        </section>
+
+        <section className="bg-[#f5f1e7] px-5 py-24 text-slate-950 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="grid gap-10 lg:grid-cols-[.78fr_1.22fr] lg:gap-20">
+              <div><SectionLabel dark>Why planning still feels hard</SectionLabel><h2 className="mt-4 text-balance text-4xl font-black tracking-[-.035em] sm:text-5xl">A great trip should not begin with spreadsheet fatigue.</h2><p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">TravelMate brings the decisions that affect one another into the same planning flow.</p></div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {problemCards.map(({ icon: Icon, title, description }, index) => <article key={title} className="rounded-3xl border border-slate-900/10 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,.05)]"><span className="text-xs font-black text-emerald-800">0{index + 1}</span><Icon className="mt-10 text-emerald-800" size={25} /><h3 className="mt-5 text-lg font-black">{title}</h3><p className="mt-3 text-sm leading-6 text-slate-600">{description}</p></article>)}
               </div>
-              <FeatureCardDesc>
-                A mathematical algorithm distributes your total budget across accommodation, food, activities, and transport.
-              </FeatureCardDesc>
-            </FeatureCard>
+            </div>
+          </div>
+        </section>
 
-            {/* Card 3: Weather Alerts */}
-            <FeatureCard>
-              <FeatureIconBadge $color="blue">☁</FeatureIconBadge>
-              <div>
-                <FeatureCardTitle>Live Weather Alerts</FeatureCardTitle>
-              </div>
-              <FeatureCardDesc>
-                Real-time OpenWeatherMap data surfaces storm warnings and sun windows so you plan each day wisely.
-              </FeatureCardDesc>
-            </FeatureCard>
+        <section id="workflow" className="scroll-mt-20 bg-[#071817] px-5 py-24 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-3xl"><SectionLabel>Designed around the traveler</SectionLabel><h2 className="mt-4 text-balance text-4xl font-black tracking-[-.035em] sm:text-5xl">From a simple trip brief to a plan you can actually use.</h2></div>
+            <ol className="mt-14 grid gap-px overflow-hidden rounded-3xl border border-white/10 bg-white/10 md:grid-cols-5">
+              {travelerSteps.map(([title, description], index) => <li key={title} className="group bg-[#0a201f] p-6 transition hover:bg-[#0d2929]"><span className="font-mono text-xs text-amber-200">0{index + 1}</span><div className="mt-16 h-px w-8 bg-amber-300/70 transition-all group-hover:w-14" /><h3 className="mt-5 font-black">{title}</h3><p className="mt-3 text-sm leading-6 text-white/55">{description}</p></li>)}
+            </ol>
 
-            {/* Card 4: Price Compare */}
-            <FeatureCard>
-              <FeatureIconBadge $color="purple">📊</FeatureIconBadge>
-              <div>
-                <FeatureCardTitle>Price Comparison</FeatureCardTitle>
-              </div>
-              <FeatureCardDesc>
-                Side-by-side local spot ratings, average meal costs, and monthly visitor counts — no guesswork.
-              </FeatureCardDesc>
-            </FeatureCard>
-          </CoreFeaturesGrid>
-        </CoreFeaturesInner>
-      </CoreFeaturesSection>
+            <div className="mt-16 grid items-center gap-10 rounded-[32px] border border-white/10 bg-white/[.035] p-7 lg:grid-cols-[.65fr_1.35fr] lg:p-10">
+              <div><SectionLabel>For local owners</SectionLabel><h3 className="mt-3 text-3xl font-black">Make useful options easier to discover.</h3><p className="mt-4 leading-7 text-white/55">Verified owners can keep listings, pricing, and capacity organized without changing the traveler-first planning experience.</p></div>
+              <ol className="grid gap-3 sm:grid-cols-5">
+                {hostSteps.map(([title], index) => <li key={title} className="rounded-2xl bg-white/5 p-4"><span className="text-xs font-black text-emerald-200">0{index + 1}</span><p className="mt-8 text-sm font-bold leading-5">{title}</p></li>)}
+              </ol>
+            </div>
+          </div>
+        </section>
 
-      {/* ── How It Works Section ── */}
-      <HowItWorksSection id="how-it-works">
-        <HowItWorksInner>
-          <HowItWorksHeader>
-            <HowItWorksBadge>How It Works</HowItWorksBadge>
-            <HowItWorksTitle>From idea to itinerary in 30 seconds</HowItWorksTitle>
-          </HowItWorksHeader>
+        <section id="features" className="scroll-mt-20 bg-[#e9eee9] px-5 py-24 text-slate-950 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><div className="max-w-3xl"><SectionLabel dark>One connected workspace</SectionLabel><h2 className="mt-4 text-balance text-4xl font-black tracking-[-.035em] sm:text-5xl">The context behind the trip, not just a list of places.</h2></div><p className="max-w-sm leading-7 text-slate-600">Preferences, options, costs, and conditions work together before recommendations reach your itinerary.</p></div>
+            <div className="mt-12 grid gap-4 lg:grid-cols-3">
+              {featureCards.map(({ icon: Icon, title, description, className, label }) => <article key={title} className={`min-h-72 rounded-[28px] p-7 ${className}`}><div className="flex items-center justify-between"><span className="text-xs font-black uppercase tracking-[.16em] opacity-60">{label}</span><span className="grid size-11 place-items-center rounded-2xl border border-current/15 bg-current/5"><Icon size={21} /></span></div><h3 className="mt-20 max-w-md text-2xl font-black tracking-tight">{title}</h3><p className="mt-4 max-w-lg leading-7 opacity-65">{description}</p></article>)}
+            </div>
+          </div>
+        </section>
 
-          <HowItWorksGrid>
-            {/* Step 1 */}
-            <HowItWorksStep>
-              <StepIconBadge>📍</StepIconBadge>
-              <StepNumber>01</StepNumber>
-              <HowItWorksStepTitle>Enter destination &amp; budget</HowItWorksStepTitle>
-              <HowItWorksStepDesc>
-                Type where you want to go and how much you want to spend total.
-              </HowItWorksStepDesc>
-            </HowItWorksStep>
+        <section id="budget" className="scroll-mt-20 bg-[#f5f1e7] px-5 py-24 text-slate-950 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-14 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
+            <div className="lg:sticky lg:top-28"><SectionLabel dark>Budget engine</SectionLabel><h2 className="mt-4 text-balance text-4xl font-black tracking-[-.035em] sm:text-5xl">Know where the money goes before the trip begins.</h2><p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">TravelMate separates estimated accommodation, food, activities, and transport, then keeps a safety reserve visible. The result is reconciled against the total budget—not guessed by the interface.</p>
+              <div className="mt-9 overflow-hidden rounded-3xl bg-[#0d2929] p-6 text-white"><div className="flex items-end justify-between"><div><p className="text-xs font-bold uppercase tracking-widest text-white/50">Example budget</p><strong className="mt-2 block text-3xl">₱35,000</strong></div><span className="rounded-full bg-emerald-300/15 px-3 py-1 text-xs font-bold text-emerald-200">On track</span></div><div className="mt-6 flex h-2 overflow-hidden rounded-full bg-white/10"><span className="w-[34%] bg-amber-300"/><span className="w-[22%] bg-orange-300"/><span className="w-[20%] bg-emerald-300"/><span className="w-[14%] bg-cyan-300"/><span className="w-[10%] bg-white/35"/></div><div className="mt-5 grid grid-cols-2 gap-x-5 gap-y-4 text-xs sm:grid-cols-3">{[['34%', 'Accommodation'], ['22%', 'Food'], ['20%', 'Activities'], ['14%', 'Transport'], ['10%', 'Safety reserve']].map(([value, label]) => <div key={label}><strong className="text-base text-amber-100">{value}</strong><p className="text-white/45">{label}</p></div>)}</div></div>
+            </div>
+            <div><div className="mb-5 flex items-end justify-between"><div><p className="text-xs font-black uppercase tracking-[.16em] text-emerald-800">Example itinerary</p><h3 className="mt-2 text-2xl font-black">Seven days, one readable view</h3></div><CalendarRange className="text-emerald-800" /></div><div className="overflow-hidden rounded-3xl border border-slate-900/10 bg-white shadow-[0_25px_70px_rgba(15,23,42,.07)]">{exampleDays.map(([day, title, weather, cost], index) => <article key={day} className="grid grid-cols-[42px_1fr_auto] items-center gap-3 border-b border-slate-900/8 p-4 last:border-0 sm:grid-cols-[50px_1fr_150px_auto] sm:p-5"><span className={`grid size-10 place-items-center rounded-xl text-xs font-black ${index === 3 ? 'bg-amber-200 text-amber-950' : 'bg-[#dcefeb] text-emerald-950'}`}>{day}</span><div><h4 className="font-black">{title}</h4><p className="mt-1 text-xs text-slate-500 sm:hidden">{weather}</p></div><span className={`hidden items-center gap-2 text-sm sm:flex ${index === 3 ? 'text-amber-700' : 'text-slate-500'}`}><CloudSun size={16}/>{weather}</span><strong className="text-sm">{cost}</strong></article>)}</div><p className="mt-4 text-xs leading-5 text-slate-500">Example estimates only. Actual plans use the traveler’s selected dates and clearly identify live, test, estimated, or unavailable provider data.</p></div>
+          </div>
+        </section>
 
-            {/* Step 2 */}
-            <HowItWorksStep>
-              <StepIconBadge>⚡</StepIconBadge>
-              <StepNumber>02</StepNumber>
-              <HowItWorksStepTitle>AI generates your 7-day plan</HowItWorksStepTitle>
-              <HowItWorksStepDesc>
-                OpenAI crafts a fully timed itinerary with daily activities, costs, and local tips.
-              </HowItWorksStepDesc>
-            </HowItWorksStep>
+        <section id="safety" className="bg-[#0d2929] px-5 py-24 lg:px-8">
+          <div className="mx-auto max-w-7xl"><div className="grid gap-12 lg:grid-cols-[.75fr_1.25fr]"><div><SectionLabel>Trust through clarity</SectionLabel><h2 className="mt-4 text-balance text-4xl font-black tracking-[-.035em] sm:text-5xl">Know what is verified, estimated, and yours.</h2></div><div className="grid gap-4 sm:grid-cols-3">{[[LockKeyhole, 'Protected account access', 'Secure sessions and email verification protect access to saved travel data.'], [ShieldCheck, 'Backend ownership checks', 'Trips and profile changes are authorized on the server, not trusted to the browser.'], [Bot, 'Transparent recommendations', 'AI suggestions and external data remain planning guidance, with sources and limitations made clear.']].map(([Icon, title, description]) => { const CardIcon = Icon as LucideIcon; return <article key={String(title)} className="rounded-3xl border border-white/10 bg-white/5 p-6"><CardIcon className="text-amber-200"/><h3 className="mt-12 font-black">{String(title)}</h3><p className="mt-3 text-sm leading-6 text-white/55">{String(description)}</p></article>; })}</div></div></div>
+        </section>
 
-            {/* Step 3 */}
-            <HowItWorksStep>
-              <StepIconBadge>⭐</StepIconBadge>
-              <StepNumber>03</StepNumber>
-              <HowItWorksStepTitle>Travel with confidence</HowItWorksStepTitle>
-              <HowItWorksStepDesc>
-                Live weather alerts and price comparisons keep you informed every step of the way.
-              </HowItWorksStepDesc>
-            </HowItWorksStep>
-          </HowItWorksGrid>
-        </HowItWorksInner>
-      </HowItWorksSection>
+        <section className="bg-[#f5f1e7] px-5 py-24 text-slate-950 lg:px-8">
+          <div className="mx-auto max-w-6xl"><div className="mx-auto max-w-3xl text-center"><SectionLabel dark>A more complete planning flow</SectionLabel><h2 className="mt-4 text-balance text-4xl font-black tracking-[-.035em] sm:text-5xl">Less switching. More confident decisions.</h2></div>
+            <div className="mt-12 hidden overflow-hidden rounded-3xl border border-slate-900/10 bg-white md:block"><table className="w-full text-left"><thead className="bg-[#0d2929] text-white"><tr><th className="px-6 py-5 text-sm">Capability</th><th className="px-4 py-5 text-center text-sm">Notes app</th><th className="px-4 py-5 text-center text-sm">Booking site</th><th className="px-4 py-5 text-center text-sm text-amber-200">TravelMate</th></tr></thead><tbody>{comparisonRows.map(([label, notes, booking, travelMate]) => <tr key={label} className="border-t border-slate-900/8"><th className="px-6 py-4 text-sm font-bold">{label}</th>{[notes, booking, travelMate].map((value, index) => <td key={index} className="px-4 py-4 text-center">{value ? <Check className={`mx-auto ${index === 2 ? 'text-emerald-700' : 'text-slate-400'}`} size={19}/> : <span className="text-slate-300">—</span>}</td>)}</tr>)}</tbody></table></div>
+            <div className="mt-10 grid gap-4 md:hidden">{comparisonRows.map(([label, , , value]) => <article key={label} className="flex items-center justify-between gap-4 rounded-2xl bg-white p-5"><span className="text-sm font-bold">{label}</span>{value && <span className="grid size-8 shrink-0 place-items-center rounded-full bg-emerald-100 text-emerald-800"><Check size={16}/></span>}</article>)}</div>
+          </div>
+        </section>
 
-      {/* ── User Reviews Section ── */}
-      <UserReviewsSection id="reviews">
-        <UserReviewsInner>
-          <UserReviewsHeader>
-            <UserReviewsBadge>USER REVIEWS</UserReviewsBadge>
-            <UserReviewsTitle>Travellers love it</UserReviewsTitle>
-          </UserReviewsHeader>
+        <section id="preview" className="scroll-mt-20 bg-[#e9eee9] px-5 py-24 text-slate-950 lg:px-8">
+          <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-[.72fr_1.28fr]"><div><SectionLabel dark>Platform preview</SectionLabel><h2 className="mt-4 text-balance text-4xl font-black tracking-[-.035em] sm:text-5xl">Your trip stays understandable as it grows.</h2><p className="mt-5 text-lg leading-8 text-slate-600">Move between itinerary, budget, travel options, conditions, and saved plans without losing the context of the trip.</p><button type="button" onClick={() => show('register')} className="group mt-8 inline-flex items-center gap-2 font-black text-emerald-900">Build your first plan <ArrowRight size={18} className="transition-transform group-hover:translate-x-1"/></button></div>
+            <div className="overflow-hidden rounded-[30px] border border-slate-900/10 bg-[#071817] text-white shadow-[0_30px_90px_rgba(15,23,42,.16)]"><div className="flex items-center justify-between border-b border-white/10 px-5 py-4"><div className="flex items-center gap-2"><span className="size-2.5 rounded-full bg-rose-400"/><span className="size-2.5 rounded-full bg-amber-300"/><span className="size-2.5 rounded-full bg-emerald-300"/></div><span className="text-[10px] font-bold uppercase tracking-[.18em] text-white/40">Traveler workspace</span></div><div className="grid md:grid-cols-[160px_1fr]"><nav className="hidden border-r border-white/10 p-4 md:block" aria-label="Preview navigation">{['Overview', 'Itinerary', 'Budget', 'Compare', 'Conditions'].map((item, index) => <div key={item} className={`mb-1 rounded-xl px-3 py-2.5 text-xs font-bold ${index === 1 ? 'bg-amber-300 text-slate-950' : 'text-white/45'}`}>{item}</div>)}</nav><div className="p-5 sm:p-7"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-amber-200">Palawan · Nov 8–13</p><h3 className="mt-2 text-2xl font-black">Island and nature itinerary</h3></div><span className="rounded-full border border-emerald-300/30 bg-emerald-300/10 px-3 py-1 text-xs text-emerald-200">Saved</span></div><div className="mt-7 grid gap-3 sm:grid-cols-3">{[[MapPinned, '6 days', 'Planned'], [WalletCards, '₱31,840', 'Estimated'], [CloudSun, '1 alert', 'Conditions']].map(([Icon, value, label]) => { const PreviewIcon = Icon as LucideIcon; return <div key={String(label)} className="rounded-2xl bg-white/5 p-4"><PreviewIcon size={18} className="text-amber-200"/><strong className="mt-7 block">{String(value)}</strong><span className="text-xs text-white/40">{String(label)}</span></div>; })}</div><div className="mt-3 rounded-2xl border border-white/10 p-4"><div className="flex items-center justify-between"><div><span className="text-[10px] font-bold uppercase tracking-widest text-white/35">Day 3</span><h4 className="mt-1 font-black">Lagoon and coastal route</h4></div><span className="text-sm font-black">₱5,280</span></div><div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10"><div className="h-full w-[72%] rounded-full bg-amber-300"/></div><p className="mt-3 text-xs text-white/45">Morning boat transfer · Lagoon visit · Coastal lunch · Sunset viewpoint</p></div></div></div></div>
+          </div>
+        </section>
 
-          <UserReviewsGrid>
-            {/* Card 1: Elena K. */}
-            <ReviewCard>
-              <RatingStars>★★★★★</RatingStars>
-              <ReviewQuote>
-                &ldquo;The AI planner nailed every detail of our Prague trip. It even knew which days to schedule lighter so we could recover from jet lag.&rdquo;
-              </ReviewQuote>
-              <UserMeta>
-                <UserAvatar>EK</UserAvatar>
-                <UserInfo>
-                  <UserName>Elena K.</UserName>
-                  <UserRole>Solo Traveller</UserRole>
-                </UserInfo>
-              </UserMeta>
-            </ReviewCard>
+        <section id="faq" className="scroll-mt-20 bg-[#f5f1e7] px-5 py-24 text-slate-950 lg:px-8">
+          <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[.65fr_1.35fr]"><div><SectionLabel dark>Questions, answered</SectionLabel><h2 className="mt-4 text-4xl font-black tracking-[-.035em]">Plan with fewer unknowns.</h2><p className="mt-5 leading-7 text-slate-600">TravelMate distinguishes planning guidance from confirmed provider information.</p></div><div className="overflow-hidden rounded-3xl border border-slate-900/10 bg-white px-6 sm:px-8">{faqs.map(([question, answer]) => <details key={question} className="group border-b border-slate-900/10 py-6 last:border-0"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-black marker:hidden">{question}<span className="grid size-8 shrink-0 place-items-center rounded-full bg-slate-100 transition group-open:rotate-180"><ChevronDown size={16}/></span></summary><p className="max-w-2xl pt-4 text-sm leading-7 text-slate-600">{answer}</p></details>)}</div></div>
+        </section>
 
-            {/* Card 2: Sophie C. */}
-            <ReviewCard>
-              <RatingStars>★★★★★</RatingStars>
-              <ReviewQuote>
-                &ldquo;Weather alerts saved us from a storm on day three. The budget split is frighteningly accurate — we came in $12 under.&rdquo;
-              </ReviewQuote>
-              <UserMeta>
-                <UserAvatar>SC</UserAvatar>
-                <UserInfo>
-                  <UserName>Sophie C.</UserName>
-                  <UserRole>Digital Nomad</UserRole>
-                </UserInfo>
-              </UserMeta>
-            </ReviewCard>
+        <section className="bg-[#071817] px-5 py-24 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-4 md:grid-cols-2"><article className="rounded-[30px] bg-amber-300 p-8 text-slate-950 sm:p-10"><Users size={28}/><p className="mt-16 text-xs font-black uppercase tracking-[.16em] text-slate-700">For travelers</p><h2 className="mt-3 text-3xl font-black tracking-tight">Start with the trip you have in mind.</h2><p className="mt-4 max-w-lg leading-7 text-slate-700">Bring your destination, dates, budget, and interests. TravelMate will help organize the rest.</p><button type="button" onClick={() => show('register')} className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#071817] px-5 py-3 font-extrabold text-white">Create traveler account <ArrowRight size={17}/></button></article><article className="rounded-[30px] border border-white/12 bg-white/5 p-8 sm:p-10"><Hotel size={28} className="text-emerald-200"/><p className="mt-16 text-xs font-black uppercase tracking-[.16em] text-emerald-200">For owners</p><h2 className="mt-3 text-3xl font-black tracking-tight">Help travelers discover a better local option.</h2><p className="mt-4 max-w-lg leading-7 text-white/55">Create an owner profile and manage approved Cebu listings from a focused workspace.</p><button type="button" onClick={() => { setRole('owner'); show('register'); }} className="mt-8 inline-flex items-center gap-2 rounded-full border border-white/20 px-5 py-3 font-extrabold">Create owner account <ArrowRight size={17}/></button></article></div>
+        </section>
+      </main>
 
-            {/* Card 3: James O. */}
-            <ReviewCard>
-              <RatingStars>★★★★★</RatingStars>
-              <ReviewQuote>
-                &ldquo;Found restaurants I never would have discovered on my own. The price compare tool is gold for anyone on a tight budget.&rdquo;
-              </ReviewQuote>
-              <UserMeta>
-                <UserAvatar>JO</UserAvatar>
-                <UserInfo>
-                  <UserName>James O.</UserName>
-                  <UserRole>Adventure Seeker</UserRole>
-                </UserInfo>
-              </UserMeta>
-            </ReviewCard>
-          </UserReviewsGrid>
-        </UserReviewsInner>
-      </UserReviewsSection>
+      <footer className="border-t border-white/10 bg-[#071817] px-5 py-10 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8 sm:flex-row sm:items-end sm:justify-between"><div><a href="#top" className="flex items-center gap-2.5 text-lg font-black"><span className="grid size-8 place-items-center rounded-xl bg-amber-300 text-[#071817]"><Compass size={18}/></span>TravelMate</a><p className="mt-4 max-w-md text-sm leading-6 text-white/45">AI-powered itinerary planning, budget estimates, clearly sourced stay options, and saved-trip management in one system.</p></div><div className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-white/55"><a href="#features" className="hover:text-white">Features</a><a href="#workflow" className="hover:text-white">How it works</a><a href="#faq" className="hover:text-white">FAQ</a><button type="button" onClick={() => show('login')} className="hover:text-white">Sign in</button></div></div><div className="mx-auto mt-8 flex max-w-7xl flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/35 sm:flex-row sm:justify-between"><span>© 2026 TravelMate. Capstone project.</span><span>Planning guidance—not a guarantee of price or availability.</span></div>
+      </footer>
 
-      {/* ── Final Call-To-Action Section ── */}
-      <FinalCtaSection id="cta">
-        <FinalCtaInner>
-          <FinalCtaTitle>Ready to plan your trip?</FinalCtaTitle>
-          <FinalCtaSubtitle>
-            Join 1,200+ travellers who use TravelMate to plan smarter, spend less, and stress never.
-          </FinalCtaSubtitle>
-          <FinalCtaButton
-            id="final-cta-start-btn"
-            onClick={() => handleOpenAuth('register')}
-          >
-            ⚡ Start Planning — It&apos;s Free
-          </FinalCtaButton>
-        </FinalCtaInner>
-      </FinalCtaSection>
+      {open && <AuthDialog mode={mode} setMode={setMode} role={role} setRole={setRole} email={email} setEmail={setEmail} password={password} setPassword={setPassword} name={name} setName={setName} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onClose={() => setOpen(false)} closeButtonRef={closeButtonRef} />}
+    </div>
+  );
+}
 
-      {/* ── Bottom Footer Bar ── */}
-      <BottomFooterBar>
-        <BottomFooterInner>
-          <LogoContainer>
-            <TravelMateLogo />
-            <LogoText>TravelMate</LogoText>
-          </LogoContainer>
-          <BottomFooterCopyright>
-            &copy; 2026 TravelMate &middot; AI-Powered Travel Planning
-          </BottomFooterCopyright>
-        </BottomFooterInner>
-      </BottomFooterBar>
-      {/* Interactive Authentication Modal */}
-      {isAuthOpen && (
-        <ModalBackdropNew onClick={handleCloseAuth}>
-          <ModalCardNew onClick={(e) => e.stopPropagation()}>
-            <ModalHeaderNew>
-              <LogoContainer>
-                <TravelMateLogo />
-                <LogoText style={{ fontSize: '1.2rem' }}>TravelMate</LogoText>
-              </LogoContainer>
-              <ModalCloseBtnNew onClick={handleCloseAuth}>✕</ModalCloseBtnNew>
-            </ModalHeaderNew>
+function SectionLabel({ children, dark = false }: { children: React.ReactNode; dark?: boolean }) {
+  return <p className={`text-xs font-black uppercase tracking-[.18em] ${dark ? 'text-emerald-800' : 'text-amber-200'}`}>{children}</p>;
+}
 
-            {/* Auth View: Sign In / Create Account */}
-            {authView !== 'forgot' && (
-              <>
-                <TabPillContainer>
-                  <TabPillBtn
-                    $active={authView === 'login'}
-                    onClick={() => { setAuthView('login'); setShowSuccess(false); setErrors({}); }}
-                  >
-                    Sign In
-                  </TabPillBtn>
-                  <TabPillBtn
-                    $active={authView === 'register'}
-                    onClick={() => { setAuthView('register'); setShowSuccess(false); setErrors({}); }}
-                  >
-                    Create Account
-                  </TabPillBtn>
-                </TabPillContainer>
+type AuthDialogProps = {
+  mode: AuthMode;
+  setMode: (mode: AuthMode) => void;
+  role: AuthRole;
+  setRole: (role: AuthRole) => void;
+  email: string;
+  setEmail: (value: string) => void;
+  password: string;
+  setPassword: (value: string) => void;
+  name: string;
+  setName: (value: string) => void;
+  code: string;
+  setCode: (value: string) => void;
+  message: string;
+  busy: boolean;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onClose: () => void;
+  closeButtonRef: React.RefObject<HTMLButtonElement | null>;
+};
 
-                <RoleLabel>SIGN IN AS</RoleLabel>
-                <RoleGrid>
-                  <RoleCardBtn
-                    $selected={selectedRole === 'traveller'}
-                    onClick={() => setSelectedRole('traveller')}
-                  >
-                    <RoleIcon>✈️</RoleIcon>
-                    <RoleName>Traveller</RoleName>
-                  </RoleCardBtn>
-                  <RoleCardBtn
-                    $selected={selectedRole === 'destination'}
-                    onClick={() => setSelectedRole('destination')}
-                  >
-                    <RoleIcon>🏨</RoleIcon>
-                    <RoleName>Destination</RoleName>
-                  </RoleCardBtn>
-                  <RoleCardBtn
-                    $selected={selectedRole === 'system'}
-                    onClick={() => setSelectedRole('system')}
-                  >
-                    <RoleIcon>🛡️</RoleIcon>
-                    <RoleName>System</RoleName>
-                  </RoleCardBtn>
-                </RoleGrid>
+function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, setPassword, name, setName, code, setCode, message, busy, onSubmit, onClose, closeButtonRef }: AuthDialogProps) {
+  const title = mode === 'login' ? 'Welcome back' : mode === 'register' ? 'Create your account' : mode === 'verify' ? 'Verify your email' : 'Recover your account';
+  const submitLabel = busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : mode === 'register' ? 'Create account' : mode === 'verify' ? 'Verify email' : 'Send recovery message';
 
-                {showSuccess ? (
-                  <SuccessPanel>
-                    <SuccessIcon>✓</SuccessIcon>
-                    <div>
-                      <h4 style={{ margin: '0 0 4px 0', color: '#10b981', fontWeight: 800 }}>Welcome!</h4>
-                      <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>{successMsg}</p>
-                    </div>
-                  </SuccessPanel>
-                ) : authView === 'login' ? (
-                  <form onSubmit={handleLoginSubmit}>
-                    <div style={{ marginBottom: '16px' }}>
-                      <FormLabelNew htmlFor="modal-login-email">Email</FormLabelNew>
-                      <FormInputNew
-                        id="modal-login-email"
-                        type="email"
-                        placeholder="you@example.com"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                      />
-                      {errors.loginEmail && <ErrorMsg>{errors.loginEmail}</ErrorMsg>}
-                    </div>
+  return (
+    <div className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#020b0b]/85 p-4 backdrop-blur-sm" onMouseDown={onClose}>
+      <section role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title" onMouseDown={(event) => event.stopPropagation()} className="relative my-8 w-full max-w-md overflow-hidden rounded-[28px] border border-white/10 bg-[#0d2929] p-6 shadow-[0_30px_100px_rgba(0,0,0,.55)] sm:p-8">
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-300 via-emerald-300 to-cyan-300" />
+        <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Close account dialog" className="absolute right-5 top-5 grid size-10 place-items-center rounded-full border border-white/10 text-white/65 hover:bg-white/10 hover:text-white"><X size={18}/></button>
+        <span className="grid size-11 place-items-center rounded-2xl bg-amber-300 text-[#071817]"><Compass size={22}/></span>
+        <h2 id="auth-dialog-title" className="mt-6 pr-12 text-3xl font-black tracking-tight">{title}</h2>
+        <p className="mt-2 text-sm leading-6 text-white/50">Access your TravelMate planning workspace.</p>
 
-                    <div style={{ marginBottom: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                        <FormLabelNew htmlFor="modal-login-pass" style={{ margin: 0 }}>Password</FormLabelNew>
-                        <a
-                          onClick={() => { setAuthView('forgot'); setShowSuccess(false); setErrors({}); }}
-                          style={{ color: '#f59e0b', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
-                        >
-                          Forgot password?
-                        </a>
-                      </div>
-                      <FormInputNew
-                        id="modal-login-pass"
-                        type="password"
-                        placeholder="••••••••"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                      />
-                      {errors.loginPassword && <ErrorMsg>{errors.loginPassword}</ErrorMsg>}
-                    </div>
+        {message && <p role="status" aria-live="polite" className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/75">{message}</p>}
 
-                    <PrimarySubmitBtnNew type="submit">Sign In</PrimarySubmitBtnNew>
+        <form onSubmit={onSubmit} className="mt-6 space-y-4">
+          {mode === 'register' && <>
+            <fieldset><legend className="mb-2 text-xs font-bold uppercase tracking-wider text-white/50">Account type</legend><div className="grid grid-cols-2 gap-2"><button type="button" aria-pressed={role === 'traveler'} onClick={() => setRole('traveler')} className={`rounded-xl border px-3 py-3 text-sm font-bold ${role === 'traveler' ? 'border-amber-300 bg-amber-300/10 text-amber-200' : 'border-white/10 text-white/55 hover:bg-white/5'}`}>Traveler</button><button type="button" aria-pressed={role === 'owner'} onClick={() => setRole('owner')} className={`rounded-xl border px-3 py-3 text-sm font-bold ${role === 'owner' ? 'border-emerald-300 bg-emerald-300/10 text-emerald-200' : 'border-white/10 text-white/55 hover:bg-white/5'}`}>Owner</button></div></fieldset>
+            <label className="block text-sm font-bold" htmlFor="auth-name">Full name<input id="auth-name" required minLength={2} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25" placeholder="Your name" /></label>
+          </>}
 
-                    <BottomSwitchText>
-                      Don&apos;t have an account?
-                      <span onClick={() => { setAuthView('register'); setShowSuccess(false); setErrors({}); }}>
-                        Sign up free
-                      </span>
-                    </BottomSwitchText>
-                  </form>
-                ) : (
-                  <form onSubmit={handleRegisterSubmit}>
-                    <div style={{ marginBottom: '16px' }}>
-                      <FormLabelNew htmlFor="modal-reg-email">Email</FormLabelNew>
-                      <FormInputNew
-                        id="modal-reg-email"
-                        type="email"
-                        placeholder="you@example.com"
-                        value={regEmail}
-                        onChange={(e) => setRegEmail(e.target.value)}
-                      />
-                      {errors.regEmail && <ErrorMsg>{errors.regEmail}</ErrorMsg>}
-                    </div>
+          {mode === 'verify' ? <label className="block text-sm font-bold" htmlFor="auth-code">Activation code<input id="auth-code" required autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-mono text-lg uppercase tracking-[.2em] text-white placeholder:text-white/25" placeholder="Enter code" /></label> : <label className="block text-sm font-bold" htmlFor="auth-email">Email address<input id="auth-email" required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25" placeholder="you@example.com" /></label>}
 
-                    <div style={{ marginBottom: '16px' }}>
-                      <FormLabelNew htmlFor="modal-reg-pass">Password</FormLabelNew>
-                      <FormInputNew
-                        id="modal-reg-pass"
-                        type="password"
-                        placeholder="••••••••"
-                        value={regPassword}
-                        onChange={(e) => setRegPassword(e.target.value)}
-                      />
-                      {errors.regPassword && <ErrorMsg>{errors.regPassword}</ErrorMsg>}
-                    </div>
+          {(mode === 'login' || mode === 'register') && <label className="block text-sm font-bold" htmlFor="auth-password">Password<input id="auth-password" required type="password" minLength={8} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25" placeholder="At least 8 characters" /></label>}
 
-                    <PrimarySubmitBtnNew type="submit">Create Account</PrimarySubmitBtnNew>
+          <button disabled={busy} className="mt-2 w-full rounded-full bg-amber-300 px-5 py-3.5 font-extrabold text-[#102220] transition hover:bg-amber-200 disabled:cursor-wait disabled:opacity-60">{submitLabel}</button>
+        </form>
 
-                    <BottomSwitchText>
-                      Already have an account?
-                      <span onClick={() => { setAuthView('login'); setShowSuccess(false); setErrors({}); }}>
-                        Sign in
-                      </span>
-                    </BottomSwitchText>
-                  </form>
-                )}
-              </>
-            )}
-
-            {/* Auth View: Forgot Password */}
-            {authView === 'forgot' && (
-              <div style={{ marginTop: '20px' }}>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f1f5f9', margin: '0 0 8px 0' }}>Reset Password</h3>
-                <p style={{ fontSize: '0.85rem', color: '#94a3b8', margin: '0 0 20px 0' }}>
-                  Enter your account email to receive a password reset link.
-                </p>
-
-                {showSuccess ? (
-                  <SuccessPanel>
-                    <SuccessIcon>🛡️</SuccessIcon>
-                    <div>
-                      <h4 style={{ margin: '0 0 4px 0', color: '#f59e0b', fontWeight: 800 }}>Link Sent</h4>
-                      <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8' }}>{successMsg}</p>
-                    </div>
-                    <PrimarySubmitBtnNew onClick={() => { setAuthView('login'); setShowSuccess(false); }} style={{ marginTop: '16px' }}>
-                      Back to Sign In
-                    </PrimarySubmitBtnNew>
-                  </SuccessPanel>
-                ) : (
-                  <form onSubmit={handleForgotSubmit}>
-                    <div style={{ marginBottom: '16px' }}>
-                      <FormLabelNew htmlFor="modal-forgot-email">Email Address</FormLabelNew>
-                      <FormInputNew
-                        id="modal-forgot-email"
-                        type="email"
-                        placeholder="you@example.com"
-                        value={forgotEmail}
-                        onChange={(e) => setForgotEmail(e.target.value)}
-                      />
-                      {errors.forgotEmail && <ErrorMsg>{errors.forgotEmail}</ErrorMsg>}
-                    </div>
-
-                    <PrimarySubmitBtnNew type="submit">Send Recovery Email</PrimarySubmitBtnNew>
-
-                    <BottomSwitchText>
-                      Remembered?
-                      <span onClick={() => { setAuthView('login'); setShowSuccess(false); setErrors({}); }}>
-                        Sign in
-                      </span>
-                    </BottomSwitchText>
-                  </form>
-                )}
-              </div>
-            )}
-          </ModalCardNew>
-        </ModalBackdropNew>
-      )}
-    </PageContainer>
+        <div className="mt-5 flex items-center justify-between gap-3 text-xs font-bold"><button type="button" onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); }} className="text-amber-200 hover:text-amber-100">{mode === 'login' ? 'Create an account' : 'Back to sign in'}</button>{mode === 'login' && <button type="button" onClick={() => setMode('forgot')} className="text-white/45 hover:text-white">Forgot password?</button>}</div>
+        {mode === 'login' && process.env.NODE_ENV !== 'production' && <div className="mt-6 rounded-2xl bg-black/20 p-4 text-[11px] leading-5 text-white/40"><strong className="text-white/65">Development demo access</strong><br/>traveler@travelmate.test · owner@travelmate.test · admin@travelmate.test<br/>Password: Travel123!</div>}
+      </section>
+    </div>
   );
 }

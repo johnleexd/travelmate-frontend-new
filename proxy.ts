@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function proxy(request: NextRequest) {
-  const token = request.cookies.get('auth_token')?.value;
-  const role = request.cookies.get('user_role')?.value;
+  const token = request.cookies.get('travelmate_session')?.value;
 
   const url = request.nextUrl.clone();
 
@@ -16,23 +15,8 @@ export function proxy(request: NextRequest) {
       return NextResponse.redirect(url);
     }
 
-    // Role-based route guard
-    if (url.pathname.startsWith('/admin/dashboard')) {
-      if (role !== 'admin') {
-        url.pathname = role === 'owner' ? '/owner/dashboard' : '/dashboard';
-        return NextResponse.redirect(url);
-      }
-    } else if (url.pathname.startsWith('/owner/dashboard')) {
-      if (role !== 'owner') {
-        url.pathname = role === 'admin' ? '/admin/dashboard' : '/dashboard';
-        return NextResponse.redirect(url);
-      }
-    } else if (url.pathname === '/dashboard') {
-      if (role !== 'traveler') {
-        url.pathname = role === 'admin' ? '/admin/dashboard' : '/owner/dashboard';
-        return NextResponse.redirect(url);
-      }
-    }
+    // Proxy is an optimistic presence check only. Every page data request and
+    // mutation performs authoritative signed-session and role validation.
   }
 
   return NextResponse.next();
