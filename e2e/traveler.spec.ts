@@ -68,10 +68,12 @@ test('registration requires a strong password and matching confirmation', async 
   await dialog.getByLabel('Email address').fill('password-test@example.com');
   await password.fill('weakpass1!');
   await confirmation.fill('weakpass1!');
+  await expect(dialog.getByLabel('Password strength: Getting stronger')).toBeVisible();
   await dialog.getByRole('button', { name: 'Create account' }).click();
   expect(await password.evaluate((input: HTMLInputElement) => input.validity.valid)).toBe(false);
 
   await password.fill('StrongPass1!');
+  await expect(dialog.getByLabel('Password strength: Strong')).toBeVisible();
   await confirmation.fill('DifferentPass1!');
   await dialog.getByRole('button', { name: 'Create account' }).click();
   await expect(dialog.getByText('Passwords do not match. Re-enter the same password in both fields.')).toBeVisible();

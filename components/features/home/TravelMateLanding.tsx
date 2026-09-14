@@ -30,6 +30,7 @@ import {
 import { handleResponse } from '@/services/api.service';
 import { useModalAccessibility } from '@/hooks/use-modal-accessibility';
 import {
+  getPasswordStrength,
   isStrongPassword,
   STRONG_PASSWORD_PATTERN,
   STRONG_PASSWORD_REQUIREMENTS,
@@ -370,6 +371,13 @@ type AuthDialogProps = {
 function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, setPassword, confirmPassword, setConfirmPassword, name, setName, code, setCode, message, busy, onSubmit, onClose, containerRef, closeButtonRef }: AuthDialogProps) {
   const title = mode === 'login' ? 'Welcome back' : mode === 'register' ? 'Create your account' : mode === 'verify' ? 'Verify your email' : 'Recover your account';
   const submitLabel = busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : mode === 'register' ? 'Create account' : mode === 'verify' ? 'Verify email' : 'Send recovery message';
+  const strength = getPasswordStrength(password);
+  const strengthIndicator = {
+    empty: { label: 'Start typing', segments: 0, bar: 'bg-white/10', text: 'text-white/40' },
+    weak: { label: 'Weak', segments: 1, bar: 'bg-red-300', text: 'text-red-200' },
+    medium: { label: 'Getting stronger', segments: 2, bar: 'bg-amber-300', text: 'text-amber-200' },
+    strong: { label: 'Strong', segments: 3, bar: 'bg-emerald-300', text: 'text-emerald-200' },
+  }[strength];
 
   return (
     <div ref={containerRef} className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#020b0b]/85 p-4 backdrop-blur-sm" onMouseDown={onClose}>
@@ -393,7 +401,11 @@ function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, s
           {mode === 'login' && <label className="block text-sm font-bold" htmlFor="auth-password">Password<input id="auth-password" required type="password" minLength={8} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25" placeholder="At least 8 characters" /></label>}
 
           {mode === 'register' && <>
-            <label className="block text-sm font-bold" htmlFor="auth-password">Password<input id="auth-password" required type="password" minLength={8} maxLength={64} pattern={STRONG_PASSWORD_PATTERN.source} autoComplete="new-password" aria-describedby="auth-password-requirements" aria-invalid={password.length > 0 && !isStrongPassword(password)} value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25 invalid:border-red-300 invalid:focus:outline-red-300" placeholder="Create a strong password" title={STRONG_PASSWORD_REQUIREMENTS} /></label>
+            <label className="block text-sm font-bold" htmlFor="auth-password">Password<input id="auth-password" required type="password" minLength={8} maxLength={64} pattern={STRONG_PASSWORD_PATTERN.source} autoComplete="new-password" aria-describedby="auth-password-strength auth-password-requirements" aria-invalid={password.length > 0 && !isStrongPassword(password)} value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25 invalid:border-red-300 invalid:focus:outline-red-300" placeholder="Create a strong password" title={STRONG_PASSWORD_REQUIREMENTS} /></label>
+            <div id="auth-password-strength" role="status" aria-live="polite" aria-label={`Password strength: ${strengthIndicator.label}`} className="-mt-2 space-y-2">
+              <div className="flex items-center justify-between text-xs"><span className="font-semibold text-white/50">Password strength</span><span className={`font-bold ${strengthIndicator.text}`}>{strengthIndicator.label}</span></div>
+              <div className="grid grid-cols-3 gap-1.5" aria-hidden="true">{[1, 2, 3].map((segment) => <span key={segment} className={`h-1.5 rounded-full transition-colors ${segment <= strengthIndicator.segments ? strengthIndicator.bar : 'bg-white/10'}`} />)}</div>
+            </div>
             <p id="auth-password-requirements" className="-mt-2 text-xs leading-5 text-white/50">{STRONG_PASSWORD_REQUIREMENTS}</p>
             <label className="block text-sm font-bold" htmlFor="auth-confirm-password">Confirm password<input id="auth-confirm-password" required type="password" minLength={8} maxLength={64} autoComplete="new-password" aria-describedby="auth-confirm-password-message" aria-invalid={confirmPassword.length > 0 && password !== confirmPassword} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25" placeholder="Re-enter your password" /></label>
             <p id="auth-confirm-password-message" aria-live="polite" className={`-mt-2 text-xs ${confirmPassword.length > 0 && password !== confirmPassword ? 'text-red-200' : 'text-white/50'}`}>{confirmPassword.length > 0 && password !== confirmPassword ? 'Passwords do not match.' : 'Enter the same password again.'}</p>

@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isStrongPassword, STRONG_PASSWORD_PATTERN } from "../lib/password-validation.ts";
+import {
+  getPasswordStrength,
+  isStrongPassword,
+  STRONG_PASSWORD_PATTERN,
+} from "../lib/password-validation.ts";
 
 test("strong passwords satisfy every required character class", () => {
   assert.equal(isStrongPassword("Travel123!"), true);
@@ -19,4 +23,11 @@ test("password validation rejects missing character classes and whitespace", () 
   ]) {
     assert.equal(isStrongPassword(password), false, `${password} should be rejected`);
   }
+});
+
+test("password strength reports progressive, deterministic indicator states", () => {
+  assert.equal(getPasswordStrength(""), "empty");
+  assert.equal(getPasswordStrength("abc"), "weak");
+  assert.equal(getPasswordStrength("Travel12"), "medium");
+  assert.equal(getPasswordStrength("Travel123!"), "strong");
 });
