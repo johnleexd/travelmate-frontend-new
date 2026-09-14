@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ArrowRight,
@@ -28,6 +28,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { handleResponse } from '@/lib/apiService';
+import { useModalAccessibility } from '@/lib/useModalAccessibility';
 
 type AuthMode = 'login' | 'register' | 'verify' | 'forgot';
 type AuthRole = 'traveler' | 'owner';
@@ -100,7 +101,7 @@ async function auth(body: Record<string, unknown>) {
 
 export default function TravelMateLanding() {
   const router = useRouter();
-  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const authDialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -113,24 +114,14 @@ export default function TravelMateLanding() {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    closeButtonRef.current?.focus();
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', onKeyDown);
-      returnFocusRef.current?.focus();
-    };
-  }, [open]);
+  useModalAccessibility({
+    active: open,
+    containerRef: authDialogRef,
+    initialFocusRef: closeButtonRef,
+    onClose: () => setOpen(false),
+  });
 
   const show = (nextMode: AuthMode) => {
-    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setMode(nextMode);
     setMessage('');
     setMenu(false);
@@ -330,7 +321,7 @@ export default function TravelMateLanding() {
         <div className="mx-auto flex max-w-7xl flex-col gap-8 sm:flex-row sm:items-end sm:justify-between"><div><a href="#top" className="flex items-center gap-2.5 text-lg font-black"><span className="grid size-8 place-items-center rounded-xl bg-amber-300 text-[#071817]"><Compass size={18}/></span>TravelMate</a><p className="mt-4 max-w-md text-sm leading-6 text-white/45">AI-powered itinerary planning, budget estimates, clearly sourced stay options, and saved-trip management in one system.</p></div><div className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-white/55"><a href="#features" className="hover:text-white">Features</a><a href="#workflow" className="hover:text-white">How it works</a><a href="#faq" className="hover:text-white">FAQ</a><button type="button" onClick={() => show('login')} className="hover:text-white">Sign in</button></div></div><div className="mx-auto mt-8 flex max-w-7xl flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/35 sm:flex-row sm:justify-between"><span>© 2026 TravelMate. Capstone project.</span><span>Planning guidance—not a guarantee of price or availability.</span></div>
       </footer>
 
-      {open && <AuthDialog mode={mode} setMode={setMode} role={role} setRole={setRole} email={email} setEmail={setEmail} password={password} setPassword={setPassword} name={name} setName={setName} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onClose={() => setOpen(false)} closeButtonRef={closeButtonRef} />}
+      {open && <AuthDialog mode={mode} setMode={setMode} role={role} setRole={setRole} email={email} setEmail={setEmail} password={password} setPassword={setPassword} name={name} setName={setName} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onClose={() => setOpen(false)} containerRef={authDialogRef} closeButtonRef={closeButtonRef} />}
     </div>
   );
 }
@@ -356,21 +347,22 @@ type AuthDialogProps = {
   busy: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onClose: () => void;
+  containerRef: React.RefObject<HTMLDivElement | null>;
   closeButtonRef: React.RefObject<HTMLButtonElement | null>;
 };
 
-function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, setPassword, name, setName, code, setCode, message, busy, onSubmit, onClose, closeButtonRef }: AuthDialogProps) {
+function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, setPassword, name, setName, code, setCode, message, busy, onSubmit, onClose, containerRef, closeButtonRef }: AuthDialogProps) {
   const title = mode === 'login' ? 'Welcome back' : mode === 'register' ? 'Create your account' : mode === 'verify' ? 'Verify your email' : 'Recover your account';
   const submitLabel = busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : mode === 'register' ? 'Create account' : mode === 'verify' ? 'Verify email' : 'Send recovery message';
 
   return (
-    <div className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#020b0b]/85 p-4 backdrop-blur-sm" onMouseDown={onClose}>
-      <section role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title" onMouseDown={(event) => event.stopPropagation()} className="relative my-8 w-full max-w-md overflow-hidden rounded-[28px] border border-white/10 bg-[#0d2929] p-6 shadow-[0_30px_100px_rgba(0,0,0,.55)] sm:p-8">
+    <div ref={containerRef} className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#020b0b]/85 p-4 backdrop-blur-sm" onMouseDown={onClose}>
+      <section role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title" aria-describedby="auth-dialog-description" onMouseDown={(event) => event.stopPropagation()} className="relative my-8 w-full max-w-md overflow-hidden rounded-[28px] border border-white/10 bg-[#0d2929] p-6 shadow-[0_30px_100px_rgba(0,0,0,.55)] sm:p-8">
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-amber-300 via-emerald-300 to-cyan-300" />
         <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Close account dialog" className="absolute right-5 top-5 grid size-10 place-items-center rounded-full border border-white/10 text-white/65 hover:bg-white/10 hover:text-white"><X size={18}/></button>
         <span className="grid size-11 place-items-center rounded-2xl bg-amber-300 text-[#071817]"><Compass size={22}/></span>
         <h2 id="auth-dialog-title" className="mt-6 pr-12 text-3xl font-black tracking-tight">{title}</h2>
-        <p className="mt-2 text-sm leading-6 text-white/50">Access your TravelMate planning workspace.</p>
+        <p id="auth-dialog-description" className="mt-2 text-sm leading-6 text-white/50">Access your TravelMate planning workspace.</p>
 
         {message && <p role="status" aria-live="polite" className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm leading-6 text-white/75">{message}</p>}
 

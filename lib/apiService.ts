@@ -27,6 +27,7 @@ export type {
 
 import type { ItineraryResponse, WeatherData } from '@/lib/contracts';
 import type { PartyType } from '@/lib/domain';
+import { parseWeatherData } from '@/lib/provider-response';
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {
@@ -122,7 +123,7 @@ export async function fetchWeather(city: string, startDate?: string, endDate?: s
   try { res = await fetch(url, { method: 'GET', signal: AbortSignal.timeout(20_000) }); }
   catch { throw new Error('Weather service is currently unavailable.'); }
 
-  return handleResponse<WeatherData>(res);
+  return parseWeatherData(await handleResponse<unknown>(res));
 }
 
 // ─── Combined helper ───────────────────────────────────────────────────────────

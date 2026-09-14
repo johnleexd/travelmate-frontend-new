@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowRight, BedDouble, BusFront, CalendarDays, ChevronDown, ChevronUp, Clock3, CloudSun, Compass, Copy, Eye, LayoutDashboard, LogOut, MapPin, Pencil, Plane, Plus, Save, ShieldCheck, Sparkles, Ticket, Trash2, UserRound, WalletCards, X } from 'lucide-react';
@@ -10,6 +10,7 @@ import { CEBU_COORDINATES, CEBU_LOCATIONS } from '@/data/cebu-locations';
 import type { LiveAccommodation, LocationSuggestion, TravelOptionsResponse } from '@/lib/contracts';
 import { moveActivity, removeActivity, upsertActivity } from '@/lib/itinerary-editor';
 import { DashboardLoadState } from '@/components/DashboardLoadState';
+import { useModalAccessibility } from '@/lib/useModalAccessibility';
 
 type Platform = { user: PublicUser; listings: Listing[]; bookings: Booking[]; trips: SavedTrip[] };
 type Tab = 'overview' | 'planner' | 'budget' | 'compare' | 'market' | 'bookings' | 'profile';
@@ -77,6 +78,10 @@ export default function TravelerDashboard() {
   const [comparisonBusy, setComparisonBusy] = useState(false);
   const [comparisonMessage, setComparisonMessage] = useState('');
   const [loadError, setLoadError] = useState('');
+  const activityModalRef = useRef<HTMLDivElement | null>(null);
+  const activityTitleRef = useRef<HTMLInputElement | null>(null);
+  const dayModalRef = useRef<HTMLDivElement | null>(null);
+  const dayCloseRef = useRef<HTMLButtonElement | null>(null);
 
   const refresh = () => api().then(setData);
   const loadInitial = async () => {
@@ -103,14 +108,18 @@ export default function TravelerDashboard() {
     }, 300);
     return () => { clearTimeout(timeout); controller.abort(); };
   }, [destination]);
-  useEffect(() => {
-    if (!activityEditor && !selectedDay) return;
-    const closeDialog = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { setActivityEditor(null); setSelectedDay(null); }
-    };
-    document.addEventListener('keydown', closeDialog);
-    return () => document.removeEventListener('keydown', closeDialog);
-  }, [activityEditor, selectedDay]);
+  useModalAccessibility({
+    active: activityEditor !== null,
+    containerRef: activityModalRef,
+    initialFocusRef: activityTitleRef,
+    onClose: () => setActivityEditor(null),
+  });
+  useModalAccessibility({
+    active: selectedDay !== null,
+    containerRef: dayModalRef,
+    initialFocusRef: dayCloseRef,
+    onClose: () => setSelectedDay(null),
+  });
 
   async function searchLiveAccommodations() {
     if (travelers > 9) { setStayMessage('Live hotel search currently supports up to 9 travelers.'); return; }
@@ -501,11 +510,11 @@ export default function TravelerDashboard() {
           </section>}
         </main>
       </div>
-      {activityEditor && editorDay && <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="activity-editor-title" onMouseDown={(event)=>{if(event.target===event.currentTarget)setActivityEditor(null);}}>
+      {activityEditor && editorDay && <div ref={activityModalRef} className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="activity-editor-title" aria-describedby="activity-editor-description" onMouseDown={(event)=>{if(event.target===event.currentTarget)setActivityEditor(null);}}>
         <form key={`${activityEditor.dayIndex}-${activityEditor.activityIndex ?? 'new'}`} onSubmit={(event)=>{event.preventDefault();submitActivity(event.currentTarget);}} className="mx-auto mt-8 max-w-xl rounded-2xl border border-slate-700 bg-[#0b1626] p-5 shadow-2xl sm:p-6">
-          <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wider text-amber-300">Day {editorDay.day} · {editorDay.date}</p><h2 id="activity-editor-title" className="mt-1 text-xl font-bold">{editorActivity?'Edit activity':'Add custom activity'}</h2><p className="mt-1 text-sm text-slate-400">Costs are entered for the whole group and totals update automatically.</p></div><button type="button" onClick={()=>setActivityEditor(null)} aria-label="Close activity editor" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"><X size={18}/></button></div>
+          <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wider text-amber-300">Day {editorDay.day} · {editorDay.date}</p><h2 id="activity-editor-title" className="mt-1 text-xl font-bold">{editorActivity?'Edit activity':'Add custom activity'}</h2><p id="activity-editor-description" className="mt-1 text-sm text-slate-400">Costs are entered for the whole group and totals update automatically.</p></div><button type="button" onClick={()=>setActivityEditor(null)} aria-label="Close activity editor" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"><X size={18}/></button></div>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <label className="sm:col-span-2 text-xs font-medium text-slate-300">Activity title<input autoFocus required maxLength={160} name="title" defaultValue={editorActivity?.title || ''} placeholder="e.g. Visit the National Museum" className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white placeholder:text-slate-600 focus:border-amber-400"/></label>
+            <label className="sm:col-span-2 text-xs font-medium text-slate-300">Activity title<input ref={activityTitleRef} required maxLength={160} name="title" defaultValue={editorActivity?.title || ''} placeholder="e.g. Visit the National Museum" className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white placeholder:text-slate-600 focus:border-amber-400"/></label>
             <label className="text-xs font-medium text-slate-300">Time<input required maxLength={30} name="time" defaultValue={editorActivity?.time || '09:00 AM'} placeholder="09:00 AM" className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white focus:border-amber-400"/></label>
             <label className="text-xs font-medium text-slate-300">Category<select required name="category" defaultValue={editorActivity?.category || 'activity'} className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white focus:border-amber-400"><option value="activity">Activity</option><option value="food">Food</option><option value="transport">Transport</option><option value="accommodation">Accommodation</option><option value="misc">Miscellaneous</option></select></label>
             <label className="sm:col-span-2 text-xs font-medium text-slate-300">Estimated group cost (PHP)<input required type="number" min="0" max="10000000" step="0.01" name="estimatedCost" defaultValue={editorActivity?.estimatedCost ?? 0} className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white focus:border-amber-400"/></label>
@@ -514,16 +523,16 @@ export default function TravelerDashboard() {
           <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button type="button" onClick={()=>setActivityEditor(null)} className="min-h-11 rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Cancel</button><button type="submit" className="min-h-11 rounded-lg bg-amber-400 px-5 py-2 text-sm font-extrabold text-slate-950 hover:bg-amber-300">{editorActivity?'Save activity':'Add activity'}</button></div>
         </form>
       </div>}
-      {selectedDay && itinerary && <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-3 sm:p-6" role="dialog" aria-modal="true" aria-label={`Day ${selectedDay.day} full itinerary`}>
+      {selectedDay && itinerary && <div ref={dayModalRef} className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="day-dialog-title" aria-describedby="day-dialog-description" onMouseDown={(event)=>{if(event.target===event.currentTarget)setSelectedDay(null);}}>
         <div className="mx-auto max-w-4xl overflow-hidden rounded-md border border-slate-700 bg-[#07111f] shadow-2xl">
           <div className="relative aspect-[21/9] min-h-[180px]">
             <Image src={placeImage(selectedDay.imageUrl, LOCAL_DAY_IMAGES[selectedDay.day-1] || '/travel-illustration.png')} alt={`${selectedDay.theme} in ${itinerary.destination}`} fill sizes="(max-width: 900px) 100vw, 900px" className="object-cover" />
-            <button type="button" onClick={()=>setSelectedDay(null)} aria-label="Close day details" title="Close details" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-md bg-slate-950/90 hover:bg-slate-800"><X size={20}/></button>
+            <button ref={dayCloseRef} type="button" onClick={()=>setSelectedDay(null)} aria-label="Close day details" title="Close details" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-md bg-slate-950/90 hover:bg-slate-800"><X size={20}/></button>
             <span className="absolute bottom-3 left-3 bg-slate-950/90 px-3 py-2 text-sm font-bold text-amber-300">DAY {selectedDay.day}</span>
             {selectedDay.imageAttribution&&<a href={selectedDay.imageAttribution.sourceUrl} target="_blank" rel="noreferrer" title={`${selectedDay.imageAttribution.creator} · ${selectedDay.imageAttribution.license}`} className="absolute bottom-3 right-3 max-w-[65%] truncate rounded bg-slate-950/85 px-2 py-1 text-[10px] text-slate-200">Photo: {selectedDay.imageAttribution.creator} · {selectedDay.imageAttribution.license}</a>}
           </div>
           <div className="p-4 sm:p-6">
-            <div className="flex flex-wrap justify-between gap-3"><div><h2 className="text-xl font-bold">{selectedDay.theme}</h2><p className="text-sm text-slate-400">{selectedDay.date} · {itinerary.destination}</p></div><div className="text-right"><strong className="font-mono text-lg">PHP {selectedDay.totalCost.toLocaleString()}</strong><p className="flex items-center justify-end gap-1 text-xs text-emerald-200"><BusFront size={13}/>Ride/boat fare PHP {(selectedDay.rideFare||0).toLocaleString()}</p></div></div>
+            <div className="flex flex-wrap justify-between gap-3"><div><h2 id="day-dialog-title" className="text-xl font-bold">Day {selectedDay.day}: {selectedDay.theme}</h2><p id="day-dialog-description" className="text-sm text-slate-400">{selectedDay.date} · {itinerary.destination}</p></div><div className="text-right"><strong className="font-mono text-lg">PHP {selectedDay.totalCost.toLocaleString()}</strong><p className="flex items-center justify-end gap-1 text-xs text-emerald-200"><BusFront size={13}/>Ride/boat fare PHP {(selectedDay.rideFare||0).toLocaleString()}</p></div></div>
             {selectedDay.travelNote && <p className="mt-4 flex items-start gap-2 border-l-2 border-cyan-400 pl-3 text-sm text-cyan-100"><Clock3 size={16} className="mt-0.5 shrink-0"/>{selectedDay.travelNote}</p>}
             {selectedDay.crowdLevel && <p className="mt-3 rounded-md border border-violet-900 bg-violet-950/30 px-3 py-2 text-xs text-violet-200"><strong className="capitalize">{selectedDay.crowdLevel} estimated crowd.</strong> {selectedDay.crowdNote}</p>}
             <div className="mt-6 divide-y divide-slate-800 border-y border-slate-800">{selectedDay.activities.map((item,index)=><article key={`${item.time}-${index}`} className="grid grid-cols-[88px_1fr] gap-3 py-4 sm:grid-cols-[128px_1fr_auto] sm:items-center">
