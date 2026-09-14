@@ -1,5 +1,6 @@
 import 'styled-components';
 
+/** Legacy styled-components tokens retained for compatibility. */
 export const theme = {
   colors: {
     primary: '#1A73E8', // Light Blue / Blue

@@ -4,6 +4,32 @@ This project contains only the TravelMate browser UI. It uses Next.js, React,
 and strict TypeScript. Backend requests to `/api/*` are rewritten to the Express
 service configured by `BACKEND_URL` (default `http://localhost:5000`).
 
+## Project structure
+
+The frontend follows the feature-oriented organization used by the referenced
+portfolio project while retaining TravelMate's existing App Router URLs:
+
+```text
+app/                 Route groups, route entry points, and framework boundaries
+components/
+|-- common/          Shared application components
+|-- features/        Complete feature and role-specific screens
+|-- provider/        Client/runtime providers
+`-- ui/              Reusable UI primitives
+constants/           Static product data and design tokens
+hooks/               Shared React hooks
+lib/                 Pure domain and itinerary utilities
+services/            Backend API and provider-response adapters
+styles/              Global Tailwind and design-system styles
+public/              Static images and icons
+tests/               Fast unit and contract tests
+e2e/                 Playwright user-flow tests
+```
+
+Files under `app` stay intentionally thin: they define URLs and render feature
+screens from `components/features`. Browser-to-backend communication is isolated
+in `services`, while deterministic calculations remain in `lib`.
+
 Run the frontend from this directory in its own terminal:
 
 ```powershell

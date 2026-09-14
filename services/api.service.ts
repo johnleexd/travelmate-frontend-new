@@ -1,5 +1,5 @@
 /**
- * lib/apiService.ts
+ * services/api.service.ts
  * ─────────────────────────────────────────────────────────────────────────────
  * Client-side API service for TravelMate.
  *
@@ -7,7 +7,7 @@
  * so that third-party API keys are NEVER exposed to the browser.
  *
  * Usage:
- *   import { fetchItineraryFromAI, fetchWeather } from '@/lib/apiService';
+ *   import { fetchItineraryFromAI, fetchWeather } from '@/services/api.service';
  *
  *   const itinerary = await fetchItineraryFromAI('Tokyo', 3000);
  *   const weather   = await fetchWeather('Tokyo');
@@ -27,7 +27,7 @@ export type {
 
 import type { ItineraryResponse, WeatherData } from '@/lib/contracts';
 import type { PartyType } from '@/lib/domain';
-import { parseWeatherData } from '@/lib/provider-response';
+import { parseWeatherData } from '@/services/provider-response';
 
 export class ApiError extends Error {
   constructor(message: string, readonly status: number) {

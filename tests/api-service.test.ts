@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { parseWeatherData } from '../lib/provider-response.ts';
+import { parseWeatherData } from '../services/provider-response.ts';
 
 const validWeather = {
   source: 'unavailable',

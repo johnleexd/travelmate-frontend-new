@@ -1,3 +1,4 @@
+/** Cebu destinations supported by TravelMate's local marketplace. */
 export const CEBU_LOCATIONS = [
   'Cebu City',
   'Mandaue City',

@@ -27,8 +27,8 @@ import {
   X,
   type LucideIcon,
 } from 'lucide-react';
-import { handleResponse } from '@/lib/apiService';
-import { useModalAccessibility } from '@/lib/useModalAccessibility';
+import { handleResponse } from '@/services/api.service';
+import { useModalAccessibility } from '@/hooks/use-modal-accessibility';
 
 type AuthMode = 'login' | 'register' | 'verify' | 'forgot';
 type AuthRole = 'traveler' | 'owner';
