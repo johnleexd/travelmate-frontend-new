@@ -29,6 +29,11 @@ import {
 } from 'lucide-react';
 import { handleResponse } from '@/services/api.service';
 import { useModalAccessibility } from '@/hooks/use-modal-accessibility';
+import {
+  isStrongPassword,
+  STRONG_PASSWORD_PATTERN,
+  STRONG_PASSWORD_REQUIREMENTS,
+} from '@/lib/password-validation';
 
 type AuthMode = 'login' | 'register' | 'verify' | 'forgot';
 type AuthRole = 'traveler' | 'owner';
@@ -109,6 +114,7 @@ export default function TravelMateLanding() {
   const [role, setRole] = useState<AuthRole>('traveler');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
   const [code, setCode] = useState('');
   const [message, setMessage] = useState('');
@@ -130,8 +136,16 @@ export default function TravelMateLanding() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setBusy(true);
     setMessage('');
+    if (mode === 'register' && !isStrongPassword(password)) {
+      setMessage(STRONG_PASSWORD_REQUIREMENTS);
+      return;
+    }
+    if (mode === 'register' && password !== confirmPassword) {
+      setMessage('Passwords do not match. Re-enter the same password in both fields.');
+      return;
+    }
+    setBusy(true);
     try {
       if (mode === 'login') {
         const data = await auth({ action: 'login', email, password });
@@ -321,7 +335,7 @@ export default function TravelMateLanding() {
         <div className="mx-auto flex max-w-7xl flex-col gap-8 sm:flex-row sm:items-end sm:justify-between"><div><a href="#top" className="flex items-center gap-2.5 text-lg font-black"><span className="grid size-8 place-items-center rounded-xl bg-amber-300 text-[#071817]"><Compass size={18}/></span>TravelMate</a><p className="mt-4 max-w-md text-sm leading-6 text-white/45">AI-powered itinerary planning, budget estimates, clearly sourced stay options, and saved-trip management in one system.</p></div><div className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-white/55"><a href="#features" className="hover:text-white">Features</a><a href="#workflow" className="hover:text-white">How it works</a><a href="#faq" className="hover:text-white">FAQ</a><button type="button" onClick={() => show('login')} className="hover:text-white">Sign in</button></div></div><div className="mx-auto mt-8 flex max-w-7xl flex-col gap-2 border-t border-white/10 pt-6 text-xs text-white/35 sm:flex-row sm:justify-between"><span>© 2026 TravelMate. Capstone project.</span><span>Planning guidance—not a guarantee of price or availability.</span></div>
       </footer>
 
-      {open && <AuthDialog mode={mode} setMode={setMode} role={role} setRole={setRole} email={email} setEmail={setEmail} password={password} setPassword={setPassword} name={name} setName={setName} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onClose={() => setOpen(false)} containerRef={authDialogRef} closeButtonRef={closeButtonRef} />}
+      {open && <AuthDialog mode={mode} setMode={setMode} role={role} setRole={setRole} email={email} setEmail={setEmail} password={password} setPassword={setPassword} confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword} name={name} setName={setName} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onClose={() => setOpen(false)} containerRef={authDialogRef} closeButtonRef={closeButtonRef} />}
     </div>
   );
 }
@@ -339,6 +353,8 @@ type AuthDialogProps = {
   setEmail: (value: string) => void;
   password: string;
   setPassword: (value: string) => void;
+  confirmPassword: string;
+  setConfirmPassword: (value: string) => void;
   name: string;
   setName: (value: string) => void;
   code: string;
@@ -351,7 +367,7 @@ type AuthDialogProps = {
   closeButtonRef: React.RefObject<HTMLButtonElement | null>;
 };
 
-function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, setPassword, name, setName, code, setCode, message, busy, onSubmit, onClose, containerRef, closeButtonRef }: AuthDialogProps) {
+function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, setPassword, confirmPassword, setConfirmPassword, name, setName, code, setCode, message, busy, onSubmit, onClose, containerRef, closeButtonRef }: AuthDialogProps) {
   const title = mode === 'login' ? 'Welcome back' : mode === 'register' ? 'Create your account' : mode === 'verify' ? 'Verify your email' : 'Recover your account';
   const submitLabel = busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : mode === 'register' ? 'Create account' : mode === 'verify' ? 'Verify email' : 'Send recovery message';
 
@@ -374,7 +390,14 @@ function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, s
 
           {mode === 'verify' ? <label className="block text-sm font-bold" htmlFor="auth-code">Activation code<input id="auth-code" required autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-mono text-lg uppercase tracking-[.2em] text-white placeholder:text-white/25" placeholder="Enter code" /></label> : <label className="block text-sm font-bold" htmlFor="auth-email">Email address<input id="auth-email" required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25" placeholder="you@example.com" /></label>}
 
-          {(mode === 'login' || mode === 'register') && <label className="block text-sm font-bold" htmlFor="auth-password">Password<input id="auth-password" required type="password" minLength={8} autoComplete={mode === 'register' ? 'new-password' : 'current-password'} value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25" placeholder="At least 8 characters" /></label>}
+          {mode === 'login' && <label className="block text-sm font-bold" htmlFor="auth-password">Password<input id="auth-password" required type="password" minLength={8} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25" placeholder="At least 8 characters" /></label>}
+
+          {mode === 'register' && <>
+            <label className="block text-sm font-bold" htmlFor="auth-password">Password<input id="auth-password" required type="password" minLength={8} maxLength={64} pattern={STRONG_PASSWORD_PATTERN.source} autoComplete="new-password" aria-describedby="auth-password-requirements" aria-invalid={password.length > 0 && !isStrongPassword(password)} value={password} onChange={(event) => setPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25 invalid:border-red-300 invalid:focus:outline-red-300" placeholder="Create a strong password" title={STRONG_PASSWORD_REQUIREMENTS} /></label>
+            <p id="auth-password-requirements" className="-mt-2 text-xs leading-5 text-white/50">{STRONG_PASSWORD_REQUIREMENTS}</p>
+            <label className="block text-sm font-bold" htmlFor="auth-confirm-password">Confirm password<input id="auth-confirm-password" required type="password" minLength={8} maxLength={64} autoComplete="new-password" aria-describedby="auth-confirm-password-message" aria-invalid={confirmPassword.length > 0 && password !== confirmPassword} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className="mt-2 w-full rounded-xl border border-white/15 bg-black/20 px-4 py-3 font-normal text-white placeholder:text-white/25" placeholder="Re-enter your password" /></label>
+            <p id="auth-confirm-password-message" aria-live="polite" className={`-mt-2 text-xs ${confirmPassword.length > 0 && password !== confirmPassword ? 'text-red-200' : 'text-white/50'}`}>{confirmPassword.length > 0 && password !== confirmPassword ? 'Passwords do not match.' : 'Enter the same password again.'}</p>
+          </>}
 
           <button disabled={busy} className="mt-2 w-full rounded-full bg-amber-300 px-5 py-3.5 font-extrabold text-[#102220] transition hover:bg-amber-200 disabled:cursor-wait disabled:opacity-60">{submitLabel}</button>
         </form>

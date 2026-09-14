@@ -57,6 +57,29 @@ test('authentication dialog supports keyboard dismissal and demo login', async (
   await login(page);
 });
 
+test('registration requires a strong password and matching confirmation', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Plan a trip', exact: true }).first().click();
+  const dialog = page.getByRole('dialog');
+  const password = dialog.getByLabel('Password', { exact: true });
+  const confirmation = dialog.getByLabel('Confirm password', { exact: true });
+
+  await dialog.getByLabel('Full name').fill('Password Test');
+  await dialog.getByLabel('Email address').fill('password-test@example.com');
+  await password.fill('weakpass1!');
+  await confirmation.fill('weakpass1!');
+  await dialog.getByRole('button', { name: 'Create account' }).click();
+  expect(await password.evaluate((input: HTMLInputElement) => input.validity.valid)).toBe(false);
+
+  await password.fill('StrongPass1!');
+  await confirmation.fill('DifferentPass1!');
+  await dialog.getByRole('button', { name: 'Create account' }).click();
+  await expect(dialog.getByText('Passwords do not match. Re-enter the same password in both fields.')).toBeVisible();
+
+  await confirmation.fill('StrongPass1!');
+  await expect(confirmation).toHaveAttribute('aria-invalid', 'false');
+});
+
 test('traveler workspace tabs stay inside a 390px mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page);
