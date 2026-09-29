@@ -3,6 +3,19 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const frontendRoot = path.dirname(fileURLToPath(import.meta.url));
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: https://images.unsplash.com https://upload.wikimedia.org https://thumb.wikimedia.org https://flagcdn.com",
+  "font-src 'self' data:",
+  "connect-src 'self' ws: wss:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "upgrade-insecure-requests",
+].join('; ');
 
 const nextConfig: NextConfig = {
   turbopack: {
@@ -27,13 +40,31 @@ const nextConfig: NextConfig = {
         hostname: 'thumb.wikimedia.org',
         pathname: '/wikipedia/commons/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'flagcdn.com',
+        pathname: '/w1280/**',
+      },
     ],
   },
   async rewrites() {
     const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
     return {
-      beforeFiles: [{ source: '/api/:path*', destination: `${backendUrl}/api/:path*` }],
+      afterFiles: [{ source: '/api/:path*', destination: `${backendUrl}/api/:path*` }],
     };
+  },
+  async headers() {
+    return [{
+      source: '/:path*',
+      headers: [
+        { key: 'Content-Security-Policy', value: contentSecurityPolicy },
+        { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+        { key: 'X-Content-Type-Options', value: 'nosniff' },
+        { key: 'X-Frame-Options', value: 'DENY' },
+        { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
+      ],
+    }];
   },
 };
 

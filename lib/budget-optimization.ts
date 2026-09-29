@@ -1,7 +1,9 @@
 import type { BudgetOptimization, BudgetOptimizationSuggestion, DayPlan } from './contracts.ts';
+import { formatMoney, type CurrencyCode } from './domain.ts';
 
 interface BudgetOptimizationInput {
   budget: number;
+  currency: CurrencyCode;
   reserve: number;
   plannedSpend: number;
   travelers: number;
@@ -28,7 +30,7 @@ export function buildBudgetOptimization(input: BudgetOptimizationInput): BudgetO
     const accommodationTotal = input.accommodation ? money(input.accommodation.nightlyRate * input.accommodation.nights) : 0;
     if (input.accommodation && accommodationTotal > 0) candidates.push({
       id: 'compare-lower-rate-stay', category: 'accommodation', title: 'Compare a lower-rate stay',
-      description: `Look for a verified stay near PHP ${money(input.accommodation.nightlyRate * 0.8).toLocaleString()} per night or lower before changing the selected accommodation.`,
+      description: `Look for a verified stay near ${formatMoney(money(input.accommodation.nightlyRate * 0.8), input.currency)} per night or lower before changing the selected accommodation.`,
       estimatedSavings: money(accommodationTotal * 0.2),
       tradeoff: 'A lower rate may mean fewer amenities, a smaller room, or a less central location. Availability is not guaranteed.',
     });
@@ -53,7 +55,7 @@ export function buildBudgetOptimization(input: BudgetOptimizationInput): BudgetO
     const foodTotal = categoryTotal('food');
     if (foodTotal > 0) candidates.push({
       id: 'set-meal-budget-cap', category: 'food', title: 'Set a daily meal cap',
-      description: `Choose local set meals or markets for selected meals; a 20% reduction is about PHP ${money(foodTotal * 0.2).toLocaleString()} for the group.`,
+      description: `Choose local set meals or markets for selected meals; a 20% reduction is about ${formatMoney(money(foodTotal * 0.2), input.currency)} for the group.`,
       estimatedSavings: money(foodTotal * 0.2), tradeoff: 'This reduces premium dining and may require checking menus or sharing dishes.',
     });
     const transportTotal = categoryTotal('transport');

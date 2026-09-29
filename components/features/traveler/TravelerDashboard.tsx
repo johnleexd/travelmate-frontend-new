@@ -1,26 +1,57 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { ArrowRight, BedDouble, BusFront, CalendarDays, ChevronDown, ChevronUp, Clock3, CloudSun, Compass, Copy, Eye, LayoutDashboard, LogOut, MapPin, Pencil, Plane, Plus, Save, ShieldCheck, Sparkles, Ticket, Trash2, UserRound, WalletCards, X } from 'lucide-react';
-import { fetchTripData, handleResponse, isAuthenticationError, type DayActivity, type ItineraryResponse, type WeatherData } from '@/services/api.service';
-import { PARTY_TYPE_LABELS, type Booking, type Listing, type PartyType, type PublicUser, type SavedTrip } from '@/lib/domain';
-import { CEBU_COORDINATES, CEBU_LOCATIONS } from '@/constants/cebu-locations';
-import type { LiveAccommodation, LocationSuggestion, TravelOptionsResponse } from '@/lib/contracts';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ArrowRight, BedDouble, Bell, CalendarDays, CloudSun, Compass, Home, LocateFixed, LogOut, MapPin, Plane, UserRound, WalletCards, X } from 'lucide-react';
+import { fetchTripData, fetchWeather, handleResponse, isAuthenticationError, refreshItineraryDayImages, type DayActivity, type ItineraryResponse, type WeatherData } from '@/services/api.service';
+import { CURRENCY_NAMES, formatMoney, partyBudgetExplanation, partyBudgetLabel, partySpendLabel, PARTY_TYPE_LABELS, SUPPORTED_CURRENCIES, ZERO_DECIMAL_CURRENCIES, type CurrencyCode, type PartyType } from '@/lib/domain';
+import { CEBU_COORDINATES as CEBU_COORDINATE_VALUES, CEBU_LOCATIONS as CEBU_LOCATION_VALUES } from '@/constants/cebu-locations';
+import type { PlatformActionResponse, PlatformResponse, ProfileResponse, SavedTrip, TravelOptionsResponse } from '@/lib/contracts';
 import { moveActivity, removeActivity, upsertActivity } from '@/lib/itinerary-editor';
+import { applyConditionSnapshot } from '@/lib/conditions';
 import { DashboardLoadState } from '@/components/common/DashboardLoadState';
+import { TravelerJourneyOverview } from '@/components/features/traveler/TravelerJourneyOverview';
+import { TravelerAccountCenter } from '@/components/features/traveler/TravelerAccountCenter';
+import { SavedTripLifecycle } from '@/components/features/traveler/SavedTripLifecycle';
 import { useModalAccessibility } from '@/hooks/use-modal-accessibility';
+import { useDestinationPlanning } from '@/hooks/use-destination-planning';
+import { fetchCurrentLocation, fetchExchangeRate } from '@/services/destination-planning.service';
+import { isCurrencyCode } from '@/lib/currency-conversion';
+import type { ExchangeRateQuote } from '@/lib/contracts';
+import { ReferenceAmount } from '@/components/common/ReferenceAmount';
+import { ProviderFreshness } from '@/components/common/ProviderFreshness';
+import { TravelComparisonWorkspace } from '@/components/features/traveler/TravelComparisonWorkspace';
+import { ItineraryWorkspace } from '@/components/features/traveler/ItineraryWorkspace';
+import { ActivityEditorDialog, DayDetailsDialog } from '@/components/features/traveler/TravelerItineraryDialogs';
+import { parseTravelOptionsResponse } from '@/services/provider-response';
+import { addCalendarDays, localDateInputValue, regenerationDraftDates } from '@/lib/date';
+import { recommendAccommodation } from '@/lib/accommodation-recommendation';
+import { MarketplaceCards, TravelerBookingManager, TravelerNotifications } from '@/components/features/traveler/OwnerMarketplace';
 
-type Platform = { user: PublicUser; listings: Listing[]; bookings: Booking[]; trips: SavedTrip[] };
-type Tab = 'overview' | 'planner' | 'budget' | 'compare' | 'market' | 'bookings' | 'profile';
-const LOCAL_DAY_IMAGES = ['/travel-illustration.png', '/mountain-hero-bg.png', '/beach-bg.png', '/travel-illustration.png', '/beach-bg.png', '/mountain-hero-bg.png', '/travel-illustration.png'] as const;
+type Tab = 'overview' | 'planner' | 'budget' | 'compare' | 'market' | 'bookings' | 'notifications' | 'profile';
+type PreTripCostDraft = {
+  airportTransfers: number; passport: number; visaOrAuthorization: number;
+  departureTaxes: number; insurance: number; other: number;
+};
+const EMPTY_PRE_TRIP_COSTS: PreTripCostDraft = { airportTransfers: 0, passport: 0, visaOrAuthorization: 0, departureTaxes: 0, insurance: 0, other: 0 };
+const CEBU_COORDINATES: Record<string, { latitude: number; longitude: number }> = CEBU_COORDINATE_VALUES;
+const CEBU_LOCATIONS: readonly string[] = CEBU_LOCATION_VALUES;
+const TAB_COPY: Record<Tab, { title: string; description: string }> = {
+  overview: { title: 'Your travel home', description: 'See what TravelMate does, where your plans are, and the single best action to take next.' },
+  planner: { title: 'Start a new trip', description: 'Begin with four essentials. Optional preferences simply help make the itinerary more personal.' },
+  budget: { title: 'Does this plan fit your budget?', description: 'Review estimated spending, remaining money, and optional ways to reduce cost.' },
+  compare: { title: 'Compare available travel options', description: 'Check flights, stays, and activities for the destination and dates already in your plan.' },
+  market: { title: 'Browse local stays', description: 'Review approved TravelMate listings and keep their estimated cost connected to your trip.' },
+  bookings: { title: 'Saved trips and bookings', description: 'Return to plans you deliberately saved and manage existing accommodation requests.' },
+  notifications: { title: 'Travel updates that need you.', description: 'See owner decisions, completed stays, reviews, and important account events.' },
+  profile: { title: 'Your account', description: 'Manage contact information and understand what verification changes.' },
+};
 
-function addDays(dateText: string, days: number): string {
-  const date = new Date(`${dateText}T00:00:00.000Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-}
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 function savedItinerary(value: unknown): ItineraryResponse | null {
   if (!value || typeof value !== 'object') return null;
@@ -28,60 +59,89 @@ function savedItinerary(value: unknown): ItineraryResponse | null {
   return typeof itinerary.destination === 'string' && Array.isArray(itinerary.days) && itinerary.days.length > 0 ? itinerary as ItineraryResponse : null;
 }
 
-function placeImage(source: string | undefined, fallback: string): string {
-  return source?.startsWith('/') || source?.startsWith('https://upload.wikimedia.org/') || source?.startsWith('https://thumb.wikimedia.org/') ? source : fallback;
-}
-
-function offerTime(value: string | undefined): string {
-  if (!value) return 'Unavailable';
-  const date = new Date(value);
-  return Number.isFinite(date.getTime()) ? date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : value;
-}
-
-async function api(body?: Record<string, unknown>) {
+async function api(): Promise<PlatformResponse>;
+async function api(body: Record<string, unknown>): Promise<PlatformActionResponse>;
+async function api(body?: Record<string, unknown>): Promise<PlatformResponse | PlatformActionResponse> {
   const response = await fetch(body ? '/api/platform' : '/api/platform?scope=traveler', body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) } : undefined);
-  return handleResponse<Platform & { result?: unknown }>(response);
+  return body ? handleResponse<PlatformActionResponse>(response) : handleResponse<PlatformResponse>(response);
 }
 
-export default function TravelerDashboard() {
+export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) {
   const router = useRouter();
-  const [data, setData] = useState<Platform | null>(null);
-  const [tab, setTab] = useState<Tab>('overview');
-  const [destination, setDestination] = useState('Cordova, Cebu, Philippines');
-  const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
-  const [coordinates, setCoordinates] = useState<{ latitude: number; longitude: number } | null>(CEBU_COORDINATES.Cordova);
-  const [budget, setBudget] = useState(20000);
+  const [data, setData] = useState<PlatformResponse | null>(null);
+  const [selectedTab, setSelectedTab] = useState<Tab>('overview');
+  const tab = initialTab === 'planner' ? 'planner' : selectedTab;
+  const setTab = useCallback((nextTab: Tab) => {
+    setSelectedTab(nextTab);
+    if (initialTab === 'planner' && nextTab !== 'planner') router.replace('/dashboard');
+  }, [initialTab, router]);
+  const [budget, setBudget] = useState(0);
+  const [referenceCurrency, setReferenceCurrency] = useState<CurrencyCode>('PHP');
+  const [referencePreferenceReady, setReferencePreferenceReady] = useState(false);
+  const [exchangeQuotes, setExchangeQuotes] = useState<Partial<Record<CurrencyCode, ExchangeRateQuote>>>({});
+  const [exchangeBusy, setExchangeBusy] = useState(false);
+  const [exchangeMessage, setExchangeMessage] = useState('');
   const [partyType, setPartyType] = useState<PartyType>('solo');
   const [travelers, setTravelers] = useState(1);
-  const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [endDate, setEndDate] = useState(() => addDays(new Date().toISOString().slice(0, 10), 6));
+  const [startDate, setStartDate] = useState(() => localDateInputValue());
+  const [endDate, setEndDate] = useState(() => addCalendarDays(localDateInputValue(), 6));
+  const {
+    destination, selectedDestination, suggestions: locationSuggestions, locationsBusy, locationMessage,
+    currency, currencyResolved, currencyNeedsFallback, contextBusy, contextMessage, transportationOptions,
+    transportationPreference, liveAccommodations, staysBusy, stayMessage, stayFreshness,
+    changeDestinationInput, selectDestination, confirmManualDestination, restoreDestination, setManualCurrency,
+    setTransportationPreference, retryContext, retryAccommodations,
+  } = useDestinationPlanning(startDate, endDate, travelers);
   const [interests, setInterests] = useState('food, culture, nature');
   const [travelStyle, setTravelStyle] = useState('balanced');
   const [preferredActivities, setPreferredActivities] = useState('local food, sightseeing');
   const [accommodationPreference, setAccommodationPreference] = useState('budget-friendly');
-  const [transportationPreference, setTransportationPreference] = useState('public transport and walking');
-  const [selectedStayId, setSelectedStayId] = useState('lst_solea_mactan');
+  const [selectedStayId, setSelectedStayId] = useState('');
   const [selectedLiveStayId, setSelectedLiveStayId] = useState('');
-  const [liveAccommodations, setLiveAccommodations] = useState<LiveAccommodation[]>([]);
-  const [staysBusy, setStaysBusy] = useState(false);
-  const [stayMessage, setStayMessage] = useState('');
   const [itinerary, setItinerary] = useState<ItineraryResponse | null>(null);
   const [selectedDay, setSelectedDay] = useState<ItineraryResponse['days'][number] | null>(null);
+  const [photoRefreshDay, setPhotoRefreshDay] = useState<number | null>(null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [conditionsBusy, setConditionsBusy] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [generationFailed, setGenerationFailed] = useState(false);
   const [message, setMessage] = useState('');
   const [editingTripId, setEditingTripId] = useState<string | null>(null);
+  const [regenerationTargetId, setRegenerationTargetId] = useState<string | null>(null);
   const [activityEditor, setActivityEditor] = useState<{ dayIndex: number; activityIndex: number | null } | null>(null);
   const [manualDirty, setManualDirty] = useState(false);
-  const [flightOrigin, setFlightOrigin] = useState('Manila, Philippines');
+  const [flightOrigin, setFlightOrigin] = useState('');
+  const [currentLocationBusy, setCurrentLocationBusy] = useState(false);
+  const [currentLocationMessage, setCurrentLocationMessage] = useState('');
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [preTripCosts, setPreTripCosts] = useState<PreTripCostDraft>(EMPTY_PRE_TRIP_COSTS);
+  const [includePreTripCosts, setIncludePreTripCosts] = useState(false);
   const [travelOptions, setTravelOptions] = useState<TravelOptionsResponse | null>(null);
+  const [selectedFlightId, setSelectedFlightId] = useState('');
+  const [selectedActivityIds, setSelectedActivityIds] = useState<string[]>([]);
   const [comparisonBusy, setComparisonBusy] = useState(false);
   const [comparisonMessage, setComparisonMessage] = useState('');
   const [loadError, setLoadError] = useState('');
+  const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const activityModalRef = useRef<HTMLDivElement | null>(null);
   const activityTitleRef = useRef<HTMLInputElement | null>(null);
   const dayModalRef = useRef<HTMLDivElement | null>(null);
   const dayCloseRef = useRef<HTMLButtonElement | null>(null);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
+  const profileMenuCloseRef = useRef<HTMLButtonElement | null>(null);
+  const pageRef = useRef<HTMLDivElement | null>(null);
+  const workspaceHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const dashboardMountedRef = useRef(false);
+  const generationRequestRef = useRef<{ fingerprint: string; key: string } | null>(null);
+  const draftCheckedRef = useRef(false);
+  const exchangeSourceCurrencies = useMemo(() => {
+    const values: unknown[] = [currency, itinerary?.currency, 'PHP'];
+    values.push(...liveAccommodations.map((stay) => stay.currency));
+    values.push(...(travelOptions?.flights.map((flight) => flight.currency) || []));
+    values.push(...(travelOptions?.activities.map((activity) => activity.currency) || []));
+    values.push(...(data?.trips.map((trip) => trip.currency) || []));
+    return [...new Set(values.filter(isCurrencyCode))];
+  }, [currency, itinerary?.currency, liveAccommodations, travelOptions, data?.trips]);
 
   const refresh = () => api().then(setData);
   const loadInitial = async () => {
@@ -97,17 +157,101 @@ export default function TravelerDashboard() {
       setLoadError(error instanceof Error ? error.message : 'TravelMate could not load your workspace.');
     });
   }, [router]);
+
   useEffect(() => {
-    if (destination.trim().length < 2) return;
+    const timer = window.setTimeout(() => {
+      const stored = window.localStorage.getItem('travelmate-reference-currency');
+      if (isCurrencyCode(stored)) setReferenceCurrency(stored);
+      setReferencePreferenceReady(true);
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!referencePreferenceReady) return;
+    window.localStorage.setItem('travelmate-reference-currency', referenceCurrency);
+  }, [referenceCurrency, referencePreferenceReady]);
+
+  useEffect(() => {
+    if (!data || draftCheckedRef.current) return;
+    const timer = window.setTimeout(() => {
+      if (draftCheckedRef.current) return;
+      draftCheckedRef.current = true;
+      const key = `travelmate-itinerary-draft:${data.user.id}`;
+      const stored = window.localStorage.getItem(key);
+      if (!stored) return;
+      try {
+        const draft = JSON.parse(stored) as { trip?: SavedTrip; itinerary?: unknown; weather?: unknown; savedAt?: string };
+        const plan = savedItinerary(draft.itinerary);
+        if (!draft.trip || !plan) throw new Error('Invalid draft');
+        if (!window.confirm(`Restore your unsaved ${draft.trip.destination} itinerary draft${draft.savedAt ? ` from ${new Date(draft.savedAt).toLocaleString()}` : ''}?`)) {
+          window.localStorage.removeItem(key);
+          return;
+        }
+        setBudget(draft.trip.budget); setStartDate(draft.trip.startDate); setEndDate(draft.trip.endDate);
+        setTravelers(draft.trip.travelers); setPartyType(draft.trip.partyType); setInterests(draft.trip.interests.join(', '));
+        restoreDestination(draft.trip, plan.preferences?.transportation || '');
+        if (plan.preferences) { setTravelStyle(plan.preferences.travelStyle); setAccommodationPreference(plan.preferences.accommodation); setPreferredActivities(plan.preferences.activities.join(', ')); }
+        const restoredPreTrip = plan.selectedTravelCosts?.preTrip;
+        setFlightOrigin(restoredPreTrip?.startingLocation || '');
+        setPreTripCosts(restoredPreTrip ? { airportTransfers: restoredPreTrip.airportTransferOutbound + restoredPreTrip.airportTransferReturn, passport: restoredPreTrip.passport, visaOrAuthorization: restoredPreTrip.visaOrAuthorization, departureTaxes: restoredPreTrip.departureTaxes, insurance: restoredPreTrip.insurance, other: restoredPreTrip.other } : EMPTY_PRE_TRIP_COSTS);
+        setIncludePreTripCosts(Boolean(restoredPreTrip?.total));
+        setItinerary(plan); setWeather(draft.weather && typeof draft.weather === 'object' ? draft.weather as WeatherData : null);
+        setEditingTripId(draft.trip.id || null); setRegenerationTargetId(null); setManualDirty(true); setTab('planner');
+        setMessage('Unsaved browser draft restored. Review it, then save your changes.');
+      } catch {
+        window.localStorage.removeItem(key);
+      }
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [data, restoreDestination]);
+
+  useEffect(() => {
+    if (!data || !itinerary || !manualDirty) return;
+    const key = `travelmate-itinerary-draft:${data.user.id}`;
+    const trip: SavedTrip = {
+      id: editingTripId || '', userId: data.user.id, destination, destinationCity: selectedDestination?.name,
+      destinationRegion: selectedDestination?.region, destinationCountry: selectedDestination?.country,
+      destinationCountryCode: selectedDestination?.countryCode, latitude: selectedDestination?.latitude,
+      longitude: selectedDestination?.longitude, budget, currency, startDate, endDate, travelers, partyType,
+      interests: interests.split(',').map((item) => item.trim()).filter(Boolean), itinerary, weather,
+      status: 'active', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    };
+    window.localStorage.setItem(key, JSON.stringify({ trip, itinerary, weather, savedAt: new Date().toISOString() }));
+  }, [data, itinerary, weather, manualDirty, editingTripId, destination, selectedDestination, budget, currency, startDate, endDate, travelers, partyType, interests]);
+
+  useEffect(() => {
+    if (!manualDirty) return;
+    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [manualDirty]);
+
+  useEffect(() => {
+    if (!referencePreferenceReady) return;
+    const sources = exchangeSourceCurrencies.filter((source) => source !== referenceCurrency);
     const controller = new AbortController();
-    const timeout = setTimeout(() => {
-      void fetch(`/api/locations?q=${encodeURIComponent(destination.trim())}`, { signal: controller.signal })
-        .then((response) => response.ok ? handleResponse<{ locations?: LocationSuggestion[] }>(response) : { locations: [] })
-        .then((result: { locations?: LocationSuggestion[] }) => setLocationSuggestions(result.locations || []))
-        .catch((error: unknown) => { if (!(error instanceof DOMException && error.name === 'AbortError')) setLocationSuggestions([]); });
-    }, 300);
-    return () => { clearTimeout(timeout); controller.abort(); };
-  }, [destination]);
+    const timer = window.setTimeout(() => {
+      if (sources.length === 0) {
+        setExchangeQuotes({});
+        setExchangeBusy(false);
+        setExchangeMessage('');
+        return;
+      }
+      setExchangeBusy(true);
+      setExchangeMessage('');
+      void Promise.allSettled(sources.map((source) => fetchExchangeRate(source, referenceCurrency, controller.signal)))
+        .then((results) => {
+          if (controller.signal.aborted) return;
+          const next: Partial<Record<CurrencyCode, ExchangeRateQuote>> = {};
+          results.forEach((result) => { if (result.status === 'fulfilled') next[result.value.base] = result.value; });
+          setExchangeQuotes(next);
+          if (results.some((result) => result.status === 'rejected')) setExchangeMessage('Some reference conversions are temporarily unavailable. Destination prices remain unchanged.');
+        })
+        .finally(() => { if (!controller.signal.aborted) setExchangeBusy(false); });
+    }, 0);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [exchangeSourceCurrencies, referenceCurrency, referencePreferenceReady]);
   useModalAccessibility({
     active: activityEditor !== null,
     containerRef: activityModalRef,
@@ -115,64 +259,218 @@ export default function TravelerDashboard() {
     onClose: () => setActivityEditor(null),
   });
   useModalAccessibility({
+    active: profileMenuOpen,
+    containerRef: profileMenuRef,
+    initialFocusRef: profileMenuCloseRef,
+    onClose: () => setProfileMenuOpen(false),
+  });
+
+  useEffect(() => {
+    if (!dashboardMountedRef.current) {
+      dashboardMountedRef.current = true;
+      return;
+    }
+    window.requestAnimationFrame(() => workspaceHeadingRef.current?.focus());
+  }, [tab]);
+  useModalAccessibility({
     active: selectedDay !== null,
     containerRef: dayModalRef,
     initialFocusRef: dayCloseRef,
     onClose: () => setSelectedDay(null),
   });
 
-  async function searchLiveAccommodations() {
-    if (travelers > 9) { setStayMessage('Live hotel search currently supports up to 9 travelers.'); return; }
-    setStaysBusy(true); setStayMessage(''); setLiveAccommodations([]); setSelectedLiveStayId('');
-    try {
-      const checkOutDate = endDate === startDate ? addDays(startDate, 1) : endDate;
-      const params = new URLSearchParams({ destination: destination.trim(), checkInDate: startDate, checkOutDate, adults: String(travelers) });
-      if (coordinates) { params.set('latitude', String(coordinates.latitude)); params.set('longitude', String(coordinates.longitude)); }
-      const response = await fetch(`/api/accommodations?${params}`);
-      const result = await handleResponse<{ accommodations?: LiveAccommodation[]; message?: string }>(response);
-      const accommodations = result.accommodations || [];
-      setLiveAccommodations(accommodations);
-      setStayMessage(result.message || 'Live accommodation search complete.');
-      if (!selectedStayId && accommodations[0]) setSelectedLiveStayId(accommodations[0].id);
-    } catch (error) { setStayMessage(error instanceof Error ? error.message : 'Live accommodation search failed.'); }
-    finally { setStaysBusy(false); }
-  }
+  useGSAP(() => {
+    if (!data || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const media = gsap.matchMedia();
+    media.add('(min-width: 1024px)', () => {
+      const rail = document.querySelector<HTMLElement>('[data-traveler-rail]');
+      const shell = document.querySelector<HTMLElement>('[data-traveler-shell]');
+      if (!rail || !shell) return;
+
+      const pin = ScrollTrigger.create({
+        trigger: shell,
+        start: 'top top+=80',
+        end: 'bottom bottom-=32',
+        pin: rail,
+        pinSpacing: false,
+      });
+      return () => pin.kill();
+    });
+
+    gsap.utils.toArray<HTMLElement>('[data-dashboard-image]').forEach((image) => {
+      gsap.fromTo(image, { autoAlpha: 0.58, scale: 0.88 }, {
+        autoAlpha: 1,
+        scale: 1,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: image,
+          start: 'top 92%',
+          end: 'top 42%',
+          scrub: true,
+        },
+      });
+      gsap.to(image, {
+        autoAlpha: 0.3,
+        scale: 0.97,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: image,
+          start: 'bottom 28%',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+    });
+
+    const journeyCards = gsap.utils.toArray<HTMLElement>('[data-journey-card]');
+    if (journeyCards.length > 0) {
+      gsap.fromTo(journeyCards, { y: 52, scale: 0.96, opacity: 0.35 }, {
+        y: 0,
+        scale: 1,
+        opacity: 1,
+        duration: 0.85,
+        stagger: 0.09,
+        ease: 'power3.out',
+        scrollTrigger: { trigger: journeyCards[0], start: 'top 88%', once: true },
+      });
+    }
+
+    const lifecycleWords = gsap.utils.toArray<HTMLElement>('[data-lifecycle-word]');
+    if (lifecycleWords.length > 0) {
+      gsap.fromTo(lifecycleWords, { opacity: 0.18 }, {
+        opacity: 1,
+        stagger: 0.03,
+        ease: 'none',
+        scrollTrigger: { trigger: lifecycleWords[0].parentElement, start: 'top 82%', end: 'bottom 42%', scrub: 0.6 },
+      });
+    }
+
+    const lifecycleRail = document.querySelector<HTMLElement>('[data-lifecycle-rail]');
+    if (lifecycleRail) {
+      media.add('(min-width: 1024px)', () => {
+        const marquee = gsap.to(lifecycleRail, { xPercent: -50, duration: 28, repeat: -1, ease: 'none' });
+        return () => marquee.kill();
+      });
+    }
+
+    gsap.utils.toArray<HTMLElement>('[data-lifecycle-stack]').forEach((card, index) => {
+      gsap.fromTo(card, { y: 36 + index * 12, scale: 0.96 }, {
+        y: 0,
+        scale: 1,
+        ease: 'none',
+        scrollTrigger: { trigger: card, start: 'top 92%', end: 'top 58%', scrub: 0.45 },
+      });
+    });
+
+    ScrollTrigger.refresh();
+    return () => media.revert();
+  }, { scope: pageRef, dependencies: [data, tab], revertOnUpdate: true });
 
   async function searchComparison() {
+    const comparisonOrigin = flightOrigin.trim();
     if (travelers > 9) { setComparisonMessage('Live provider comparison currently supports up to 9 travelers.'); return; }
-    if (flightOrigin.trim().length < 2 || destination.trim().length < 2) { setComparisonMessage('Enter a valid flight origin and destination.'); return; }
-    setComparisonBusy(true); setComparisonMessage(''); setTravelOptions(null); setLiveAccommodations([]);
+    if (comparisonOrigin.length < 2 || destination.trim().length < 2) { setComparisonMessage('Enter a valid starting location or departure airport and destination.'); return; }
+    setComparisonBusy(true); setComparisonMessage(''); setTravelOptions(null); setSelectedFlightId(''); setSelectedActivityIds([]);
     try {
-      const comparisonParams = new URLSearchParams({ origin: flightOrigin.trim(), destination: destination.trim(), departureDate: startDate, returnDate: endDate, adults: String(travelers) });
-      const checkOutDate = endDate === startDate ? addDays(startDate, 1) : endDate;
-      const stayParams = new URLSearchParams({ destination: destination.trim(), checkInDate: startDate, checkOutDate, adults: String(travelers) });
-      if (coordinates) {
-        comparisonParams.set('latitude', String(coordinates.latitude)); comparisonParams.set('longitude', String(coordinates.longitude));
-        stayParams.set('latitude', String(coordinates.latitude)); stayParams.set('longitude', String(coordinates.longitude));
+      const comparisonParams = new URLSearchParams({ origin: comparisonOrigin, destination: destination.trim(), departureDate: startDate, returnDate: endDate, adults: String(travelers), currency });
+      if (Number.isFinite(selectedDestination?.latitude) && Number.isFinite(selectedDestination?.longitude)) {
+        comparisonParams.set('latitude', String(selectedDestination!.latitude)); comparisonParams.set('longitude', String(selectedDestination!.longitude));
       }
-      const [comparisonResult, stayResult] = await Promise.allSettled([
-        fetch(`/api/travel-options?${comparisonParams}`).then((response) => handleResponse<TravelOptionsResponse>(response)),
-        fetch(`/api/accommodations?${stayParams}`).then((response) => handleResponse<{ accommodations?: LiveAccommodation[]; message?: string }>(response)),
-      ]);
-      if (comparisonResult.status === 'fulfilled') setTravelOptions(comparisonResult.value);
-      if (stayResult.status === 'fulfilled') setLiveAccommodations(stayResult.value.accommodations || []);
-      const messages = [
-        comparisonResult.status === 'fulfilled' ? `${comparisonResult.value.flightMessage} ${comparisonResult.value.activityMessage}` : comparisonResult.reason instanceof Error ? comparisonResult.reason.message : 'Flight and activity comparison failed.',
-        stayResult.status === 'fulfilled' ? stayResult.value.message : stayResult.reason instanceof Error ? stayResult.reason.message : 'Hotel comparison failed.',
-      ].filter(Boolean);
-      setComparisonMessage(messages.join(' '));
+      const comparisonResult = await fetch(`/api/travel-options?${comparisonParams}`).then((response) => handleResponse<unknown>(response)).then(parseTravelOptionsResponse);
+      setTravelOptions(comparisonResult);
+      setComparisonMessage(`${comparisonResult.flightMessage} ${comparisonResult.activityMessage}`);
+    } catch (error) {
+      setComparisonMessage(error instanceof Error ? error.message : 'Flight and activity comparison failed.');
     } finally { setComparisonBusy(false); }
   }
 
+  function handleDestinationKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (locationSuggestions.length === 0) return;
+    if (event.key === 'ArrowDown') { event.preventDefault(); setActiveSuggestionIndex((index) => Math.min(locationSuggestions.length - 1, index + 1)); }
+    else if (event.key === 'ArrowUp') { event.preventDefault(); setActiveSuggestionIndex((index) => Math.max(0, index - 1)); }
+    else if (event.key === 'Enter' && activeSuggestionIndex >= 0) { event.preventDefault(); confirmDestination(locationSuggestions[activeSuggestionIndex]); setActiveSuggestionIndex(-1); }
+    else if (event.key === 'Escape') setActiveSuggestionIndex(-1);
+  }
+
   async function generate() {
+    if (!selectedDestination || !currencyResolved) { setMessage('Select a destination suggestion and confirm its currency before generating.'); return; }
+    if (startDate < localDateInputValue()) {
+      if (regenerationTargetId) {
+        const draftDates = regenerationDraftDates(startDate, endDate);
+        setStartDate(draftDates.startDate); setEndDate(draftDates.endDate); setGenerationFailed(true);
+        setMessage(`The saved dates have passed. Draft dates moved to ${draftDates.startDate}–${draftDates.endDate}; review them, then select Generate my trip again. Your saved plan is unchanged.`);
+      } else {
+        setGenerationFailed(true);
+        setMessage('These trip dates have passed. Choose a new start date before generating; your saved plan is unchanged.');
+      }
+      return;
+    }
     setBusy(true); setMessage('');
     try {
       const selectedStay = data?.listings.find((listing) => listing.id === selectedStayId);
-      const selectedLiveStay = liveAccommodations.find((stay) => stay.id === selectedLiveStayId);
-      const result = await fetchTripData(destination.trim(), budget, { partyType, travelers, startDate, endDate, latitude: coordinates?.latitude, longitude: coordinates?.longitude, interests: interests.split(',').map((x) => x.trim()).filter(Boolean), preferredActivities: preferredActivities.split(',').map((x) => x.trim()).filter(Boolean), travelStyle, accommodationPreference, transportationPreference, accommodationListingId: selectedStay?.id, externalAccommodation: selectedLiveStay ? { hotelId: selectedLiveStay.hotelId, offerId: selectedLiveStay.offerId, name: selectedLiveStay.name, address: selectedLiveStay.address, nightlyRate: selectedLiveStay.nightlyRate, isLive: selectedLiveStay.isLive, selectionToken: selectedLiveStay.selectionToken } : undefined });
-      setItinerary(result.itinerary); setWeather(result.weather); setManualDirty(false); setActivityEditor(null); setMessage(result.itinerary.source === 'mock' ? 'Demo fallback plan ready. Its recommendations and prices are estimates.' : `Your ${result.itinerary.days.length}-day ${result.itinerary.source === 'gemini' ? 'Gemini' : 'OpenAI'} plan is ready.`);
-    } catch (error) { setMessage(error instanceof Error ? error.message : 'Generation failed.'); }
+      const selectedLiveStay = liveAccommodations.find((stay) => stay.id === selectedLiveStayId)
+        || (!selectedStayId ? accommodationRecommendation?.accommodation : undefined);
+      const selectedFlight = travelOptions?.flights.find((flight) => flight.id === selectedFlightId);
+      const selectedActivities = travelOptions?.activities.filter((activity) => selectedActivityIds.includes(activity.id)) || [];
+      const requestDetails = { destination: destination.trim(), budget, currency, partyType, travelers, startDate, endDate, interests, preferredActivities, travelStyle, accommodationPreference, transportationPreference, accommodationListingId: selectedStay?.id, externalAccommodationId: selectedLiveStay?.id, selectedFlightId, selectedActivityIds, flightOrigin, includePreTripCosts, preTripCosts };
+      const fingerprint = JSON.stringify(requestDetails);
+      const idempotencyKey = generationRequestRef.current?.fingerprint === fingerprint ? generationRequestRef.current.key : crypto.randomUUID();
+      generationRequestRef.current = { fingerprint, key: idempotencyKey };
+      const result = await fetchTripData(destination.trim(), budget, { idempotencyKey, currency, partyType, travelers, startDate, endDate, latitude: selectedDestination.latitude, longitude: selectedDestination.longitude, interests: interests.split(',').map((x) => x.trim()).filter(Boolean), preferredActivities: preferredActivities.split(',').map((x) => x.trim()).filter(Boolean), travelStyle, accommodationPreference, transportationPreference: transportationPreference || 'locally appropriate transportation', accommodationListingId: selectedStay?.id, externalAccommodation: selectedLiveStay ? { hotelId: selectedLiveStay.hotelId, offerId: selectedLiveStay.offerId, name: selectedLiveStay.name, address: selectedLiveStay.address, nightlyRate: selectedLiveStay.nightlyRate, currency: selectedLiveStay.currency, isLive: selectedLiveStay.isLive, selectionToken: selectedLiveStay.selectionToken } : undefined, selectedFlight: selectedFlight ? { id: selectedFlight.id, name: `${selectedFlight.airline} ${selectedFlight.origin}-${selectedFlight.destination}`, price: selectedFlight.price, currency: selectedFlight.currency, fetchedAt: selectedFlight.fetchedAt, selectionToken: selectedFlight.selectionToken } : undefined, selectedActivities: selectedActivities.map((activity) => ({ id: activity.id, name: activity.name, price: activity.price, currency: activity.currency, fetchedAt: activity.fetchedAt, selectionToken: activity.selectionToken })), preTripCosts: includePreTripCosts ? { startingLocation: flightOrigin.trim() || undefined, airportTransferOutbound: preTripCosts.airportTransfers, airportTransferReturn: 0, passport: preTripCosts.passport, visaOrAuthorization: preTripCosts.visaOrAuthorization, departureTaxes: preTripCosts.departureTaxes, insurance: preTripCosts.insurance, other: preTripCosts.other } : undefined });
+      generationRequestRef.current = null;
+      setItinerary(result.itinerary); setWeather(result.weather); setManualDirty(false); setActivityEditor(null); setGenerationFailed(false);
+      const destinationDetails = selectedDestination.countryCode && selectedDestination.country ? { city: selectedDestination.name, region: selectedDestination.region, country: selectedDestination.country, countryCode: selectedDestination.countryCode, latitude: selectedDestination.latitude, longitude: selectedDestination.longitude } : undefined;
+      try {
+        const response = await api({
+          action: regenerationTargetId ? 'update-trip' : 'save-trip', id: regenerationTargetId || undefined,
+          destination: destination.trim(), destinationDetails, budget, currency, startDate, endDate, partyType, travelers,
+          interests: interests.split(',').map((item) => item.trim()).filter(Boolean), itinerary: result.itinerary, weather: result.weather,
+        });
+        const saved = response.result as SavedTrip | undefined;
+        if (saved?.id) setEditingTripId(saved.id);
+        setRegenerationTargetId(null);
+        await refresh();
+        const providerMessage = result.itinerary.source === 'mock' ? 'Demo fallback plan ready; recommendations and prices are estimates.' : `Your ${result.itinerary.days.length}-day ${result.itinerary.source === 'gemini' ? 'Gemini' : 'OpenAI'} plan is ready.`;
+        setMessage(`${providerMessage} It was saved automatically${regenerationTargetId ? ' as a new version of the selected trip' : ' to Saved trips'}.`);
+      } catch (saveError) {
+        setManualDirty(true);
+        await refresh().catch(() => undefined);
+        setMessage(`The itinerary was generated, but automatic saving failed: ${saveError instanceof Error ? saveError.message : 'unknown save error'}. A browser draft will be kept until you save it.`);
+      }
+    } catch (error) { setGenerationFailed(true); setMessage(error instanceof Error ? error.message : 'Generation failed. Your current plan is unchanged; please retry.'); }
     finally { setBusy(false); }
+  }
+
+  async function refreshConditions() {
+    setConditionsBusy(true); setMessage('');
+    try {
+      const refreshed = await fetchWeather(destination.trim(), startDate, endDate, { latitude: selectedDestination?.latitude, longitude: selectedDestination?.longitude });
+      setWeather(refreshed);
+      setItinerary((current) => current ? applyConditionSnapshot(current, refreshed) : current);
+      setMessage(`Conditions refreshed at ${new Date(refreshed.fetchedAt).toLocaleString()}. Your itinerary activities and manual edits were not changed.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Conditions could not be refreshed. Your itinerary is unchanged.');
+    } finally { setConditionsBusy(false); }
+  }
+
+  async function refreshDayPhotos(day: ItineraryResponse['days'][number], announce = false) {
+    setPhotoRefreshDay(day.day);
+    try {
+      const refreshedDay = await refreshItineraryDayImages(itinerary?.destination || destination.trim(), day);
+      setItinerary((current) => current ? { ...current, days: current.days.map((item) => item.day === refreshedDay.day ? refreshedDay : item) } : current);
+      setSelectedDay((current) => current?.day === refreshedDay.day ? refreshedDay : current);
+      if (announce) setMessage(`Activity photos for Day ${day.day} refreshed from Wikimedia Commons.`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Activity photos could not be refreshed. Existing images are still available.');
+    } finally {
+      setPhotoRefreshDay((current) => current === day.day ? null : current);
+    }
+  }
+
+  function openDayDetails(day: ItineraryResponse['days'][number]) {
+    setSelectedDay(day);
+    void refreshDayPhotos(day);
   }
 
   async function action(body: Record<string, unknown>, success: string): Promise<boolean> {
@@ -186,9 +484,12 @@ export default function TravelerDashboard() {
     if (!itinerary) return;
     setBusy(true); setMessage('');
     try {
-      const response = await api({ action: editingTripId ? 'update-trip' : 'save-trip', id: editingTripId || undefined, destination, budget, startDate, endDate, partyType, travelers, interests: interests.split(',').map((item) => item.trim()).filter(Boolean), itinerary, weather });
+      const destinationDetails = selectedDestination && Number.isFinite(selectedDestination.latitude) && Number.isFinite(selectedDestination.longitude) && selectedDestination.countryCode ? { city: selectedDestination.name, region: selectedDestination.region, country: selectedDestination.country, countryCode: selectedDestination.countryCode, latitude: selectedDestination.latitude, longitude: selectedDestination.longitude } : undefined;
+      const response = await api({ action: editingTripId ? 'update-trip' : 'save-trip', id: editingTripId || undefined, destination, destinationDetails, budget, currency, startDate, endDate, partyType, travelers, interests: interests.split(',').map((item) => item.trim()).filter(Boolean), itinerary, weather });
       const saved = response.result as SavedTrip | undefined;
       if (saved?.id) setEditingTripId(saved.id);
+      setRegenerationTargetId(null);
+      if (data?.user.id) window.localStorage.removeItem(`travelmate-itinerary-draft:${data.user.id}`);
       await refresh();
       setMessage(editingTripId ? 'Saved trip updated.' : 'Trip saved. Open Trips to view, edit, duplicate, or delete it.');
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Trip could not be saved.'); }
@@ -201,12 +502,14 @@ export default function TravelerDashboard() {
     try {
       const response = editingTripId
         ? await api({ action: 'update-trip-itinerary', id: editingTripId, itinerary })
-        : await api({ action: 'save-trip', destination, budget, startDate, endDate, partyType, travelers, interests: interests.split(',').map((item) => item.trim()).filter(Boolean), itinerary, weather });
+        : await api({ action: 'save-trip', destination, destinationDetails: selectedDestination && Number.isFinite(selectedDestination.latitude) && Number.isFinite(selectedDestination.longitude) && selectedDestination.countryCode ? { city: selectedDestination.name, region: selectedDestination.region, country: selectedDestination.country, countryCode: selectedDestination.countryCode, latitude: selectedDestination.latitude, longitude: selectedDestination.longitude } : undefined, budget, currency, startDate, endDate, partyType, travelers, interests: interests.split(',').map((item) => item.trim()).filter(Boolean), itinerary, weather });
       const saved = response.result as SavedTrip | undefined;
       const canonical = saved ? savedItinerary(saved.itinerary) : null;
       if (saved?.id) setEditingTripId(saved.id);
       if (canonical) setItinerary(canonical);
       setSelectedDay(null); setManualDirty(false);
+      setRegenerationTargetId(null);
+      if (data?.user.id) window.localStorage.removeItem(`travelmate-itinerary-draft:${data.user.id}`);
       await refresh();
       setMessage(editingTripId ? 'Manual itinerary changes saved.' : 'Edited itinerary saved to your trips.');
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Manual changes could not be saved.'); }
@@ -252,17 +555,33 @@ export default function TravelerDashboard() {
     setTab('planner'); setMessage(`${name} added to your activity preferences. Generate or update the itinerary to use it.`);
   }
 
+  function startNewTrip() {
+    if (manualDirty && !window.confirm('Start a new trip? Your current unsaved edits remain available in browser draft recovery.')) return;
+    const today = localDateInputValue();
+    setEditingTripId(null); setRegenerationTargetId(null); setItinerary(null); setWeather(null); setManualDirty(false);
+    setSelectedStayId(''); setSelectedLiveStayId(''); setTravelOptions(null); setSelectedFlightId(''); setSelectedActivityIds([]); setComparisonMessage(''); setGenerationFailed(false);
+    setFlightOrigin(''); setPreTripCosts(EMPTY_PRE_TRIP_COSTS); setIncludePreTripCosts(false);
+    changeDestinationInput(''); setStartDate(today); setEndDate(addCalendarDays(today, 6)); setPartyType('solo'); setTravelers(1);
+    setTab('planner'); setMessage('');
+  }
+
   function loadTrip(trip: SavedTrip, keepPlan = true) {
     const plan = savedItinerary(trip.itinerary);
     if (!plan) { setMessage('This saved trip does not contain a usable itinerary.'); return; }
-    setDestination(trip.destination); setBudget(trip.budget); setStartDate(trip.startDate); setEndDate(trip.endDate);
-    const municipality = CEBU_LOCATIONS.find((item) => trip.destination.toLowerCase().startsWith(item.toLowerCase()));
-    setCoordinates(municipality && /\bcebu\b|\bphilippines\b/i.test(trip.destination) ? CEBU_COORDINATES[municipality] : null);
-    setTravelers(trip.travelers); setPartyType(trip.travelers === 1 ? 'solo' : trip.travelers === 2 ? 'couple' : 'friends');
+    const draftDates = keepPlan ? { startDate: trip.startDate, endDate: trip.endDate, movedForward: false } : regenerationDraftDates(trip.startDate, trip.endDate);
+    setBudget(trip.budget); setStartDate(draftDates.startDate); setEndDate(draftDates.endDate);
+    setTravelers(trip.travelers); setPartyType(trip.partyType);
     setInterests(trip.interests.join(', ')); setEditingTripId(trip.id);
-    if (plan.preferences) { setTravelStyle(plan.preferences.travelStyle); setAccommodationPreference(plan.preferences.accommodation); setTransportationPreference(plan.preferences.transportation); setPreferredActivities(plan.preferences.activities.join(', ')); }
-    setItinerary(keepPlan ? plan : null); setWeather(keepPlan && trip.weather && typeof trip.weather === 'object' ? trip.weather as WeatherData : null); setManualDirty(false); setActivityEditor(null);
-    setTab('planner'); setMessage(keepPlan ? 'Saved trip loaded. Change the form, regenerate if needed, then update it.' : 'Trip details loaded. Generate a fresh itinerary, then update the saved trip.');
+    setRegenerationTargetId(keepPlan ? null : trip.id);
+    restoreDestination(trip, plan.preferences?.transportation || '');
+    const restoredPreTrip = plan.selectedTravelCosts?.preTrip;
+    setFlightOrigin(restoredPreTrip?.startingLocation || '');
+    setPreTripCosts(restoredPreTrip ? { airportTransfers: restoredPreTrip.airportTransferOutbound + restoredPreTrip.airportTransferReturn, passport: restoredPreTrip.passport, visaOrAuthorization: restoredPreTrip.visaOrAuthorization, departureTaxes: restoredPreTrip.departureTaxes, insurance: restoredPreTrip.insurance, other: restoredPreTrip.other } : EMPTY_PRE_TRIP_COSTS);
+    setIncludePreTripCosts(Boolean(restoredPreTrip?.total));
+    if (plan.preferences) { setTravelStyle(plan.preferences.travelStyle); setAccommodationPreference(plan.preferences.accommodation); setPreferredActivities(plan.preferences.activities.join(', ')); }
+    setItinerary(keepPlan ? plan : null); setWeather(keepPlan && trip.weather && typeof trip.weather === 'object' ? trip.weather as WeatherData : null); setManualDirty(false); setActivityEditor(null); setGenerationFailed(false);
+    generationRequestRef.current = null;
+    setTab('planner'); setMessage(keepPlan ? 'Saved trip loaded. Change the form, regenerate if needed, then update it.' : draftDates.movedForward ? `The saved dates have passed. Draft dates moved to ${draftDates.startDate}–${draftDates.endDate} for regeneration; your saved plan is unchanged until the new plan succeeds.` : 'Trip details loaded. Generate a fresh itinerary, then update the saved trip.');
   }
 
   async function saveProfile(form: HTMLFormElement) {
@@ -274,7 +593,7 @@ export default function TravelerDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: fields.get('name'), phone: fields.get('phone'), bio: fields.get('bio') }),
       });
-      await handleResponse<{ profile: PublicUser }>(response);
+      await handleResponse<ProfileResponse>(response);
       await refresh();
       setMessage('Profile updated.');
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Profile update failed.'); }
@@ -284,266 +603,312 @@ export default function TravelerDashboard() {
   async function logout() { await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) }); router.replace('/'); }
   if (!data) return <DashboardLoadState label="your TravelMate workspace" error={loadError} onRetry={() => { setLoadError(''); void loadInitial(); }} />;
   const tripDays = Math.floor((new Date(`${endDate}T00:00:00.000Z`).getTime() - new Date(`${startDate}T00:00:00.000Z`).getTime()) / 86_400_000) + 1;
-  const maximumEndDate = addDays(startDate, 13);
+  const maximumEndDate = addCalendarDays(startDate, 13);
   const split = itinerary?.budgetSummary as (ItineraryResponse['budgetSummary'] & { reserve?: number; dailyAverage?: number }) | undefined;
   const optimization = itinerary?.budgetOptimization;
   const localMunicipality = CEBU_LOCATIONS.find((location) => destination.toLowerCase().startsWith(location.toLowerCase()));
-  const stayOptions = data.listings.filter((listing) => listing.category === 'stay' && listing.status === 'approved' && listing.municipality === localMunicipality);
-  const selectedLiveAccommodation = liveAccommodations.find((stay) => stay.id === selectedLiveStayId);
-  const today = new Date().toISOString().slice(0, 10);
+  const stayOptions = currency === 'PHP' ? data.listings.filter((listing) => listing.category === 'stay' && listing.status === 'approved' && listing.municipality === localMunicipality) : [];
+  const accommodationRecommendation = recommendAccommodation(liveAccommodations, accommodationPreference, budget, currency);
+  const selectedLiveAccommodation = liveAccommodations.find((stay) => stay.id === selectedLiveStayId)
+    || (!selectedStayId ? accommodationRecommendation?.accommodation : undefined);
+  const preTripTotal = preTripCosts.airportTransfers + preTripCosts.passport + preTripCosts.visaOrAuthorization + preTripCosts.departureTaxes + preTripCosts.insurance + preTripCosts.other;
+  const updatePreTripAmount = (field: keyof PreTripCostDraft, value: string) => {
+    const amount = value === '' ? 0 : Number(value);
+    setPreTripCosts((current) => ({ ...current, [field]: Number.isFinite(amount) && amount >= 0 ? amount : 0 }));
+  };
+  const today = localDateInputValue();
   const upcomingTrip = [...data.trips].filter((trip) => trip.endDate >= today).sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
-  const activeBookings = data.bookings.filter((booking) => !['cancelled', 'completed'].includes(booking.status));
-  const upcomingPlan = upcomingTrip ? savedItinerary(upcomingTrip.itinerary) : null;
-  const upcomingTripImage = placeImage(upcomingPlan?.days[0]?.imageUrl, '/beach-bg.png');
   const userInitials = data.user.name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'TM';
-  const overviewStats = [
-    { label: 'Saved trips', value: String(data.trips.length), description: 'Plans in your account', icon: CalendarDays, color: 'text-cyan-300', surface: 'bg-cyan-400/10' },
-    { label: 'Active bookings', value: String(activeBookings.length), description: 'Current stay requests', icon: BedDouble, color: 'text-emerald-300', surface: 'bg-emerald-400/10' },
-    { label: 'Trust score', value: `${data.user.trustScore}/100`, description: data.user.profileStatus === 'verified' ? 'Verified profile' : 'Limited Mode', icon: ShieldCheck, color: 'text-amber-300', surface: 'bg-amber-400/10' },
-    { label: 'Current plan', value: itinerary ? `${itinerary.days.length} days` : 'None yet', description: itinerary ? itinerary.destination : 'Ready when you are', icon: MapPin, color: 'text-violet-300', surface: 'bg-violet-400/10' },
-  ];
+  const currentTabCopy = tab === 'planner' && itinerary
+    ? { title: 'Review and shape your trip', description: 'Inspect the generated days, edit activities, check conditions, and save only when the plan is ready.' }
+    : tab === 'planner' && editingTripId
+      ? { title: 'Regenerate a saved trip', description: 'The saved details are loaded. Adjust them, generate a fresh itinerary, then choose Update saved trip.' }
+      : TAB_COPY[tab];
   const editorDay = activityEditor && itinerary ? itinerary.days[activityEditor.dayIndex] : undefined;
   const editorActivity = activityEditor?.activityIndex !== null && activityEditor?.activityIndex !== undefined ? editorDay?.activities[activityEditor.activityIndex] : undefined;
   const changePartyType = (nextPartyType: PartyType) => {
     setPartyType(nextPartyType);
     setTravelers(nextPartyType === 'solo' ? 1 : nextPartyType === 'couple' ? 2 : nextPartyType === 'family' ? 4 : 3);
-    setLiveAccommodations([]); setSelectedLiveStayId(''); setStayMessage(''); setTravelOptions(null); setComparisonMessage('');
+    setSelectedLiveStayId(''); setTravelOptions(null); setComparisonMessage('');
     setItinerary(null);
     setMessage('');
   };
+  const changeCurrency = (nextCurrency: CurrencyCode) => {
+    setManualCurrency(nextCurrency);
+    setSelectedStayId('');
+    if (selectedLiveAccommodation?.currency !== nextCurrency) setSelectedLiveStayId('');
+    setItinerary(null);
+    setManualDirty(false);
+    setMessage(`Budget currency changed to ${nextCurrency}. Generate a new plan so every estimate uses one currency.`);
+  };
   const changeDestination = (location: string) => {
-    setDestination(location);
-    const selectedLocation = locationSuggestions.find((item) => item.label === location);
-    const municipality = CEBU_LOCATIONS.find((item) => location.toLowerCase().startsWith(item.toLowerCase()));
-    setCoordinates(selectedLocation ? { latitude: selectedLocation.latitude, longitude: selectedLocation.longitude } : municipality && /\bcebu\b|\bphilippines\b/i.test(location) ? CEBU_COORDINATES[municipality] : null);
-    if (selectedLocation) setLocationSuggestions([]);
-    const firstStay = data.listings.find((listing) => listing.category === 'stay' && listing.status === 'approved' && listing.municipality === municipality);
-    setSelectedStayId(firstStay?.id || '');
+    changeDestinationInput(location);
+    setSelectedStayId('');
     setSelectedLiveStayId('');
-    setLiveAccommodations([]);
-    setStayMessage('');
     setTravelOptions(null);
     setComparisonMessage('');
     setItinerary(null);
     setWeather(null);
     setMessage('');
   };
+  const confirmDestination = (location: (typeof locationSuggestions)[number]) => {
+    selectDestination(location);
+    setSelectedStayId('');
+    setSelectedLiveStayId('');
+    setTravelOptions(null);
+    setComparisonMessage('');
+    setItinerary(null);
+    setWeather(null);
+    setMessage('');
+  };
+  const useCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setCurrentLocationMessage('Location access is not available in this browser.');
+      return;
+    }
+    setCurrentLocationBusy(true);
+    setCurrentLocationMessage('Requesting your location...');
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const controller = new AbortController();
+        void fetchCurrentLocation(position.coords.latitude, position.coords.longitude, controller.signal)
+          .then((location) => {
+            setFlightOrigin(location.label);
+            setCurrentLocationMessage(`Suggested from your current area: ${location.label}`);
+            setTravelOptions(null);
+          })
+          .catch((error: unknown) => setCurrentLocationMessage(error instanceof Error ? error.message : 'Current location could not be identified.'))
+          .finally(() => setCurrentLocationBusy(false));
+      },
+      (error) => {
+        setCurrentLocationBusy(false);
+        setCurrentLocationMessage(error.code === error.PERMISSION_DENIED ? 'Location permission was not granted. Enter your starting location manually.' : 'Current location is unavailable. Enter your starting location manually.');
+      },
+      { enableHighAccuracy: false, maximumAge: 300_000, timeout: 10_000 },
+    );
+  };
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#07111f] text-slate-100">
-      <header className="sticky top-0 z-40 border-b border-slate-800 bg-[#07111f]/95 backdrop-blur px-5 py-3 flex items-center justify-between">
-        <button className="flex items-center gap-2 font-extrabold text-lg" onClick={() => router.push('/')}><Compass className="text-amber-400" />TravelMate</button>
-        <div className="flex items-center gap-3"><span className="hidden sm:block text-sm text-slate-400">{data.user.name}</span><button type="button" aria-label="Sign out" title="Sign out" onClick={logout} className="p-2 hover:bg-slate-800 rounded-md"><LogOut size={18} /></button></div>
-      </header>
-      <div className="mx-auto grid w-full max-w-7xl grid-cols-[minmax(0,1fr)] gap-0 px-4 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-8 lg:px-8">
-        <aside className="min-w-0 max-w-[calc(100vw-2rem)] py-4 lg:sticky lg:top-[65px] lg:flex lg:h-[calc(100vh-65px)] lg:max-w-none lg:flex-col lg:py-8">
-          <nav aria-label="Traveler workspace" className="flex max-w-full snap-x gap-2 overflow-x-auto pb-2 [scrollbar-width:thin] lg:flex-col lg:overflow-visible lg:pb-0">
-            {([['overview','Dashboard',LayoutDashboard],['planner','Plan',MapPin],['budget','Budget',WalletCards],['compare','Compare',Plane],['market','Stays',BedDouble],['bookings','Trips',CalendarDays],['profile','Verification',ShieldCheck]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => setTab(id)} className={`flex shrink-0 snap-start items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${tab===id?'bg-amber-400 text-slate-950 shadow-lg shadow-amber-950/20':'text-slate-400 hover:bg-slate-900 hover:text-slate-100'}`}><Icon size={16}/>{label}</button>)}
-          </nav>
-          <button onClick={() => setTab('profile')} className={`mt-auto hidden w-full items-center gap-3 rounded-2xl border p-3 text-left transition lg:flex ${tab==='profile'?'border-amber-400/50 bg-amber-400/10':'border-slate-800 bg-slate-900/50 hover:border-slate-700 hover:bg-slate-900'}`} aria-label="Open user profile">
-            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-amber-300 to-orange-500 text-sm font-black text-slate-950 shadow-lg shadow-amber-950/30">{userInitials}</span>
-            <span className="min-w-0 flex-1"><strong className="block truncate text-sm text-slate-100">{data.user.name}</strong><span className="block truncate text-[11px] text-slate-500">{data.user.email}</span></span>
-            <UserRound size={16} className="shrink-0 text-amber-300" />
+    <div ref={pageRef} className="traveler-dashboard min-h-screen w-full max-w-full overflow-x-hidden bg-[#0b1d1a] text-slate-100">
+      <a href="#traveler-main-content" className="sr-only z-[100] bg-[#f1ead8] px-4 py-2 font-bold text-[#14231f] focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to trip workspace</a>
+      <header className="sticky top-0 z-40 px-4 pt-4 sm:px-6">
+        <div className="mx-auto flex h-16 w-full max-w-[1380px] items-center justify-between border border-white/15 bg-[#102824]/88 px-4 text-white shadow-[0_18px_50px_rgba(8,24,22,.22)] backdrop-blur-xl sm:px-6">
+          <div className="flex shrink-0 items-center gap-3 font-semibold">
+            <span className="grid size-9 place-items-center bg-[#ffcf70] text-[#102824]"><Compass size={20} strokeWidth={2.2}/></span>
+            <span className="text-lg">TravelMate</span>
+          </div>
+          <button type="button" onClick={() => setProfileMenuOpen(true)} aria-label={`Open profile menu for ${data.user.name}`} aria-haspopup="dialog" aria-expanded={profileMenuOpen} aria-controls="traveler-profile-menu" className="flex min-w-0 items-center gap-2 border border-white/15 bg-white/[0.04] py-1.5 pl-1.5 pr-3 text-left transition-colors hover:border-[#ffcf70]/50 hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffcf70] sm:gap-3">
+            <span className="grid size-9 shrink-0 place-items-center bg-[#ffcf70] text-xs font-black text-[#102824]">{userInitials}</span>
+            <span className="min-w-0"><strong className="block max-w-40 truncate text-xs font-bold text-white sm:text-sm">{data.user.name}</strong><span className="hidden max-w-48 truncate text-[10px] text-white/60 sm:block">{data.user.email}</span></span>
+            <UserRound size={15} className="shrink-0 text-[#ffcf70]" />
           </button>
+        </div>
+      </header>
+
+      {profileMenuOpen && <div className="fixed inset-0 z-[80]">
+        <button type="button" aria-label="Close profile menu" onClick={() => setProfileMenuOpen(false)} className="traveler-profile-backdrop absolute inset-0 bg-[#061714]/65 backdrop-blur-sm" />
+        <aside ref={profileMenuRef} id="traveler-profile-menu" role="dialog" aria-modal="true" aria-labelledby="traveler-profile-menu-title" tabIndex={-1} className="traveler-profile-drawer absolute inset-y-0 right-0 flex w-full max-w-sm flex-col border-l border-white/15 bg-[#102824] text-white shadow-[-24px_0_70px_rgba(0,0,0,.35)]">
+          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 sm:px-6">
+            <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#ffcf70]">TravelMate</p><h2 id="traveler-profile-menu-title" className="mt-1 text-lg font-semibold">Your account</h2></div>
+            <button ref={profileMenuCloseRef} type="button" aria-label="Close profile menu" onClick={() => setProfileMenuOpen(false)} className="grid size-10 place-items-center border border-white/20 text-white/75 transition-colors hover:bg-white/10 hover:text-white"><X size={18}/></button>
+          </div>
+          <div className="p-5 sm:p-6">
+            <div className="flex items-center gap-3 border border-white/15 bg-white/[0.04] p-3">
+              <span className="grid size-12 shrink-0 place-items-center bg-[#ffcf70] text-sm font-black text-[#102824]">{userInitials}</span>
+              <span className="min-w-0"><strong className="block truncate text-sm text-white">{data.user.name}</strong><span className="mt-1 block truncate text-xs text-white/55">{data.user.email}</span></span>
+            </div>
+            <div className="mt-4 flex items-center justify-between border-b border-white/10 pb-4 text-xs"><span className="text-white/55">Profile status</span><span className={`border px-2 py-1 font-bold ${data.user.profileStatus === 'verified' ? 'border-emerald-300/35 bg-emerald-300/10 text-emerald-200' : 'border-[#ffcf70]/35 bg-[#ffcf70]/10 text-[#ffcf70]'}`}>{data.user.profileStatus === 'verified' ? 'Verified' : 'Limited Mode'}</span></div>
+          </div>
+          <div className="mt-auto border-t border-white/10 p-5 sm:p-6">
+            <button type="button" onClick={() => { setProfileMenuOpen(false); setTab('profile'); }} className="flex min-h-12 w-full items-center gap-3 border border-white/15 px-4 text-sm font-semibold text-white/85 transition-colors hover:border-[#ffcf70]/50 hover:bg-white/[0.06]"><UserRound size={17} className="text-[#ffcf70]"/>Account settings<ArrowRight size={16} className="ml-auto"/></button>
+            <button type="button" onClick={() => void logout()} className="mt-2 flex min-h-12 w-full items-center gap-3 border border-white/15 px-4 text-sm font-semibold text-white/85 transition-colors hover:border-[#ffcf70]/50 hover:bg-white/[0.06]"><LogOut size={17} className="text-[#ffcf70]"/>Sign out</button>
+          </div>
         </aside>
-        <main className="min-w-0 w-full max-w-[calc(100vw-2rem)] overflow-x-hidden py-5 lg:max-w-none lg:py-8">
-          <div className="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between"><div className="min-w-0 max-w-full"><p className="text-xs uppercase tracking-widest text-amber-400">Traveler workspace</p><h1 className="break-words text-2xl font-bold">{tab === 'overview' ? 'Dashboard' : tab === 'planner' ? 'Build your trip plan' : tab === 'compare' ? 'Compare travel options' : tab === 'market' ? 'Stay booking' : tab === 'bookings' ? 'Trips' : tab[0].toUpperCase()+tab.slice(1)}</h1></div><span className={`w-fit shrink-0 text-xs px-3 py-1 rounded-full border ${data.user.profileStatus==='verified'?'border-emerald-500 text-emerald-300':'border-amber-500 text-amber-300'}`}>{data.user.profileStatus==='verified'?'Verified profile':'Limited Mode'}</span></div>
-          {message && <div role="status" className="mb-5 border border-slate-700 bg-slate-900 px-4 py-3 rounded-md text-sm">{message}</div>}
+      </div>}
 
-          {tab === 'overview' && <div className="space-y-6">
-            <section className="relative min-h-[310px] overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/20">
-              <Image src="/beach-bg.png" alt="Tropical beach inspiration for your next trip" fill priority sizes="(max-width: 1024px) 100vw, 980px" className="object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#06111f] via-[#06111f]/85 to-[#06111f]/15" />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#06111f]/80 via-transparent to-transparent" />
-              <div className="relative flex min-h-[310px] w-full max-w-2xl flex-col items-start justify-center p-6 sm:p-10">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-slate-950/35 px-3 py-1.5 text-xs font-semibold text-cyan-100 backdrop-blur"><Sparkles size={14} className="text-amber-300"/>AI-powered trip planning</span>
-                <p className="mt-5 text-sm font-medium text-white/70">Welcome back, {data.user.name.split(' ')[0]}.</p>
-                <h2 className="mt-2 max-w-xl text-3xl font-black leading-tight tracking-tight text-white sm:text-4xl">Your next great story starts with a place.</h2>
-                <p className="mt-3 max-w-lg text-sm leading-6 text-slate-200/80">Turn your dates, interests, and budget into a personalized itinerary—complete with stays, weather, and cost estimates.</p>
-                <button onClick={()=>setTab('planner')} className="group mt-6 inline-flex items-center gap-2 rounded-full bg-amber-400 px-5 py-3 text-sm font-extrabold text-slate-950 shadow-lg shadow-amber-950/30 transition hover:-translate-y-0.5 hover:bg-amber-300">Plan a new trip <ArrowRight size={16} className="transition-transform group-hover:translate-x-1"/></button>
-              </div>
-            </section>
+      {tab !== 'overview' && <div className="border-b border-white/10 bg-[#102622] px-4 py-3 sm:px-6"><div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-1 text-xs text-white/52"><strong className="text-white/78">Current trip context</strong><span>{selectedDestination ? destination : 'Choose and confirm a destination'}</span><span>{startDate} to {endDate}</span><span>{currencyResolved && Number.isFinite(budget) ? formatMoney(budget, currency) : 'Currency auto-detected after destination'}{currencyResolved&&<ReferenceAmount amount={budget} currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>}</span>{itinerary && <span className="text-emerald-200">Generated plan available</span>}</div></div>}
 
-            <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              {overviewStats.map(({label,value,description,icon:StatIcon,color,surface})=><article key={label} className="group rounded-2xl border border-slate-800/90 bg-slate-900/55 p-4 transition hover:-translate-y-0.5 hover:border-slate-700 hover:bg-slate-900/80"><div className="flex items-start justify-between gap-3"><p className="text-xs uppercase tracking-wider text-slate-500">{label}</p><span className={`grid h-9 w-9 place-items-center rounded-xl ${surface} ${color}`}><StatIcon size={17}/></span></div><strong className="mt-2 block truncate text-xl text-slate-100">{value}</strong><p className="mt-1 truncate text-xs text-slate-500">{description}</p></article>)}
-            </section>
+      <div data-traveler-shell className="mx-auto grid w-full max-w-[1600px] grid-cols-[minmax(0,1fr)] gap-0 px-4 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-10 lg:px-6 xl:gap-14">
+        <aside className="min-w-0 max-w-[calc(100vw-2rem)] py-4 lg:sticky lg:top-24 lg:max-w-none lg:self-start lg:py-8">
+          <div data-traveler-rail className="lg:flex lg:h-[calc(100vh-144px)] lg:w-[248px] lg:flex-col">
+            <nav aria-label="Traveler workspace" className="traveler-mobile-nav flex max-w-full snap-x gap-px overflow-x-auto border border-white/10 bg-white/10 p-px lg:flex-col lg:overflow-visible">
+              {([['overview','Home',Home],['planner','Plan a trip',MapPin],['bookings','Saved trips',CalendarDays],['notifications','Notifications',Bell]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => id === 'planner' ? startNewTrip() : setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}{id === 'notifications' && data.notifications.filter((item) => !item.readAt).length > 0 && <span className="ml-auto bg-amber-300 px-1.5 text-[10px] font-black text-[#14231f]">{data.notifications.filter((item) => !item.readAt).length}</span>}</button>)}
+              <div className="hidden px-4 pb-2 pt-6 text-[10px] font-bold uppercase tracking-[0.16em] text-white/28 lg:block">Use with a plan</div>
+              {([['budget','Budget review',WalletCards],['compare','Travel options',Plane],['market','Local stays',BedDouble]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}</button>)}
+            </nav>
+            <div className="mt-8 hidden border-t border-white/10 pt-5 lg:block"><p className="max-w-[23ch] text-xs leading-5 text-white/38">Start with Plan a trip. Budget and travel options become useful after TravelMate creates your itinerary.</p></div>
+          </div>
+        </aside>
 
-            <section className="grid gap-4 lg:grid-cols-[1.35fr_.65fr]">
-              <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/45">
-                <div className="relative h-44 bg-slate-900 sm:h-52"><Image src={upcomingTripImage} alt={upcomingTrip ? `Preview of ${upcomingTrip.destination}` : 'Travel destination inspiration'} fill sizes="(max-width: 1024px) 100vw, 620px" className="object-cover"/><div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-transparent"/><div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-5"><div><p className="text-xs font-semibold uppercase tracking-wider text-cyan-300">Next trip</p><h2 className="mt-1 text-xl font-bold text-white">{upcomingTrip ? upcomingTrip.destination : 'No upcoming trip yet'}</h2></div><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-white/15 bg-slate-950/50 text-cyan-200 backdrop-blur"><CalendarDays size={20}/></span></div></div>
-                <div className="p-5 sm:px-6">
-                  {upcomingTrip ? <><div className="grid gap-3 sm:grid-cols-3"><div><p className="text-xs text-slate-500">Dates</p><strong className="text-sm">{upcomingTrip.startDate} – {upcomingTrip.endDate}</strong></div><div><p className="text-xs text-slate-500">Travelers</p><strong className="text-sm">{upcomingTrip.travelers}</strong></div><div><p className="text-xs text-slate-500">Budget</p><strong className="text-sm">PHP {upcomingTrip.budget.toLocaleString()}</strong></div></div><button onClick={()=>loadTrip(upcomingTrip,true)} className="group mt-5 inline-flex items-center gap-2 text-sm font-bold text-amber-300 hover:text-amber-200">Open saved plan <ArrowRight size={15} className="transition-transform group-hover:translate-x-1"/></button></> : <div className="rounded-lg border border-dashed border-slate-700 p-5 text-center"><p className="text-sm text-slate-400">Create and save an itinerary to see your next trip here.</p><button onClick={()=>setTab('planner')} className="mt-3 text-sm font-bold text-amber-300 hover:text-amber-200">Start planning</button></div>}
-                </div>
-              </div>
-              <div className="rounded-2xl border border-slate-800 bg-gradient-to-b from-slate-900/70 to-slate-900/35 p-5 sm:p-6"><p className="text-xs uppercase tracking-wider text-emerald-300">Quick actions</p><h2 className="mt-1 font-bold">What would you like to do?</h2><div className="mt-4 grid gap-2">{[[MapPin,'Build a trip','planner'],[Plane,'Compare prices','compare'],[CalendarDays,'Open saved trips','bookings']] .map(([Icon,label,target])=>{const ActionIcon=Icon as typeof MapPin;return <button key={String(label)} onClick={()=>setTab(target as Tab)} className="group flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950/45 px-4 py-3 text-left text-sm font-semibold transition hover:border-amber-400/30 hover:bg-slate-900"><span className="flex items-center gap-3"><span className="grid h-8 w-8 place-items-center rounded-lg bg-slate-800 text-slate-300 group-hover:bg-amber-400/10 group-hover:text-amber-300"><ActionIcon size={16}/></span>{String(label)}</span><ArrowRight size={14} className="text-slate-600 transition-transform group-hover:translate-x-1 group-hover:text-amber-300"/></button>})}</div><button onClick={()=>setTab('profile')} className="mt-4 flex w-full items-center gap-3 border-t border-slate-800 pt-4 text-left"><span className="grid h-9 w-9 place-items-center rounded-xl bg-amber-400 text-xs font-black text-slate-950">{userInitials}</span><span className="min-w-0 flex-1"><strong className="block truncate text-sm">{data.user.name}</strong><span className="block text-[11px] text-slate-500">Manage profile & verification</span></span><ArrowRight size={14} className="text-slate-600"/></button></div>
-            </section>
-          </div>}
+        <main id="traveler-main-content" tabIndex={-1} className="min-w-0 w-full max-w-[calc(100vw-2rem)] overflow-x-hidden pb-20 pt-5 outline-none lg:max-w-none lg:pt-10">
+          <div className="mb-7 flex flex-col items-start gap-3 border-b border-white/10 pb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+            <div className="min-w-0 max-w-4xl"><h1 ref={workspaceHeadingRef} tabIndex={-1} className="break-words text-[clamp(2rem,4vw,3.75rem)] font-black leading-[0.96] tracking-[-0.05em] outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1d1a]">{currentTabCopy.title}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-white/52">{currentTabCopy.description}</p></div>
+            <span className={`w-fit shrink-0 border px-3 py-2 text-[11px] font-bold tracking-wide ${data.user.profileStatus==='verified'?'border-emerald-400/40 bg-emerald-400/10 text-emerald-200':'border-amber-300/40 bg-amber-300/10 text-amber-200'}`}>{data.user.profileStatus==='verified'?'Verified profile':'Limited Mode'}</span>
+          </div>
+          {message && <div role="status" aria-live="polite" className="mb-6 border-l-2 border-amber-300 bg-white/[0.055] px-4 py-3 text-sm text-white/80">{message}</div>}
+
+          {tab === 'overview' && <TravelerJourneyOverview
+            userName={data.user.name}
+            profileVerified={data.user.profileStatus === 'verified'}
+            savedTripCount={data.trips.length}
+            currentPlan={itinerary ? { destination: itinerary.destination, days: itinerary.days.length } : null}
+            upcomingTrip={upcomingTrip ? { destination: upcomingTrip.destination, startDate: upcomingTrip.startDate, endDate: upcomingTrip.endDate, travelers: upcomingTrip.travelers, budget: upcomingTrip.budget, currency: upcomingTrip.currency } : null}
+            referenceCurrency={referenceCurrency}
+            exchangeQuotes={exchangeQuotes}
+            onStartPlanning={startNewTrip}
+            onOpenCurrentPlan={() => setTab('planner')}
+            onOpenUpcomingTrip={() => { if (upcomingTrip) loadTrip(upcomingTrip, true); }}
+            onOpenSavedTrips={() => setTab('bookings')}
+            onOpenBudget={() => setTab('budget')}
+            onOpenOptions={() => setTab('compare')}
+            onOpenAccount={() => setTab('profile')}
+          />}
 
           {tab === 'planner' && <>
             <div className="space-y-5">
-              <section className="relative min-h-[210px] overflow-hidden rounded-3xl border border-white/10 shadow-xl shadow-black/20">
-                <Image src="/mountain-hero-bg.png" alt="Mountain destination at sunrise" fill priority sizes="(max-width: 1024px) 100vw, 980px" className="object-cover object-center" />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#07111f] via-[#07111f]/85 to-[#07111f]/20" />
-                <div className="relative flex min-h-[210px] w-full max-w-full flex-col justify-center p-6 sm:p-8">
-                  <span className="inline-flex w-fit items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-1.5 text-xs font-bold text-amber-200 backdrop-blur"><Sparkles size={14}/>Smart trip builder</span>
-                  <h2 className="mt-4 max-w-lg text-2xl font-black tracking-tight sm:text-3xl">Let&apos;s design a trip that feels like you.</h2>
-                  <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">Share the essentials and a few preferences. TravelMate will balance your itinerary, estimated budget, weather, and stays.</p>
-                  <div className="mt-5 flex flex-wrap items-center gap-2 text-[11px] font-semibold"><span className="rounded-full bg-amber-400 px-3 py-1.5 text-slate-950">1&nbsp; Trip details</span><span className="rounded-full border border-white/15 bg-slate-950/40 px-3 py-1.5 text-slate-200 backdrop-blur">2&nbsp; Personalize</span><span className="rounded-full border border-white/15 bg-slate-950/40 px-3 py-1.5 text-slate-200 backdrop-blur">3&nbsp; Your itinerary</span></div>
+              <section className="relative min-h-[300px] overflow-hidden border border-white/10 bg-[#efe8d6] text-[#14231f]">
+                <div className="absolute inset-y-0 right-0 w-[48%] overflow-hidden"><Image data-dashboard-image src="/mountain-hero-bg.png" alt="Mountain destination at sunrise" fill priority loading="eager" sizes="(max-width: 1024px) 100vw, 560px" className="object-cover object-center" /><div className="absolute inset-0 bg-gradient-to-r from-[#efe8d6] via-[#efe8d6]/30 to-transparent"/></div>
+                <div className="relative flex min-h-[300px] w-full max-w-4xl flex-col justify-end p-6 sm:p-10">
+                  <p className="text-sm font-semibold text-[#4a655e]">How this page works</p>
+                  <h2 className="mt-3 max-w-3xl text-4xl font-black leading-[0.95] tracking-[-0.055em] sm:text-6xl">Four details are enough to begin.</h2>
+                  <p className="mt-5 max-w-2xl text-sm leading-6 text-[#49635c]">Choose a destination, dates, group size, and total budget. Add optional preferences if you want more personalization, then generate a plan to review before saving.</p>
                 </div>
               </section>
 
-              <section className="grid gap-4 xl:grid-cols-[1.02fr_.98fr] [&_input]:min-h-12 [&_select]:min-h-12">
-                <article className="rounded-2xl border border-slate-800 bg-gradient-to-b from-slate-900/80 to-slate-900/35 p-5 shadow-lg shadow-black/10 sm:p-6">
-                  <div className="mb-5 flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-cyan-400/10 text-cyan-300"><MapPin size={19}/></span><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-cyan-300">Step 1</p><h2 className="font-bold">Trip essentials</h2><p className="mt-0.5 text-xs text-slate-500">Where, when, and how much?</p></div></div>
+              <section aria-label="Trip brief" className="relative overflow-hidden border border-amber-200/20 bg-[#ffcf70] p-4 text-[#14231f] shadow-[0_18px_55px_rgba(0,0,0,.14)] sm:p-5">
+                <div className="absolute right-0 top-0 h-full w-1/3 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,.42),transparent_52%)]" aria-hidden="true" />
+                <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div><p className="text-[10px] font-black uppercase tracking-[.18em] text-[#49635c]">Your trip brief</p><h2 className="mt-1 text-xl font-black tracking-[-0.035em]">Shape the outline, then let TravelMate fill the days.</h2></div>
+                  <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-3 lg:min-w-[540px]">
+                    <div className="flex items-center gap-3 border border-[#14231f]/15 bg-white/25 px-3 py-2"><MapPin size={16} className="shrink-0 text-[#b24d32]" /><span><span className="block text-[10px] font-bold uppercase tracking-wider text-[#49635c]">Going to</span><strong className="block truncate">{selectedDestination ? destination : 'Choose a destination'}</strong></span></div>
+                    <div className="flex items-center gap-3 border border-[#14231f]/15 bg-white/25 px-3 py-2"><CalendarDays size={16} className="shrink-0 text-[#b24d32]" /><span><span className="block text-[10px] font-bold uppercase tracking-wider text-[#49635c]">When</span><strong className="block">{startDate} → {endDate}</strong></span></div>
+                    <div className="flex items-center gap-3 border border-[#14231f]/15 bg-white/25 px-3 py-2"><WalletCards size={16} className="shrink-0 text-[#b24d32]" /><span><span className="block text-[10px] font-bold uppercase tracking-wider text-[#49635c]">Budget</span><strong className="block">{currencyResolved && Number.isFinite(budget) ? formatMoney(budget, currency) : 'Set after destination'}</strong></span></div>
+                  </div>
+                </div>
+              </section>
+
+              <section className="relative grid grid-flow-dense gap-px overflow-hidden border border-emerald-100/10 bg-emerald-100/10 xl:grid-cols-12 [&_input]:min-h-12 [&_select]:min-h-12 [&_input]:border-white/15 [&_select]:border-white/15 [&_label]:text-white/75">
+                <article className="bg-[#14302a] p-5 sm:p-7 xl:col-span-7">
+                  <div className="mb-7 flex items-start gap-4 border-b border-white/12 pb-5"><span className="grid h-11 w-11 shrink-0 place-items-center border border-cyan-300/35 bg-cyan-300/5 text-cyan-200"><MapPin size={19}/></span><div><p className="text-[10px] font-black uppercase tracking-[.16em] text-cyan-200/70">01 · Start with the essentials</p><h2 className="mt-1 text-xl font-black tracking-[-0.03em]">Required trip details</h2><p className="mt-1 text-xs text-white/50">These fields give TravelMate enough information to build a plan.</p></div></div>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="sm:col-span-2 text-xs font-medium text-slate-300">Destination<input required minLength={2} list="global-destinations" value={destination} onChange={e=>changeDestination(e.target.value)} placeholder="e.g. Kyoto, Japan" autoComplete="off" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition placeholder:text-slate-600 hover:border-slate-600 focus:border-cyan-400"/><datalist id="global-destinations">{locationSuggestions.map(location=><option key={location.id} value={location.label}/>)}</datalist></label>
-                    <label className="sm:col-span-2 text-xs font-medium text-slate-300">Total group budget (PHP)<span className="relative mt-1.5 block"><span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 font-bold text-amber-300">₱</span><input type="number" min="1000" value={budget} onChange={e=>setBudget(Number(e.target.value))} className="w-full rounded-xl border border-slate-700 bg-slate-950/80 py-2 pl-9 pr-4 text-white transition hover:border-slate-600 focus:border-amber-400" /></span></label>
-                    <label className="text-xs font-medium text-slate-300">Start date<input required type="date" min={new Date().toISOString().slice(0,10)} value={startDate} onChange={e=>{const next=e.target.value;setStartDate(next);if(endDate<next||endDate>addDays(next,13))setEndDate(addDays(next,6));setLiveAccommodations([]);setSelectedLiveStayId('');setStayMessage('');setTravelOptions(null);setComparisonMessage('');setItinerary(null);setWeather(null);}} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-cyan-400" /></label>
-                    <label className="text-xs font-medium text-slate-300">End date<input required type="date" min={startDate} max={maximumEndDate} value={endDate} onChange={e=>{setEndDate(e.target.value);setLiveAccommodations([]);setSelectedLiveStayId('');setStayMessage('');setTravelOptions(null);setComparisonMessage('');setItinerary(null);setWeather(null);}} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-cyan-400" /><span className={`mt-1.5 block text-[10px] ${tripDays>=1&&tripDays<=14?'text-emerald-300':'text-amber-300'}`}>{tripDays>=1&&tripDays<=14?`${tripDays} travel day${tripDays===1?'':'s'} selected`:'Choose 1–14 days'}</span></label>
+                    <div className="relative sm:col-span-2 text-xs font-medium text-slate-300"><label htmlFor="destination-search">Destination</label><input id="destination-search" required minLength={2} role="combobox" aria-autocomplete="list" aria-expanded={locationSuggestions.length>0} aria-controls="destination-suggestions" aria-activedescendant={activeSuggestionIndex>=0?`destination-option-${activeSuggestionIndex}`:undefined} aria-describedby="destination-status" value={destination} onChange={e=>{changeDestination(e.target.value);setActiveSuggestionIndex(-1);}} onKeyDown={handleDestinationKeyDown} placeholder="Search city, province, or country" autoComplete="off" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition placeholder:text-slate-600 hover:border-slate-600 focus:border-cyan-400"/>{locationSuggestions.length>0&&<ul id="destination-suggestions" role="listbox" className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-xl border border-slate-700 bg-slate-950 p-1 shadow-2xl">{locationSuggestions.map((location,index)=><li id={`destination-option-${index}`} key={location.id} role="option" aria-selected={activeSuggestionIndex===index||selectedDestination?.id===location.id}><button type="button" onMouseEnter={()=>setActiveSuggestionIndex(index)} onClick={()=>{confirmDestination(location);setActiveSuggestionIndex(-1);}} className={`w-full rounded-lg px-3 py-2 text-left hover:bg-slate-800 focus:bg-slate-800 ${activeSuggestionIndex===index?'bg-slate-800':''}`}><strong className="block text-sm text-white">{location.name}</strong><span className="text-[11px] text-slate-400">{location.contextLabel}</span></button></li>)}</ul>}<p id="destination-status" aria-live="polite" className={`mt-1 text-[11px] ${selectedDestination?'text-emerald-300':'text-slate-500'}`}>{locationsBusy?'Searching destinations...':selectedDestination?`Confirmed: ${selectedDestination.label}`:locationMessage||'Choose a suggestion to confirm the destination.'}</p>{!selectedDestination&&!locationsBusy&&destination.trim().length>=2&&locationMessage&&<button type="button" onClick={()=>confirmManualDestination(destination)} className="mt-2 border border-amber-300/40 px-3 py-2 text-xs font-bold text-amber-200">Use “{destination.trim()}” manually</button>}</div>
+                    <label className="text-xs font-medium text-slate-300">{partyBudgetLabel(partyType, travelers)}<input type="number" min="0" step={ZERO_DECIMAL_CURRENCIES.includes(currency)?'1':'0.01'} value={budget} onChange={e=>setBudget(Number(e.target.value))} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition hover:border-slate-600 focus:border-amber-400" /><span className="mt-1.5 block text-[11px] font-normal text-amber-200">{budget > 0 ? partyBudgetExplanation(partyType, travelers) : 'Enter your total trip budget to continue.'}</span><ReferenceAmount amount={budget} currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} className="mt-1 block text-[11px] font-normal text-cyan-200"/></label>
+                    <div className="text-xs font-medium text-slate-300"><div className="grid grid-cols-2 gap-2"><label>Destination currency<select value={selectedDestination&&currencyResolved?currency:''} disabled={!selectedDestination||contextBusy||!currencyNeedsFallback} onChange={e=>changeCurrency(e.target.value as CurrencyCode)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-amber-400 disabled:opacity-60"><option value="">{contextBusy?'Detecting...':selectedDestination?'Select':'Auto'}</option>{SUPPORTED_CURRENCIES.map(code=><option key={code} value={code}>{code}</option>)}</select></label><label>Show equivalents in<select value={referenceCurrency} onChange={e=>setReferenceCurrency(e.target.value as CurrencyCode)} className="mt-1.5 w-full rounded-xl border border-cyan-700/70 bg-slate-950/80 px-3 py-2 text-white transition hover:border-cyan-500 focus:border-cyan-400">{SUPPORTED_CURRENCIES.map(code=><option key={code} value={code}>{code} · {CURRENCY_NAMES[code]}</option>)}</select></label></div><span className="mt-1.5 block text-[10px] text-slate-500">{currencyResolved?`${currency} (${CURRENCY_NAMES[currency]}) detected for the destination.`:currencyNeedsFallback?'Automatic detection unavailable; choose a destination currency.':'Select a destination first.'}</span>{currencyResolved&&currency!==referenceCurrency&&<span className="mt-1 block text-[10px] text-cyan-200/70">{exchangeBusy?'Loading reference rate...':exchangeQuotes[currency]?`1 ${currency} ≈ ${formatMoney(exchangeQuotes[currency]!.rate,referenceCurrency)} · Frankfurter reference dated ${exchangeQuotes[currency]!.asOf}`:exchangeMessage||'Reference conversion unavailable.'}</span>}</div>
+                    <label className="text-xs font-medium text-slate-300">Start date<input required type="date" min={localDateInputValue()} value={startDate} onChange={e=>{const next=e.target.value;setStartDate(next);if(endDate<next||endDate>addCalendarDays(next,13))setEndDate(addCalendarDays(next,6));setSelectedLiveStayId('');setTravelOptions(null);setComparisonMessage('');setItinerary(null);setWeather(null);}} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-cyan-400" /></label>
+                    <label className="text-xs font-medium text-slate-300">End date<input required type="date" min={startDate} max={maximumEndDate} value={endDate} onChange={e=>{setEndDate(e.target.value);setSelectedLiveStayId('');setTravelOptions(null);setComparisonMessage('');setItinerary(null);setWeather(null);}} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-cyan-400" /><span className={`mt-1.5 block text-[10px] ${tripDays>=1&&tripDays<=14?'text-emerald-300':'text-amber-300'}`}>{tripDays>=1&&tripDays<=14?`${tripDays} travel day${tripDays===1?'':'s'} selected`:'Choose 1–14 days'}</span></label>
                     <label className="text-xs font-medium text-slate-300">Traveling as<select value={partyType} onChange={e=>changePartyType(e.target.value as PartyType)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-cyan-400">{Object.entries(PARTY_TYPE_LABELS).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
-                    <label className="text-xs font-medium text-slate-300">Travelers<input type="number" min={partyType==='solo'?1:2} max="20" disabled={partyType==='solo'||partyType==='couple'} value={travelers} onChange={e=>{setTravelers(Number(e.target.value));setLiveAccommodations([]);setSelectedLiveStayId('');setStayMessage('');setTravelOptions(null);setComparisonMessage('');}} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition hover:border-slate-600 focus:border-cyan-400 disabled:opacity-50" /></label>
+                    <label className="text-xs font-medium text-slate-300">Travelers<input type="number" min={partyType==='solo'?1:2} max="20" disabled={partyType==='solo'||partyType==='couple'} value={travelers} onChange={e=>{setTravelers(Number(e.target.value));setSelectedLiveStayId('');setTravelOptions(null);setComparisonMessage('');}} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition hover:border-slate-600 focus:border-cyan-400 disabled:opacity-50" /></label>
                   </div>
                 </article>
 
-                <article className="rounded-2xl border border-slate-800 bg-gradient-to-b from-slate-900/80 to-slate-900/35 p-5 shadow-lg shadow-black/10 sm:p-6">
-                  <div className="mb-5 flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-400/10 text-violet-300"><Sparkles size={19}/></span><div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-violet-300">Step 2</p><h2 className="font-bold">Make it yours</h2><p className="mt-0.5 text-xs text-slate-500">Optional choices for a more personal plan.</p></div></div>
+                <article className="bg-[#19362f] p-5 sm:p-7 xl:col-span-5">
+                  <div className="mb-7 flex items-start gap-4 border-b border-white/12 pb-5"><span className="grid h-11 w-11 shrink-0 place-items-center border border-amber-300/35 bg-amber-300/5 text-amber-200"><Compass size={19}/></span><div><p className="text-[10px] font-black uppercase tracking-[.16em] text-amber-200/70">02 · Make it feel like yours</p><h2 className="mt-1 text-xl font-black tracking-[-0.03em]">Optional preferences</h2><p className="mt-1 text-xs text-white/50">Skip these if you are unsure. You can revise them later.</p></div></div>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="sm:col-span-2 text-xs font-medium text-slate-300"><div className="flex items-center justify-between gap-2"><label htmlFor="accommodation">Accommodation</label><button type="button" disabled={staysBusy||destination.trim().length<2||tripDays<1||tripDays>14} onClick={()=>void searchLiveAccommodations()} className="font-bold text-cyan-300 hover:text-cyan-200 disabled:opacity-50">{staysBusy?'Searching...':'Find live stays'}</button></div><select id="accommodation" value={selectedLiveStayId?`live:${selectedLiveStayId}`:selectedStayId?`local:${selectedStayId}`:''} onChange={e=>{const [source,...idParts]=e.target.value.split(':');const id=idParts.join(':');setSelectedStayId(source==='local'?id:'');setSelectedLiveStayId(source==='live'?id:'');}} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-violet-400"><option value="">No accommodation</option>{stayOptions.length>0&&<optgroup label="TravelMate stays">{stayOptions.map(stay=><option key={stay.id} value={`local:${stay.id}`}>{stay.name} - PHP {stay.price.toLocaleString()}/night</option>)}</optgroup>}{liveAccommodations.length>0&&<optgroup label="Amadeus availability">{liveAccommodations.map(stay=><option key={stay.id} value={`live:${stay.id}`}>{stay.isLive?'LIVE':'TEST'} · {stay.name} - {stay.currency} {stay.nightlyRate.toLocaleString()}/night</option>)}</optgroup>}</select>{selectedLiveAccommodation&&<p className="mt-1 text-[11px] text-cyan-200">{selectedLiveAccommodation.currency} {selectedLiveAccommodation.total.toLocaleString()} for {Math.max(1,tripDays-1)} night{Math.max(1,tripDays-1)===1?'':'s'} · {selectedLiveAccommodation.roomDescription}</p>}{stayMessage&&<p className="mt-1 text-[11px] text-slate-500">{stayMessage}</p>}</div>
+                    <div className="sm:col-span-2 text-xs font-medium text-slate-300"><div className="flex items-center justify-between gap-2"><label htmlFor="accommodation">Accommodation</label><button type="button" disabled={!selectedDestination||!currencyResolved||staysBusy||tripDays<1||tripDays>14} onClick={retryAccommodations} className="font-bold text-cyan-300 hover:text-cyan-200 disabled:opacity-50">{staysBusy?'Finding stays...':'Refresh stays'}</button></div><select id="accommodation" disabled={!selectedDestination||!currencyResolved||staysBusy} value={selectedLiveStayId?`live:${selectedLiveStayId}`:selectedStayId?`local:${selectedStayId}`:''} onChange={e=>{const [source,...idParts]=e.target.value.split(':');const id=idParts.join(':');setSelectedStayId(source==='local'?id:'');setSelectedLiveStayId(source==='live'?id:'');}} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-violet-400 disabled:opacity-60"><option value="">{!selectedDestination?'Select a destination first':staysBusy?'Finding stays...':accommodationRecommendation?`Automatic recommendation: ${accommodationRecommendation.accommodation.name}`:stayOptions.length||liveAccommodations.some(stay=>stay.currency===currency)?'No provider recommendation available':'No accommodation data available'}</option>{stayOptions.length>0&&<optgroup label="TravelMate stays (PHP)">{stayOptions.map(stay=><option key={stay.id} value={`local:${stay.id}`}>{stay.name} - {formatMoney(stay.price,'PHP')}/night</option>)}</optgroup>}{liveAccommodations.some(stay=>stay.currency===currency)&&<optgroup label={`Provider accommodations (${currency})`}>{liveAccommodations.filter(stay=>stay.currency===currency).map(stay=><option key={stay.id} value={`live:${stay.id}`}>{stay.isLive?'LIVE':'TEST'} · {stay.type} · {stay.name} - {formatMoney(stay.nightlyRate,currency)}/night{stay.rating?` · ${stay.rating}/5`:''}</option>)}</optgroup>}</select>{accommodationRecommendation&&!selectedStayId&&!selectedLiveStayId&&<p className="mt-1 text-[11px] text-emerald-300">TravelMate recommends {accommodationRecommendation.accommodation.name} because it {accommodationRecommendation.reason}. This signed provider offer will be included automatically unless you choose another stay.</p>}{currencyResolved&&currency!=='PHP'&&<p className="mt-1 text-[11px] text-slate-500">TravelMate marketplace stays use PHP; only external offers returned in {currency} can be attached without an exchange-rate assumption.</p>}{selectedLiveAccommodation&&<><p className="mt-1 text-[11px] text-cyan-200">{selectedLiveAccommodation.type} (inferred from provider listing name){selectedLiveAccommodation.rating?` · ${selectedLiveAccommodation.rating}/5`:''} · {selectedLiveAccommodation.address} · {formatMoney(selectedLiveAccommodation.total,currency)} for {Math.max(1,tripDays-1)} night{Math.max(1,tripDays-1)===1?'':'s'} · {selectedLiveAccommodation.roomDescription}</p><ReferenceAmount amount={selectedLiveAccommodation.total} currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></>}{stayMessage&&<p aria-live="polite" className="mt-1 text-[11px] text-slate-500">{stayMessage}</p>}{selectedDestination&&<div className="mt-2"><ProviderFreshness freshness={stayFreshness}/></div>}</div>
                     <label className="sm:col-span-2 text-xs font-medium text-slate-300">Interests<input value={interests} onChange={e=>setInterests(e.target.value)} placeholder="food, culture, nature" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition placeholder:text-slate-600 hover:border-slate-600 focus:border-violet-400" /></label>
                     <label className="text-xs font-medium text-slate-300">Travel style<select value={travelStyle} onChange={e=>setTravelStyle(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-violet-400"><option value="budget">Budget</option><option value="balanced">Balanced</option><option value="comfort">Comfort</option><option value="luxury">Luxury</option><option value="family-friendly">Family-friendly</option></select></label>
-                    <label className="text-xs font-medium text-slate-300">Stay preference<select value={accommodationPreference} onChange={e=>setAccommodationPreference(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-violet-400"><option value="budget-friendly">Budget-friendly</option><option value="central location">Central location</option><option value="resort">Resort</option><option value="family-friendly">Family-friendly</option><option value="luxury">Luxury</option></select></label>
+                    <label className="text-xs font-medium text-slate-300">Stay preference<select value={accommodationPreference} onChange={e=>setAccommodationPreference(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-violet-400"><option value="budget-friendly">Budget-friendly</option><option value="central location">Central location</option><option value="hostel">Hostel</option><option value="condo">Condo / apartment</option><option value="resort">Resort</option><option value="family-friendly">Family-friendly</option><option value="luxury">Luxury</option></select></label>
                     <label className="sm:col-span-2 text-xs font-medium text-slate-300">Preferred activities<input value={preferredActivities} onChange={e=>setPreferredActivities(e.target.value)} placeholder="island hopping, museums" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition placeholder:text-slate-600 hover:border-slate-600 focus:border-violet-400" /></label>
-                    <label className="sm:col-span-2 text-xs font-medium text-slate-300">Transportation<select value={transportationPreference} onChange={e=>setTransportationPreference(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-violet-400"><option value="public transport and walking">Public transport & walking</option><option value="private car">Private car</option><option value="ride-hailing and taxi">Ride-hailing & taxi</option><option value="motorbike">Motorbike</option><option value="mixed practical transport">Mixed practical transport</option></select></label>
+                    <div className="sm:col-span-2 text-xs font-medium text-slate-300"><div className="flex items-center justify-between gap-2"><label htmlFor="transportation">Transportation</label>{selectedDestination&&<button type="button" disabled={contextBusy} onClick={retryContext} className="font-bold text-cyan-300 hover:text-cyan-200 disabled:opacity-50">{contextBusy?'Finding options...':'Refresh options'}</button>}</div><select id="transportation" disabled={!selectedDestination||contextBusy||transportationOptions.length===0} value={transportationPreference} onChange={e=>setTransportationPreference(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-violet-400 disabled:opacity-60"><option value="">{!selectedDestination?'Select a destination first':contextBusy?'Finding transportation options...':transportationOptions.length?'Choose a destination-relevant mode':'No verified options available'}</option>{transportationOptions.map(mode=><option key={mode.id} value={mode.label.toLowerCase()}>{mode.label}</option>)}</select>{contextMessage&&<p aria-live="polite" className="mt-1 text-[11px] text-slate-500">{contextMessage}</p>}</div>
                   </div>
+                </article>
+                <article className="bg-[#102822] p-5 sm:p-7 xl:col-span-12">
+                  <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-[10px] font-black uppercase tracking-[.16em] text-white/45">03 · Add context if you need it</p><h2 className="mt-1 text-xl font-black tracking-[-0.03em]">Trip origin and optional expenses</h2><p className="mt-1 max-w-3xl text-xs leading-5 text-white/52">Your starting location supports flight comparison. Add pre-trip expenses only when you want them included in the budget.</p></div>{includePreTripCosts&&<div className="text-right"><span className="block text-[10px] font-bold uppercase tracking-wider text-amber-200">Pre-trip total</span><strong className="text-xl text-amber-300">{formatMoney(preTripTotal,currency)}</strong></div>}</div>
+                  <div className="mt-6 grid gap-4 border-t border-white/10 pt-5"><div><div className="flex flex-wrap items-center justify-between gap-3"><label htmlFor="flight-origin" className="text-xs font-medium text-slate-300">Starting location</label><button type="button" onClick={useCurrentLocation} disabled={currentLocationBusy} className="inline-flex min-h-9 items-center gap-2 border border-cyan-300/30 px-3 py-2 text-[11px] font-bold text-cyan-200 transition hover:border-cyan-200 hover:bg-cyan-200 hover:text-[#14231f] disabled:opacity-50"><LocateFixed size={14}/>{currentLocationBusy?'Finding your location...':'Use my current location'}</button></div><input id="flight-origin" value={flightOrigin} maxLength={120} onChange={e=>{setFlightOrigin(e.target.value);setTravelOptions(null);setCurrentLocationMessage('');}} placeholder="Cordova, Cebu or Austin, Texas" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white placeholder:text-slate-600"/><span className="mt-1 block text-[10px] font-normal text-slate-500">Used as the origin when comparing flights. Your browser will ask before sharing your location.</span>{currentLocationMessage&&<p aria-live="polite" className="mt-2 text-[11px] text-cyan-200/80">{currentLocationMessage}</p>}</div><button type="button" aria-pressed={includePreTripCosts} onClick={()=>setIncludePreTripCosts(value=>!value)} className={`min-h-12 w-fit border px-5 py-3 text-sm font-bold transition ${includePreTripCosts?'border-amber-300 bg-amber-300 text-[#14231f]':'border-white/20 text-white hover:border-amber-300/60'}`}>{includePreTripCosts?'Remove pre-trip expenses':'Add pre-trip expenses (optional)'}</button></div>
+                  {includePreTripCosts&&<div className="mt-6 border-t border-white/10 pt-5"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{([['airportTransfers','Airport transfers'],['passport','Passport / renewal'],['visaOrAuthorization','Visa / authorization'],['departureTaxes','Travel tax'],['insurance','Insurance'],['other','Other costs']] as const).map(([field,label])=><label key={field} className="text-xs font-medium text-slate-300">{label}<input type="number" min="0" step={ZERO_DECIMAL_CURRENCIES.includes(currency)?'1':'0.01'} value={preTripCosts[field]||''} onChange={e=>updatePreTripAmount(field,e.target.value)} placeholder="0" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white placeholder:text-slate-600"/></label>)}</div><p className="mt-5 border-l-2 border-amber-300/50 pl-3 text-[11px] leading-5 text-white/48">Enter whole-party estimates in {currency}. Verify passport, visa, and tax amounts using official sources; leave non-applicable costs at zero.</p></div>}
                 </article>
               </section>
 
-              <section className="flex flex-col gap-5 overflow-hidden rounded-2xl border border-amber-300/20 bg-gradient-to-r from-amber-400/15 via-amber-300/5 to-cyan-400/10 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
-                <div className="flex min-w-0 items-start gap-4"><span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-amber-400 text-slate-950 shadow-lg shadow-amber-950/30"><Sparkles size={22}/></span><div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wider text-amber-300">Ready to create</p><h2 className="mt-1 truncate text-lg font-bold">{destination || 'Your next destination'}</h2><p className="mt-1 text-xs text-slate-400">{tripDays>=1&&tripDays<=14?`${tripDays} days`: 'Select valid dates'} · {travelers} traveler{travelers===1?'':'s'} · PHP {Number.isFinite(budget)?budget.toLocaleString():'0'} budget</p></div></div>
-                <button disabled={busy||tripDays<1||tripDays>14||destination.trim().length<2||!Number.isFinite(budget)||budget<1000} onClick={generate} className="group inline-flex min-h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-400 px-6 py-3 font-extrabold text-slate-950 shadow-lg shadow-amber-950/25 transition hover:-translate-y-0.5 hover:bg-amber-300 disabled:translate-y-0 disabled:opacity-50">{busy?'Building your trip...':'Generate my trip'}<ArrowRight size={17} className="transition-transform group-hover:translate-x-1"/></button>
+              <section className="flex flex-col gap-6 overflow-hidden border border-amber-300/30 bg-amber-300 p-5 text-[#14231f] sm:flex-row sm:items-center sm:justify-between sm:p-7">
+                <div className="min-w-0"><p className="text-[10px] font-black uppercase tracking-[.16em] text-[#49635c]">Ready when you are</p><h2 className="mt-1 truncate text-xl font-black tracking-[-0.035em]">{selectedDestination?destination:'Your next destination'}</h2><p className="mt-1 text-xs text-[#345047]">{tripDays>=1&&tripDays<=14?`${tripDays} days`: 'Select valid dates'} · {travelers} traveler{travelers===1?'':'s'} · {currencyResolved&&Number.isFinite(budget)?formatMoney(budget,currency):'currency pending'}</p>{currencyResolved&&<ReferenceAmount amount={budget} currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} className="mt-1 block text-[11px] font-semibold text-[#29463f]"/>}{generationFailed&&message&&<p role="alert" className="mt-3 max-w-2xl border-l-2 border-[#14231f] pl-3 text-sm font-semibold leading-5">{message}</p>}</div>
+                <button disabled={busy||tripDays<1||tripDays>14||!selectedDestination||!currencyResolved||!Number.isFinite(budget)||budget<=0} onClick={generate} className="group inline-flex min-h-12 shrink-0 items-center justify-center gap-2 bg-[#14231f] px-6 py-3 font-extrabold text-[#f5edd9] transition hover:bg-[#284a41] disabled:opacity-50">{busy?'Building your trip...':generationFailed?'Retry generation':'Generate my trip'}<ArrowRight size={17} className="transition-transform group-hover:translate-x-1"/></button>
               </section>
             </div>
-            {weather && <section className={`my-5 border-l-2 pl-4 ${weather.source==='unavailable'?'border-amber-400':'border-cyan-400'}`}><div className="flex items-center gap-3"><CloudSun className={`shrink-0 ${weather.source==='unavailable'?'text-amber-300':'text-cyan-300'}`}/><div><strong>{weather.source==='unavailable'?`Weather unavailable for ${weather.city}`:<>{weather.city}: {weather.temperature}°C, {weather.description} <span className="text-xs font-normal text-slate-400">{weather.source==='mock'?'(legacy demo fallback, not live)':'(current)'}</span></>}</strong><p className="text-xs text-slate-400">{weather.source==='unavailable'?'No current conditions or alerts are being claimed.':weather.alerts[0] || (weather.source==='mock'?'No live alert data.':'No severe current-weather alert.')} · Source: {weather.source === 'open-meteo' ? 'Open-Meteo API' : weather.source === 'openweathermap' ? 'OpenWeatherMap API' : weather.source === 'unavailable' ? 'unavailable' : 'legacy mock/demo data'}</p><p className={weather.forecastAvailable?'text-xs text-cyan-200':'text-xs text-amber-300'}>{weather.forecastMessage}</p></div></div>{weather.forecast.length>0&&<div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">{weather.forecast.map(day=><article key={day.date} className="rounded-md border border-slate-800 bg-slate-900/60 p-2"><p className="text-xs font-semibold">{new Date(`${day.date}T00:00:00`).toLocaleDateString(undefined,{weekday:'short'})}</p><p className="mt-1 text-sm font-mono">{day.tempMin}°–{day.tempMax}°C</p><p className="truncate text-xs capitalize text-slate-400">{day.description}</p><p className="text-xs text-cyan-300">Rain {day.precipitationProbability}%</p></article>)}</div>}</section>}
-            {itinerary && <>
-              <div className="my-5 flex flex-wrap items-center justify-between gap-3">
-                <div><h2 className="text-xl font-bold">{itinerary.destination}</h2><p className="text-xs uppercase tracking-widest text-cyan-300">{itinerary.source === 'gemini' ? 'Gemini generated' : itinerary.source === 'openai' ? 'OpenAI generated' : 'Demo fallback'}{itinerary.manuallyEdited || manualDirty ? ' · manually edited' : ''}</p></div>
-                <button disabled={busy} onClick={()=>void (manualDirty ? saveManualChanges() : saveCurrentTrip())} className={`flex min-h-10 items-center gap-2 rounded-lg px-4 py-2 text-sm font-bold transition disabled:opacity-50 ${manualDirty?'bg-amber-400 text-slate-950 hover:bg-amber-300':'border border-slate-600 hover:bg-slate-800'}`}><Save size={15}/>{busy?'Saving...':manualDirty?'Save manual changes':editingTripId?'Update saved trip':'Save trip'}</button>
+            {weather && <section aria-labelledby="conditions-heading" className={`my-5 border-l-2 bg-white/[0.025] p-4 ${weather.source==='unavailable'?'border-amber-400':'border-cyan-400'}`}>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex items-start gap-3"><CloudSun className={`mt-0.5 shrink-0 ${weather.source==='unavailable'?'text-amber-300':'text-cyan-300'}`}/><div><h2 id="conditions-heading" className="font-bold">{weather.source==='unavailable'?`Weather unavailable for ${weather.city}`:<>{weather.city}: {weather.temperature}°C, {weather.description}</>}</h2><p className="mt-1 text-xs leading-5 text-slate-400">{weather.source==='unavailable'?'No current conditions or alerts are being claimed.':weather.alerts[0] || (weather.source==='mock'?'No live alert data.':'No severe current-weather alert.')} · Source: {weather.source === 'open-meteo' ? 'Open-Meteo API' : weather.source === 'openweathermap' ? 'OpenWeatherMap API' : weather.source === 'unavailable' ? 'unavailable' : 'legacy mock/demo data'}</p><p className={`mt-1 text-xs ${weather.forecastAvailable?'text-cyan-200':'text-amber-300'}`}>{weather.forecastMessage}</p><div className="mt-2"><ProviderFreshness freshness={weather.freshness}/></div></div></div>
+                <button type="button" disabled={conditionsBusy} onClick={()=>void refreshConditions()} className="min-h-10 shrink-0 border border-cyan-300/35 px-4 py-2 text-xs font-bold text-cyan-200 transition hover:bg-cyan-200 hover:text-[#14231f] disabled:opacity-50">{conditionsBusy?'Refreshing conditions...':'Refresh conditions'}</button>
               </div>
-              {itinerary.costSharing && <section className="mb-5 grid gap-3 border-y border-slate-800 py-4 sm:grid-cols-3"><div><p className="text-xs uppercase text-slate-500">Party</p><strong>{PARTY_TYPE_LABELS[itinerary.costSharing.partyType]} · {itinerary.costSharing.travelers} traveler{itinerary.costSharing.travelers===1?'':'s'}</strong></div><div><p className="text-xs uppercase text-slate-500">Group plan spend</p><strong>PHP {itinerary.costSharing.plannedGroupSpend.toLocaleString()}</strong></div><div><p className="text-xs uppercase text-slate-500">Equal share</p><strong>PHP {itinerary.costSharing.plannedSpendShares[0].toLocaleString()}{travelers>1?' per traveler':' total'}</strong>{new Set(itinerary.costSharing.plannedSpendShares).size>1&&<p className="text-xs text-slate-500">PHP 1 remainder is assigned to the first traveler.</p>}</div></section>}
-              {itinerary.accommodation && <section className="mb-5 grid sm:grid-cols-[1fr_auto] gap-4 border-b border-slate-800 pb-4 items-center"><div className="flex items-start gap-3"><BedDouble className="text-amber-300 shrink-0"/><div><strong>{itinerary.accommodation.name}</strong><p className="text-sm text-slate-400">{itinerary.accommodation.address || itinerary.destination}</p><p className="text-sm">PHP {itinerary.accommodation.nightlyRate.toLocaleString()}/night x {itinerary.accommodation.nights} nights = <strong>PHP {itinerary.accommodation.total.toLocaleString()} group total</strong></p>{itinerary.costSharing&&<p className="text-xs text-slate-400">Equal accommodation share: PHP {itinerary.costSharing.accommodationShares[0].toLocaleString()}{travelers>1?' per traveler':''}</p>}</div></div>{itinerary.accommodation.source==='amadeus'?<span className="rounded-md border border-cyan-700 px-4 py-2 text-sm text-cyan-200">{itinerary.accommodation.isLive?'Live':'Test'} Amadeus offer selected</span>:<button disabled={busy} onClick={()=>void action({action:'book',listingId:itinerary.accommodation!.listingId,guests:travelers,nights:itinerary.accommodation!.nights},'Stay booked by the lead traveler; payment status is simulated as PAID_HELD until PayMongo is configured.')} className="bg-emerald-400 text-slate-950 px-4 py-2 rounded-md text-sm font-bold">Book as lead traveler</button>}</section>}
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                {itinerary.days.map((day,dayIndex)=><article key={day.day} className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50">
-                  <div className="relative aspect-[16/9] bg-slate-900">
-                    <Image src={placeImage(day.imageUrl, LOCAL_DAY_IMAGES[day.day - 1] || '/travel-illustration.png')} alt={`${day.theme} in ${itinerary.destination}`} fill sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw" className="object-cover" />
-                    <span className="absolute left-3 top-3 bg-slate-950/85 px-2 py-1 text-xs text-amber-300 font-bold">DAY {day.day}</span>
-                    <span className="absolute right-3 top-3 bg-slate-950/85 px-2 py-1 text-sm font-mono">PHP {day.totalCost.toLocaleString()}</span>
-                    {day.imageAttribution&&<a href={day.imageAttribution.sourceUrl} target="_blank" rel="noreferrer" title={`${day.imageAttribution.creator} · ${day.imageAttribution.license}`} className="absolute bottom-2 right-2 max-w-[75%] truncate rounded bg-slate-950/80 px-2 py-1 text-[9px] text-slate-300">Photo: {day.imageAttribution.creator} · {day.imageAttribution.license}</a>}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold">{day.theme}</h3>
-                    <p className="text-xs text-slate-500">{day.date}</p>
-                    {day.travelNote && <p className="mt-2 flex items-start gap-2 text-xs leading-relaxed text-cyan-200"><Clock3 size={14} className="mt-0.5 shrink-0" />{day.travelNote}</p>}
-                    {day.crowdLevel && <p className="mt-2 text-xs text-violet-200" title={day.crowdNote}>Estimated crowd: <strong className="capitalize">{day.crowdLevel}</strong> · low confidence · not live data</p>}
-                    {weather?.forecast.find(forecast=>forecast.date===day.date) && <p className="mt-2 text-xs text-sky-200"><CloudSun size={14} className="mr-1 inline"/>{weather.forecast.find(forecast=>forecast.date===day.date)!.description}, {weather.forecast.find(forecast=>forecast.date===day.date)!.tempMin}°–{weather.forecast.find(forecast=>forecast.date===day.date)!.tempMax}°C · {weather.forecast.find(forecast=>forecast.date===day.date)!.precipitationProbability}% rain</p>}
-                    {weather?.forecast.find(forecast=>forecast.date===day.date)?.weatherAlert && <p className="mt-1 text-xs text-amber-300">{weather.forecast.find(forecast=>forecast.date===day.date)!.weatherAlert}</p>}
-                    <p className="mt-2 flex items-center gap-2 text-xs text-emerald-200"><BusFront size={14}/>Estimated ride/boat fare: PHP {(day.rideFare||0).toLocaleString()}</p>
-                    <ul className="mt-3 space-y-2" aria-label={`Day ${day.day} activities`}>{day.activities.length===0?<li className="rounded-lg border border-dashed border-slate-700 px-3 py-5 text-center text-xs text-slate-500">No activities yet. Add one to build this day.</li>:day.activities.map((item,i)=><li key={`${item.time}-${item.title}-${i}`} className="rounded-lg border border-slate-800 bg-slate-950/40 p-3 text-sm"><div className="flex items-start justify-between gap-3"><span className="min-w-0"><span className="mr-2 text-xs text-cyan-300">{item.time}</span><strong className="font-semibold">{item.title}</strong><small className="mt-1 block text-slate-500">PHP {item.estimatedCost.toLocaleString()} group estimate</small></span><span className="flex shrink-0 items-center gap-0.5"><button disabled={i===0} onClick={()=>reorderActivity(dayIndex,i,-1)} aria-label={`Move ${item.title} earlier`} title="Move earlier" className="rounded p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-25"><ChevronUp size={14}/></button><button disabled={i===day.activities.length-1} onClick={()=>reorderActivity(dayIndex,i,1)} aria-label={`Move ${item.title} later`} title="Move later" className="rounded p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white disabled:opacity-25"><ChevronDown size={14}/></button><button onClick={()=>setActivityEditor({dayIndex,activityIndex:i})} aria-label={`Edit ${item.title}`} title="Edit activity" className="rounded p-1.5 text-slate-400 hover:bg-slate-800 hover:text-cyan-300"><Pencil size={14}/></button><button onClick={()=>confirmRemoveActivity(dayIndex,i)} aria-label={`Remove ${item.title}`} title="Remove activity" className="rounded p-1.5 text-slate-400 hover:bg-red-950 hover:text-red-300"><Trash2 size={14}/></button></span></div></li>)}</ul>
-                    {day.returnToStayAt && itinerary.accommodation && <p className="mt-3 border-t border-slate-800 pt-3 flex items-center gap-2 text-xs text-amber-200"><BedDouble size={14}/>Return to {itinerary.accommodation.name} by {day.returnToStayAt}</p>}
-                    <div className="mt-4 grid grid-cols-2 gap-2"><button disabled={day.activities.length>=8} onClick={()=>setActivityEditor({dayIndex,activityIndex:null})} className="flex items-center justify-center gap-2 rounded-md border border-amber-500/40 px-3 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-400/10 disabled:opacity-40"><Plus size={15}/>Add activity</button><button onClick={()=>setSelectedDay(day)} className="flex items-center justify-center gap-2 rounded-md border border-slate-700 px-3 py-2 text-sm font-semibold hover:bg-slate-800"><Eye size={15}/>Full details</button></div>
-                  </div>
-                </article>)}
-              </div>
-            </>}
+              {weather.forecast.length>0&&<div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4 xl:grid-cols-7">{weather.forecast.map(day=><article key={day.date} className="rounded-md border border-slate-800 bg-slate-900/60 p-2"><p className="text-xs font-semibold">{new Date(`${day.date}T00:00:00`).toLocaleDateString(undefined,{weekday:'short'})}</p><p className="mt-1 text-sm font-mono">{day.tempMin}°–{day.tempMax}°C</p><p className="truncate text-xs capitalize text-slate-400">{day.description}</p><p className="text-xs text-cyan-300">Rain {day.precipitationProbability}%</p></article>)}</div>}
+            </section>}
+            {itinerary && <ItineraryWorkspace
+              itinerary={itinerary}
+              weather={weather}
+              manualDirty={manualDirty}
+              editingTripId={editingTripId}
+              busy={busy}
+              travelers={travelers}
+              referenceCurrency={referenceCurrency}
+              exchangeQuotes={exchangeQuotes}
+              onSave={() => void (manualDirty ? saveManualChanges() : saveCurrentTrip())}
+              onBookAccommodation={(listingId, nights) => void action({ action: 'book', listingId, guests: travelers, nights, checkIn: startDate, checkOut: endDate }, 'Booking request sent to the owner. No payment was charged.')}
+              onReorderActivity={reorderActivity}
+              onEditActivity={(dayIndex, activityIndex) => setActivityEditor({ dayIndex, activityIndex })}
+              onRemoveActivity={confirmRemoveActivity}
+              onOpenDay={openDayDetails}
+            />}
           </>}
           {tab === 'budget' && <div>{split ? <>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[['Total group budget',split.total],['Estimated group spend',split.plannedSpend||0],[split.shortfall?'Budget shortfall':'Unspent / reserve',split.shortfall||split.remainingBudget||0],['Safety reserve target',split.reserve||0]].map(([label,value])=><div key={String(label)} className="border-t border-slate-700 py-5"><p className="text-xs uppercase text-slate-500">{label}</p><strong className={`text-2xl ${label==='Budget shortfall'?'text-red-300':''}`}>PHP {Number(value).toLocaleString()}</strong></div>)}</div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[[partyBudgetLabel(itinerary!.partyType || partyType, itinerary!.travelers || travelers),split.total],[partySpendLabel(itinerary!.partyType || partyType),split.plannedSpend||0],[split.shortfall?'Budget shortfall':'Unspent / reserve',split.shortfall||split.remainingBudget||0],['Safety reserve target',split.reserve||0]].map(([label,value])=><div key={String(label)} className="border-t border-slate-700 py-5"><p className="text-xs uppercase text-slate-500">{label}</p><strong className={`text-2xl ${label==='Budget shortfall'?'text-red-300':''}`}>{formatMoney(Number(value),itinerary!.currency)}</strong><ReferenceAmount amount={Number(value)} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} className="mt-1 block text-xs font-normal text-cyan-200/70"/></div>)}</div>
+            {itinerary?.selectedTravelCosts && itinerary.selectedTravelCosts.total > 0 && <section className="mt-4 border border-cyan-300/25 bg-cyan-300/5 p-4"><h2 className="font-bold">Committed and pre-trip costs included</h2><p className="mt-1 text-sm text-slate-400">Signed provider prices and your own pre-trip estimates are included in planned spending and the within-budget result.</p><div className="mt-3 space-y-2 text-sm">{itinerary.selectedTravelCosts.flight && <div className="flex justify-between gap-3"><span>{itinerary.selectedTravelCosts.flight.name}</span><strong>{formatMoney(itinerary.selectedTravelCosts.flight.total, itinerary.currency)}</strong></div>}{itinerary.selectedTravelCosts.activities.map((activity) => <div key={activity.id} className="flex justify-between gap-3"><span>{activity.name} · {activity.travelers} travelers</span><strong>{formatMoney(activity.total, itinerary.currency)}</strong></div>)}{itinerary.selectedTravelCosts.preTrip && <div className="mt-3 border-t border-white/10 pt-3"><div className="mb-2 flex justify-between gap-3"><span><strong>Pre-trip estimates</strong>{itinerary.selectedTravelCosts.preTrip.startingLocation ? ` · from ${itinerary.selectedTravelCosts.preTrip.startingLocation}` : ''}</span><strong>{formatMoney(itinerary.selectedTravelCosts.preTrip.total,itinerary.currency)}</strong></div>{([['Airport transfers',itinerary.selectedTravelCosts.preTrip.airportTransferOutbound + itinerary.selectedTravelCosts.preTrip.airportTransferReturn],['Passport / renewal',itinerary.selectedTravelCosts.preTrip.passport],['Visa / authorization',itinerary.selectedTravelCosts.preTrip.visaOrAuthorization],['Travel tax',itinerary.selectedTravelCosts.preTrip.departureTaxes],['Insurance',itinerary.selectedTravelCosts.preTrip.insurance],['Other costs',itinerary.selectedTravelCosts.preTrip.other]] as const).filter(([,amount])=>amount>0).map(([label,amount])=><div key={label} className="flex justify-between gap-3 text-xs text-slate-400"><span>{label}</span><span>{formatMoney(amount,itinerary.currency)}</span></div>)}<p className="mt-2 text-[11px] text-amber-200">User-entered estimates; verify document and government fees with official sources.</p></div>}<div className="flex justify-between gap-3 border-t border-white/10 pt-2"><strong>Committed-cost total</strong><strong>{formatMoney(itinerary.selectedTravelCosts.total, itinerary.currency)}</strong></div></div></section>}
             {optimization && <section className={`mt-5 rounded-xl border p-5 ${optimization.status==='over_budget'?'border-red-500/40 bg-red-500/5':optimization.status==='near_limit'?'border-amber-400/40 bg-amber-400/5':'border-emerald-400/30 bg-emerald-400/5'}`} aria-labelledby="budget-optimization-heading">
-              <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-950/60"><WalletCards size={19} className={optimization.status==='over_budget'?'text-red-300':optimization.status==='near_limit'?'text-amber-300':'text-emerald-300'}/></span><div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Budget optimization</p><h2 id="budget-optimization-heading" className="mt-1 font-bold">{optimization.status==='over_budget'?`Reduce the estimate by PHP ${optimization.amountToTarget.toLocaleString()}`:optimization.status==='near_limit'?`Save PHP ${optimization.amountToTarget.toLocaleString()} to protect the reserve`:'Plan is within budget with the reserve protected'}</h2><p className="mt-1 text-sm text-slate-400">Target spend: PHP {optimization.targetSpend.toLocaleString()}.</p></div></div>{optimization.suggestions.length>0&&<button onClick={()=>setTab('planner')} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-600 px-4 py-2 text-sm font-bold hover:bg-slate-800">Review itinerary<ArrowRight size={15}/></button>}</div>
-              {optimization.suggestions.length>0&&<><div className="mt-5 grid gap-3 lg:grid-cols-2">{optimization.suggestions.map(suggestion=><article key={suggestion.id} className="rounded-lg border border-slate-800 bg-slate-950/40 p-4"><div className="flex items-start justify-between gap-3"><div><span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300">{suggestion.category}{suggestion.affectedDay?` · Day ${suggestion.affectedDay}`:''}</span><h3 className="mt-1 font-bold">{suggestion.title}</h3></div><strong className="shrink-0 text-emerald-300">Save ~PHP {suggestion.estimatedSavings.toLocaleString()}</strong></div><p className="mt-3 text-sm text-slate-300">{suggestion.description}</p><p className="mt-2 text-xs leading-relaxed text-amber-200"><strong>Tradeoff:</strong> {suggestion.tradeoff}</p></article>)}</div><div className="mt-4 grid gap-3 border-t border-slate-800 pt-4 sm:grid-cols-2"><div><p className="text-xs uppercase text-slate-500">Potential combined savings</p><strong className="text-xl text-emerald-300">~PHP {optimization.combinedEstimatedSavings.toLocaleString()}</strong></div><div><p className="text-xs uppercase text-slate-500">Projected spend if all are applied</p><strong className="text-xl">~PHP {optimization.projectedSpendIfAllApplied.toLocaleString()}</strong>{optimization.remainingGapAfterSuggestions>0&&<p className="mt-1 text-xs text-red-300">Still PHP {optimization.remainingGapAfterSuggestions.toLocaleString()} above the target.</p>}</div></div></>}
+              <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-950/60"><WalletCards size={19} className={optimization.status==='over_budget'?'text-red-300':optimization.status==='near_limit'?'text-amber-300':'text-emerald-300'}/></span><div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Budget optimization</p><h2 id="budget-optimization-heading" className="mt-1 font-bold">{optimization.status==='over_budget'?`Reduce the estimate by ${formatMoney(optimization.amountToTarget,itinerary!.currency)}`:optimization.status==='near_limit'?`Save ${formatMoney(optimization.amountToTarget,itinerary!.currency)} to protect the reserve`:'Plan is within budget with the reserve protected'}</h2>{optimization.status!=='within_budget'&&<ReferenceAmount amount={optimization.amountToTarget} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>}<p className="mt-1 text-sm text-slate-400">Target spend: {formatMoney(optimization.targetSpend,itinerary!.currency)}.</p><ReferenceAmount amount={optimization.targetSpend} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></div></div>{optimization.suggestions.length>0&&<button onClick={()=>setTab('planner')} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-600 px-4 py-2 text-sm font-bold hover:bg-slate-800">Review itinerary<ArrowRight size={15}/></button>}</div>
+              {optimization.suggestions.length>0&&<><div className="mt-5 grid gap-3 lg:grid-cols-2">{optimization.suggestions.map(suggestion=><article key={suggestion.id} className="rounded-lg border border-slate-800 bg-slate-950/40 p-4"><div className="flex items-start justify-between gap-3"><div><span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300">{suggestion.category}{suggestion.affectedDay?` · Day ${suggestion.affectedDay}`:''}</span><h3 className="mt-1 font-bold">{suggestion.title}</h3></div><span className="shrink-0 text-right"><strong className="text-emerald-300">Save ~{formatMoney(suggestion.estimatedSavings,itinerary!.currency)}</strong><ReferenceAmount amount={suggestion.estimatedSavings} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></span></div><p className="mt-3 text-sm text-slate-300">{suggestion.description}</p><p className="mt-2 text-xs leading-relaxed text-amber-200"><strong>Tradeoff:</strong> {suggestion.tradeoff}</p></article>)}</div><div className="mt-4 grid gap-3 border-t border-slate-800 pt-4 sm:grid-cols-2"><div><p className="text-xs uppercase text-slate-500">Potential combined savings</p><strong className="text-xl text-emerald-300">~{formatMoney(optimization.combinedEstimatedSavings,itinerary!.currency)}</strong><ReferenceAmount amount={optimization.combinedEstimatedSavings} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></div><div><p className="text-xs uppercase text-slate-500">Projected spend if all are applied</p><strong className="text-xl">~{formatMoney(optimization.projectedSpendIfAllApplied,itinerary!.currency)}</strong><ReferenceAmount amount={optimization.projectedSpendIfAllApplied} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>{optimization.remainingGapAfterSuggestions>0&&<p className="mt-1 text-xs text-red-300">Still {formatMoney(optimization.remainingGapAfterSuggestions,itinerary!.currency)} above the target.<ReferenceAmount amount={optimization.remainingGapAfterSuggestions} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></p>}</div></div></>}
               <p className="mt-4 text-xs text-slate-500">{optimization.disclaimer}</p>
             </section>}
-            {itinerary?.costSharing&&<div className="mt-5 rounded-md border border-slate-800 p-4"><h2 className="font-bold">Equal-share guide</h2><p className="mt-1 text-sm text-slate-400">{PARTY_TYPE_LABELS[itinerary.costSharing.partyType]} group with {itinerary.costSharing.travelers} traveler{itinerary.costSharing.travelers===1?'':'s'}. The lead traveler pays the booking hold; the group settles these shares separately.</p><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{itinerary.costSharing.plannedSpendShares.map((amount,index)=><div key={index} className="border-t border-slate-700 py-2"><small className="text-slate-500">Traveler {index+1}</small><p className="font-mono">PHP {amount.toLocaleString()}</p></div>)}</div></div>}
-            <p className="mt-4 text-xs text-slate-500">Accommodation is shared by the group. Food, transport, and activities are estimated per person and multiplied once. Final venue prices may change.</p>
-          </> : <p className="text-slate-400">Generate a plan to calculate accommodation and estimated local costs.</p>}</div>}
-          {tab === 'compare' && <div className="space-y-6">
-            <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 sm:p-6">
-              <div className="flex max-w-full items-start gap-3"><span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-cyan-400/10 text-cyan-300"><Plane size={20}/></span><div className="min-w-0"><h2 className="break-words font-bold">Search one trip across providers</h2><p className="mt-1 break-words text-sm text-slate-400">Compare normalized flight, hotel, and activity results. Prices are references only; TravelMate does not complete external bookings.</p></div></div>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><label className="text-xs text-slate-400">Flight origin<input value={flightOrigin} onChange={event=>{setFlightOrigin(event.target.value);setTravelOptions(null);}} placeholder="Manila, Philippines" className="mt-1 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 text-white"/></label><label className="text-xs text-slate-400">Destination<input value={destination} onChange={event=>changeDestination(event.target.value)} className="mt-1 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 text-white"/></label><label className="text-xs text-slate-400">Departure<input type="date" value={startDate} readOnly className="mt-1 min-h-11 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 text-slate-300"/></label><label className="text-xs text-slate-400">Return<input type="date" value={endDate} readOnly className="mt-1 min-h-11 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 text-slate-300"/></label></div>
-              <div className="mt-4 flex flex-wrap items-center gap-3"><button disabled={comparisonBusy||travelers>9||flightOrigin.trim().length<2||destination.trim().length<2} onClick={()=>void searchComparison()} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-amber-400 px-5 py-2 font-extrabold text-slate-950 hover:bg-amber-300 disabled:opacity-50">{comparisonBusy?'Checking providers...':'Compare prices'}<ArrowRight size={16}/></button><p className="text-xs text-slate-500">{travelers} traveler{travelers===1?'':'s'} · dates and party size come from the Plan tab</p></div>
-              {comparisonMessage&&<p role="status" className="mt-4 rounded-lg border border-slate-700 bg-slate-950/50 px-4 py-3 text-sm text-slate-300">{comparisonMessage}</p>}
-            </section>
-
-            <section aria-labelledby="flight-results-heading"><div className="flex flex-wrap items-end justify-between gap-2 border-b border-slate-800 pb-3"><div><p className="text-xs font-bold uppercase tracking-wider text-cyan-300">Flights</p><h2 id="flight-results-heading" className="text-lg font-bold">{flightOrigin} to {destination}</h2></div>{travelOptions&&<span className="text-xs text-slate-500">Fetched {new Date(travelOptions.fetchedAt).toLocaleString()} · {travelOptions.provider.isLive?'Amadeus production':'Amadeus test/non-live'}</span>}</div>
-              {!travelOptions?<p className="py-8 text-center text-sm text-slate-500">Run a comparison to retrieve flight offers.</p>:travelOptions.flights.length===0?<p className="py-8 text-center text-sm text-slate-400">{travelOptions.flightMessage}</p>:<div className="mt-4 grid gap-3 lg:grid-cols-2">{travelOptions.flights.map(flight=><article key={flight.id} className="rounded-xl border border-slate-800 bg-slate-900/45 p-4"><div className="flex items-start justify-between gap-3"><div><span className="text-xs font-bold uppercase text-cyan-300">{flight.airline} · {flight.stops===0?'Nonstop':`${flight.stops} stop${flight.stops===1?'':'s'}`}</span><h3 className="mt-1 text-lg font-bold">{flight.origin} → {flight.destination}</h3></div><strong className="text-lg text-amber-300">{flight.currency} {flight.price.toLocaleString()}</strong></div><div className="mt-4 grid grid-cols-2 gap-3 text-sm"><div><small className="text-slate-500">Depart</small><p>{offerTime(flight.departure)}</p></div><div><small className="text-slate-500">Arrive</small><p>{offerTime(flight.arrival)}</p></div>{flight.returnDeparture&&<div><small className="text-slate-500">Return departure</small><p>{offerTime(flight.returnDeparture)}</p></div>}{flight.returnArrival&&<div><small className="text-slate-500">Return arrival</small><p>{offerTime(flight.returnArrival)}</p></div>}</div><p className="mt-3 text-xs text-slate-500">Duration {flight.duration} · {flight.seatsAvailable===undefined?'Seat count unavailable':`${flight.seatsAvailable} bookable seat${flight.seatsAvailable===1?'':'s'}`} · fetched {new Date(flight.fetchedAt).toLocaleString()}</p><p className="mt-2 text-xs text-amber-200">Search result only. Recheck fare and availability with the provider before booking.</p></article>)}</div>}
-            </section>
-
-            <section aria-labelledby="hotel-results-heading"><div className="border-b border-slate-800 pb-3"><p className="text-xs font-bold uppercase tracking-wider text-emerald-300">Hotels</p><h2 id="hotel-results-heading" className="text-lg font-bold">TravelMate listings and Amadeus offers</h2></div><div className="mt-4 grid gap-3 lg:grid-cols-2">{stayOptions.map(stay=>{const nights=Math.max(1,tripDays-1);return <article key={`compare-${stay.id}`} className="rounded-xl border border-slate-800 bg-slate-900/45 p-4"><span className="text-xs font-bold uppercase text-emerald-300">TravelMate database · not live</span><h3 className="mt-1 font-bold">{stay.name}</h3><p className="text-sm text-slate-400">{stay.address}</p><strong className="mt-3 block text-amber-300">PHP {(stay.price*nights).toLocaleString()} · {nights} night{nights===1?'':'s'}</strong><p className="mt-2 text-xs text-slate-500">PHP {stay.price.toLocaleString()}/night · {stay.available}/{stay.capacity} guest slots recorded</p><button onClick={()=>{setSelectedStayId(stay.id);setSelectedLiveStayId('');setTab('planner');setMessage(`${stay.name} selected for the itinerary.`);}} className="mt-4 rounded-lg border border-emerald-500/50 px-3 py-2 text-sm font-bold text-emerald-300">Select for plan</button></article>})}{liveAccommodations.map(stay=><article key={`compare-${stay.id}`} className="rounded-xl border border-slate-800 bg-slate-900/45 p-4"><span className="text-xs font-bold uppercase text-cyan-300">Amadeus {stay.isLive?'live':'test/non-live'}</span><h3 className="mt-1 font-bold">{stay.name}</h3><p className="text-sm text-slate-400">{stay.address}</p><strong className="mt-3 block text-amber-300">{stay.currency} {stay.total.toLocaleString()} total</strong><p className="mt-2 text-xs text-slate-500">{stay.currency} {stay.nightlyRate.toLocaleString()}/night · fetched {new Date(stay.fetchedAt).toLocaleString()}</p><p className="mt-2 text-xs text-slate-400">{stay.roomDescription}</p><button onClick={()=>{setSelectedStayId('');setSelectedLiveStayId(stay.id);setTab('planner');setMessage(`${stay.name} selected for the itinerary. Its signed offer price will be verified by the server.`);}} className="mt-4 rounded-lg border border-cyan-500/50 px-3 py-2 text-sm font-bold text-cyan-300">Select for plan</button></article>)}</div>{travelOptions&&stayOptions.length===0&&liveAccommodations.length===0&&<p className="py-8 text-center text-sm text-slate-400">No hotel options were returned for this destination and date.</p>}
-            </section>
-
-            <section aria-labelledby="activity-results-heading"><div className="border-b border-slate-800 pb-3"><p className="text-xs font-bold uppercase tracking-wider text-violet-300">Activities</p><h2 id="activity-results-heading" className="text-lg font-bold">Local and external experiences</h2></div>{!travelOptions?<p className="py-8 text-center text-sm text-slate-500">Run a comparison to retrieve activity options.</p>:travelOptions.activities.length===0?<p className="py-8 text-center text-sm text-slate-400">{travelOptions.activityMessage}</p>:<div className="mt-4 grid gap-3 lg:grid-cols-2">{travelOptions.activities.map(activity=><article key={activity.id} className="rounded-xl border border-slate-800 bg-slate-900/45 p-4"><div className="flex items-start justify-between gap-3"><div><span className="text-xs font-bold uppercase text-violet-300">{activity.provider==='amadeus'?`Amadeus ${activity.isLive?'live':'test/non-live'}`:'TravelMate approved listing'}</span><h3 className="mt-1 font-bold">{activity.name}</h3></div><strong className="shrink-0 text-amber-300">{activity.currency} {activity.price.toLocaleString()}</strong></div><p className="mt-2 text-sm text-slate-400">{activity.description}</p><p className="mt-3 text-xs text-slate-500">{activity.location}{activity.rating!==undefined?` · Rating ${activity.rating}/5`:''} · fetched {new Date(activity.fetchedAt).toLocaleString()}</p><div className="mt-4 flex flex-wrap gap-2"><button onClick={()=>addComparedActivity(activity.name)} className="inline-flex items-center gap-2 rounded-lg border border-violet-500/50 px-3 py-2 text-sm font-bold text-violet-300"><Ticket size={14}/>Add to preferences</button>{activity.referenceUrl&&<a href={activity.referenceUrl} target="_blank" rel="noreferrer" className="rounded-lg border border-slate-600 px-3 py-2 text-sm font-bold">Provider details</a>}</div></article>)}</div>}
-            </section>
-          </div>}
-          {tab === 'market' && <div className="space-y-5"><div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-800 pb-4"><label className="w-full max-w-sm text-xs text-slate-400">Show TravelMate stays in<select value={localMunicipality||''} onChange={e=>changeDestination(`${e.target.value}, Cebu, Philippines`)} className="mt-1 w-full bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-white"><option value="" disabled>Select a supported Cebu location</option>{CEBU_LOCATIONS.map(location=><option key={location} value={location}>{location}, Cebu</option>)}</select></label><p className="text-sm text-slate-400">{stayOptions.length} approved {stayOptions.length===1?'stay':'stays'} found</p></div>{stayOptions.length===0?<p className="py-10 text-center text-slate-400">No approved hotel, inn, or stay is available in {destination} yet.</p>:<div className="grid md:grid-cols-2 gap-4">{stayOptions.map(item=>{const nights=Math.max(1,tripDays-1);return <article key={item.id} className="overflow-hidden border border-slate-800 rounded-md"><div className="relative aspect-[16/9] bg-slate-900"><Image src={item.imageUrl?.startsWith('/')?item.imageUrl:'/travel-illustration.png'} alt={item.name} fill sizes="(max-width: 768px) 100vw, 50vw" className="object-cover"/></div><div className="p-5"><span className="text-xs uppercase text-cyan-300">{item.municipality} · hotel / inn / stay</span><h3 className="font-bold text-lg">{item.name}</h3><p className="mt-1 text-sm text-slate-400">{item.address}</p><p className="mt-3">Owner-listed PHP {item.price.toLocaleString()}/night</p><strong className="text-lg text-amber-300">{nights} night{nights===1?'':'s'}: PHP {(item.price*nights).toLocaleString()}</strong><p className="mt-2 text-xs text-slate-500">Database listing · not a live external price · {item.amenities.join(' · ')} · {item.available}/{item.capacity} guest slots available</p><p className="mt-2 text-xs leading-relaxed text-slate-400">{item.description}</p><button disabled={busy||item.available<travelers} onClick={()=>void action({action:'book',listingId:item.id,guests:travelers,nights},'Stay booked by the lead traveler; payment status is simulated as PAID_HELD until PayMongo is configured.')} className="mt-4 bg-emerald-400 text-slate-950 px-3 py-2 rounded-md font-bold text-sm">Book {nights}-night stay</button></div></article>})}</div>}</div>}
+            {itinerary?.costSharing&&itinerary.costSharing.travelers>1&&<div className="mt-5 rounded-md border border-slate-800 p-4"><h2 className="font-bold">Equal-share guide</h2><p className="mt-1 text-sm text-slate-400">{PARTY_TYPE_LABELS[itinerary.costSharing.partyType]} with {itinerary.costSharing.travelers} travelers. The entered budget is one combined total; these are optional equal shares per traveler.</p><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{itinerary.costSharing.plannedSpendShares.map((amount,index)=><div key={index} className="border-t border-slate-700 py-2"><small className="text-slate-500">Traveler {index+1}</small><p className="font-mono">{formatMoney(amount,itinerary.currency)}</p><ReferenceAmount amount={amount} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></div>)}</div></div>}
+            <p className="mt-4 text-xs text-slate-500">{itinerary?.costSharing?.travelers===1?'All displayed costs belong to the solo traveler.':'Accommodation and the entered budget cover the whole party. Food, transport, and activities are estimated per person and multiplied once.'} Final venue prices may change.</p>
+          </> : <section className="border border-dashed border-white/15 bg-white/[0.025] p-8 sm:p-12"><WalletCards size={25} className="text-amber-300"/><h2 className="mt-6 max-w-xl text-3xl font-black tracking-[-0.04em]">Budget review begins after itinerary generation.</h2><p className="mt-4 max-w-2xl text-sm leading-6 text-white/50">TravelMate needs the generated activities, transportation, food estimate, and any selected accommodation before it can explain planned spending and possible savings.</p><button type="button" onClick={()=>setTab('planner')} className="group mt-7 inline-flex min-h-11 items-center gap-2 bg-amber-300 px-5 py-2 text-sm font-extrabold text-[#14231f]">Go to trip details <ArrowRight size={16} className="transition-transform group-hover:translate-x-1"/></button></section>}</div>}
+          {tab === 'compare' && <TravelComparisonWorkspace
+            flightOrigin={flightOrigin}
+            destination={destination}
+            selectedDestination={Boolean(selectedDestination)}
+            startDate={startDate}
+            endDate={endDate}
+            travelers={travelers}
+            busy={comparisonBusy}
+            message={comparisonMessage}
+            travelOptions={travelOptions}
+            selectedFlightId={selectedFlightId}
+            selectedActivityIds={selectedActivityIds}
+            stayOptions={stayOptions}
+            liveAccommodations={liveAccommodations}
+            stayFreshness={stayFreshness}
+            tripDays={tripDays}
+            referenceCurrency={referenceCurrency}
+            exchangeQuotes={exchangeQuotes}
+            onFlightOriginChange={(value) => { setFlightOrigin(value); setTravelOptions(null); }}
+            onSearch={() => void searchComparison()}
+            onSelectFlight={(flight) => setSelectedFlightId((current) => current === flight.id ? '' : flight.id)}
+            onToggleActivityCost={(activity) => setSelectedActivityIds((current) => current.includes(activity.id) ? current.filter((id) => id !== activity.id) : [...current, activity.id])}
+            onSelectLocalStay={(stay) => { setSelectedStayId(stay.id); setSelectedLiveStayId(''); setTab('planner'); setMessage(`${stay.name} selected for the itinerary.`); }}
+            onSelectLiveStay={(stay) => { setSelectedStayId(''); setSelectedLiveStayId(stay.id); setTab('planner'); setMessage(`${stay.name} selected for the itinerary. Its signed offer price will be verified by the server.`); }}
+            onAddActivity={addComparedActivity}
+          />}
+          {tab === 'market' && <div className="space-y-5"><div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-5"><label className="w-full max-w-sm text-xs text-white/45">Show approved owner stays in<select value={localMunicipality||''} onChange={e=>{const location=e.target.value;const point=CEBU_COORDINATES[location];confirmDestination({id:-CEBU_LOCATIONS.indexOf(location)-1,name:location,region:'Cebu',country:'Philippines',countryCode:'PH',latitude:point.latitude,longitude:point.longitude,label:`${location}, Cebu, Philippines`,placeType:'City or municipality',contextLabel:`City or municipality • ${location}, Cebu, Philippines`});}} className="mt-2 min-h-12 w-full border border-white/15 bg-[#071a16] px-4 text-white"><option value="" disabled>Select a supported Cebu location</option>{CEBU_LOCATIONS.map(location=><option key={location} value={location}>{location}, Cebu</option>)}</select></label><p className="text-sm text-white/45">{stayOptions.length} approved {stayOptions.length===1?'stay':'stays'} found</p></div><MarketplaceCards listings={stayOptions} data={data} startDate={startDate} endDate={endDate} travelers={travelers} busy={busy} action={action}/></div>}
           {tab === 'bookings' && <div className="space-y-8">
-            <section>
-              <h2 className="font-bold">Saved plans ({data.trips.length})</h2>
-              <p className="mt-1 text-sm text-slate-400">These plans belong only to your account and remain available after signing out.</p>
-              {data.trips.length===0?<p className="mt-4 rounded-md border border-dashed border-slate-700 p-8 text-center text-slate-400">No saved trips yet. Generate a plan and choose Save trip.</p>:<div className="mt-4 grid gap-3 md:grid-cols-2">{data.trips.map(trip=>{
-                const plan=savedItinerary(trip.itinerary);const source=plan?.source==='openai'?'OpenAI generated':plan?.source==='gemini'?'Gemini generated':'Demo/estimated fallback';const past=trip.endDate<new Date().toISOString().slice(0,10);
-                return <article key={trip.id} className="min-w-0 max-w-full rounded-md border border-slate-800 bg-slate-900/50 p-4"><div className="flex min-w-0 flex-col items-start gap-2 sm:flex-row sm:justify-between sm:gap-3"><div className="min-w-0 max-w-full"><span className={`text-[10px] uppercase tracking-wider ${past?'text-slate-500':'text-emerald-300'}`}>{past?'Previous trip':'Upcoming trip'}</span><h3 className="break-words font-bold">{trip.destination}</h3><p className="break-words text-xs text-slate-400">{trip.startDate} – {trip.endDate} · {trip.travelers} traveler{trip.travelers===1?'':'s'}</p></div><strong className="shrink-0 font-mono text-sm">PHP {trip.budget.toLocaleString()}</strong></div><p className="mt-2 break-words text-xs text-cyan-200">{source} · saved {new Date(trip.createdAt).toLocaleDateString()}</p><div className="mt-4 flex flex-wrap gap-2"><button disabled={busy} onClick={()=>loadTrip(trip,true)} className="flex items-center gap-1 rounded border border-slate-600 px-2 py-1 text-xs"><Eye size={13}/>View</button><button disabled={busy} onClick={()=>loadTrip(trip,false)} className="flex items-center gap-1 rounded border border-slate-600 px-2 py-1 text-xs"><Pencil size={13}/>Edit / regenerate</button><button disabled={busy} onClick={()=>void action({action:'duplicate-trip',id:trip.id},'Trip duplicated.')} className="flex items-center gap-1 rounded border border-slate-600 px-2 py-1 text-xs"><Copy size={13}/>Duplicate</button><button disabled={busy} onClick={()=>{if(window.confirm(`Delete the saved trip to ${trip.destination}? This cannot be undone.`))void action({action:'delete-trip',id:trip.id},'Saved trip deleted.').then(ok=>{if(ok&&editingTripId===trip.id)setEditingTripId(null);});}} className="flex items-center gap-1 rounded border border-red-800 px-2 py-1 text-xs text-red-300"><Trash2 size={13}/>Delete</button></div></article>;
-              })}</div>}
-            </section>
-            <section>
+            <SavedTripLifecycle
+              trips={data.trips}
+              versions={data.itineraryVersions || []}
+              generations={data.itineraryGenerations || []}
+              busy={busy}
+              onPlanFirstTrip={startNewTrip}
+              onView={(trip)=>loadTrip(trip,true)}
+              onEdit={(trip)=>loadTrip(trip,false)}
+              onAction={action}
+              onDelete={(trip)=>{if(window.confirm(`Permanently delete the archived trip to ${trip.destination}? This also removes its version history and cannot be undone.`))void action({action:'delete-trip',id:trip.id},'Archived trip permanently deleted.').then(ok=>{if(ok&&editingTripId===trip.id)setEditingTripId(null);});}}
+            />
+            <TravelerBookingManager data={data} busy={busy} action={action}/>
+            <section className="hidden" aria-hidden="true">
               <h2 className="font-bold">Accommodation bookings ({data.bookings.length})</h2>
               {data.bookings.length===0?<p className="mt-3 text-sm text-slate-400">No accommodation bookings yet.</p>:data.bookings.map(item=><article key={item.id} className="border-b border-slate-800 py-4 flex flex-wrap justify-between gap-3"><div><strong>{data.listings.find(x=>x.id===item.listingId)?.name || item.listingId}</strong><p className="text-xs text-slate-400">{item.status} · {item.paymentStatus} · {item.nights > 1 ? `${item.nights} nights · ` : ''}PHP {item.amount.toLocaleString()}</p></div><div className="flex gap-2"><button disabled={busy||item.status==='cancelled'||item.status==='completed'} onClick={()=>void action({action:'request-change',id:item.id,reason:'Traveler requested a modification.'},'Modification sent for review.')} className="border border-slate-600 px-2 py-1 rounded text-xs disabled:opacity-40">Change</button><button disabled={busy||item.status==='cancelled'||item.status==='completed'} onClick={()=>void action({action:'request-cancel',id:item.id,reason:'Traveler requested cancellation.'},'Cancellation sent for review.')} className="border border-red-700 text-red-300 px-2 py-1 rounded text-xs disabled:opacity-40">Cancel</button></div></article>)}</section>
           </div>}
-          {tab === 'profile' && <section className="max-w-xl space-y-7">
-            <div><p className="text-slate-400 mb-4">Manage your contact details independently from profile verification.</p><div className="grid grid-cols-2 gap-3"><div className="border-t border-slate-700 py-3"><small>Email status</small><p>{data.user.emailVerified?'Verified':'Unverified'}</p></div><div className="border-t border-slate-700 py-3"><small>Trust score</small><p>{data.user.trustScore}/100</p></div></div></div>
-            <form onSubmit={e=>{e.preventDefault();void saveProfile(e.currentTarget);}} className="space-y-3">
-              <label className="block text-xs text-slate-400">Name<input required minLength={2} maxLength={80} name="name" defaultValue={data.user.name} className="mt-1 w-full bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-white"/></label>
-              <label className="block text-xs text-slate-400">Email<input readOnly value={data.user.email} className="mt-1 w-full bg-slate-900 border border-slate-800 rounded-md px-3 py-2 text-slate-400"/></label>
-              <label className="block text-xs text-slate-400">Phone<input maxLength={30} name="phone" defaultValue={data.user.phone || ''} placeholder="Phone number" className="mt-1 w-full bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-white"/></label>
-              <label className="block text-xs text-slate-400">Bio<textarea maxLength={500} name="bio" defaultValue={data.user.bio || ''} rows={4} placeholder="Tell us about your travel preferences" className="mt-1 w-full bg-slate-950 border border-slate-700 rounded-md px-3 py-2 text-white"/></label>
-              <button disabled={busy} className="bg-amber-400 text-slate-950 px-4 py-2 rounded-md font-bold disabled:opacity-50">{busy?'Saving...':'Save profile'}</button>
-            </form>
-            {data.user.profileStatus!=='verified'&&<form onSubmit={e=>{e.preventDefault();const f=new FormData(e.currentTarget);void action({action:'submit-profile',phone:f.get('phone'),bio:f.get('bio')},'Profile submitted for admin review.')}} className="space-y-3 border-t border-slate-800 pt-6"><div><h2 className="font-bold">Profile verification</h2><p className="mt-1 text-sm text-slate-400">Verification does not block login. Until approved, booking and listing publication remain unavailable in Limited Mode.</p></div><input required maxLength={30} name="phone" defaultValue={data.user.phone || ''} placeholder="Verification phone number" className="w-full bg-slate-950 border border-slate-700 rounded-md px-3 py-2"/><textarea required maxLength={500} name="bio" defaultValue={data.user.bio || ''} placeholder="Verification details" className="w-full bg-slate-950 border border-slate-700 rounded-md px-3 py-2"/><button disabled={busy} className="border border-amber-500 text-amber-300 px-4 py-2 rounded-md font-bold disabled:opacity-50">Submit for verification</button></form>}
-          </section>}
+          {tab === 'notifications' && <TravelerNotifications data={data} busy={busy} action={action}/>} 
+          {tab === 'profile' && <TravelerAccountCenter user={data.user} busy={busy} onSaveProfile={saveProfile} onSubmitVerification={(phone,bio)=>action({action:'submit-profile',phone,bio},'Profile submitted for admin review.')} />}
         </main>
       </div>
-      {activityEditor && editorDay && <div ref={activityModalRef} className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="activity-editor-title" aria-describedby="activity-editor-description" onMouseDown={(event)=>{if(event.target===event.currentTarget)setActivityEditor(null);}}>
-        <form key={`${activityEditor.dayIndex}-${activityEditor.activityIndex ?? 'new'}`} onSubmit={(event)=>{event.preventDefault();submitActivity(event.currentTarget);}} className="mx-auto mt-8 max-w-xl rounded-2xl border border-slate-700 bg-[#0b1626] p-5 shadow-2xl sm:p-6">
-          <div className="flex items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-wider text-amber-300">Day {editorDay.day} · {editorDay.date}</p><h2 id="activity-editor-title" className="mt-1 text-xl font-bold">{editorActivity?'Edit activity':'Add custom activity'}</h2><p id="activity-editor-description" className="mt-1 text-sm text-slate-400">Costs are entered for the whole group and totals update automatically.</p></div><button type="button" onClick={()=>setActivityEditor(null)} aria-label="Close activity editor" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white"><X size={18}/></button></div>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <label className="sm:col-span-2 text-xs font-medium text-slate-300">Activity title<input ref={activityTitleRef} required maxLength={160} name="title" defaultValue={editorActivity?.title || ''} placeholder="e.g. Visit the National Museum" className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white placeholder:text-slate-600 focus:border-amber-400"/></label>
-            <label className="text-xs font-medium text-slate-300">Time<input required maxLength={30} name="time" defaultValue={editorActivity?.time || '09:00 AM'} placeholder="09:00 AM" className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white focus:border-amber-400"/></label>
-            <label className="text-xs font-medium text-slate-300">Category<select required name="category" defaultValue={editorActivity?.category || 'activity'} className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white focus:border-amber-400"><option value="activity">Activity</option><option value="food">Food</option><option value="transport">Transport</option><option value="accommodation">Accommodation</option><option value="misc">Miscellaneous</option></select></label>
-            <label className="sm:col-span-2 text-xs font-medium text-slate-300">Estimated group cost (PHP)<input required type="number" min="0" max="10000000" step="0.01" name="estimatedCost" defaultValue={editorActivity?.estimatedCost ?? 0} className="mt-1.5 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white focus:border-amber-400"/></label>
-            <label className="sm:col-span-2 text-xs font-medium text-slate-300">Description<textarea maxLength={1000} name="description" defaultValue={editorActivity?.description || ''} rows={4} placeholder="Add helpful details, location, or reminders." className="mt-1.5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white placeholder:text-slate-600 focus:border-amber-400"/></label>
-          </div>
-          <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button type="button" onClick={()=>setActivityEditor(null)} className="min-h-11 rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Cancel</button><button type="submit" className="min-h-11 rounded-lg bg-amber-400 px-5 py-2 text-sm font-extrabold text-slate-950 hover:bg-amber-300">{editorActivity?'Save activity':'Add activity'}</button></div>
-        </form>
-      </div>}
-      {selectedDay && itinerary && <div ref={dayModalRef} className="fixed inset-0 z-50 overflow-y-auto bg-black/80 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="day-dialog-title" aria-describedby="day-dialog-description" onMouseDown={(event)=>{if(event.target===event.currentTarget)setSelectedDay(null);}}>
-        <div className="mx-auto max-w-4xl overflow-hidden rounded-md border border-slate-700 bg-[#07111f] shadow-2xl">
-          <div className="relative aspect-[21/9] min-h-[180px]">
-            <Image src={placeImage(selectedDay.imageUrl, LOCAL_DAY_IMAGES[selectedDay.day-1] || '/travel-illustration.png')} alt={`${selectedDay.theme} in ${itinerary.destination}`} fill sizes="(max-width: 900px) 100vw, 900px" className="object-cover" />
-            <button ref={dayCloseRef} type="button" onClick={()=>setSelectedDay(null)} aria-label="Close day details" title="Close details" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-md bg-slate-950/90 hover:bg-slate-800"><X size={20}/></button>
-            <span className="absolute bottom-3 left-3 bg-slate-950/90 px-3 py-2 text-sm font-bold text-amber-300">DAY {selectedDay.day}</span>
-            {selectedDay.imageAttribution&&<a href={selectedDay.imageAttribution.sourceUrl} target="_blank" rel="noreferrer" title={`${selectedDay.imageAttribution.creator} · ${selectedDay.imageAttribution.license}`} className="absolute bottom-3 right-3 max-w-[65%] truncate rounded bg-slate-950/85 px-2 py-1 text-[10px] text-slate-200">Photo: {selectedDay.imageAttribution.creator} · {selectedDay.imageAttribution.license}</a>}
-          </div>
-          <div className="p-4 sm:p-6">
-            <div className="flex flex-wrap justify-between gap-3"><div><h2 id="day-dialog-title" className="text-xl font-bold">Day {selectedDay.day}: {selectedDay.theme}</h2><p id="day-dialog-description" className="text-sm text-slate-400">{selectedDay.date} · {itinerary.destination}</p></div><div className="text-right"><strong className="font-mono text-lg">PHP {selectedDay.totalCost.toLocaleString()}</strong><p className="flex items-center justify-end gap-1 text-xs text-emerald-200"><BusFront size={13}/>Ride/boat fare PHP {(selectedDay.rideFare||0).toLocaleString()}</p></div></div>
-            {selectedDay.travelNote && <p className="mt-4 flex items-start gap-2 border-l-2 border-cyan-400 pl-3 text-sm text-cyan-100"><Clock3 size={16} className="mt-0.5 shrink-0"/>{selectedDay.travelNote}</p>}
-            {selectedDay.crowdLevel && <p className="mt-3 rounded-md border border-violet-900 bg-violet-950/30 px-3 py-2 text-xs text-violet-200"><strong className="capitalize">{selectedDay.crowdLevel} estimated crowd.</strong> {selectedDay.crowdNote}</p>}
-            <div className="mt-6 divide-y divide-slate-800 border-y border-slate-800">{selectedDay.activities.map((item,index)=><article key={`${item.time}-${index}`} className="grid grid-cols-[88px_1fr] gap-3 py-4 sm:grid-cols-[128px_1fr_auto] sm:items-center">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-slate-900"><Image src={placeImage(item.imageUrl, placeImage(selectedDay.imageUrl, '/travel-illustration.png'))} alt={`${item.title} in ${itinerary.destination}`} fill sizes="128px" className="object-cover" />{item.imageAttribution&&<a href={item.imageAttribution.sourceUrl} target="_blank" rel="noreferrer" title={`${item.imageAttribution.creator} · ${item.imageAttribution.license}`} className="absolute bottom-1 right-1 rounded bg-slate-950/85 px-1 text-[8px] text-slate-200">Photo info</a>}</div>
-              <div><p className="text-xs uppercase text-cyan-300">{item.time} · {item.category}</p><h3 className="font-semibold">{item.title}</h3><p className="mt-1 text-xs leading-relaxed text-slate-400">{item.description}</p><p className="mt-2 font-mono text-sm sm:hidden">Estimated price: {travelers>1&&item.unitCost!==undefined?`PHP ${item.unitCost.toLocaleString()}/person · PHP ${item.estimatedCost.toLocaleString()} group`:`PHP ${item.estimatedCost.toLocaleString()}`}</p></div>
-              <p className="hidden text-right font-mono text-sm sm:block"><span className="text-xs uppercase tracking-wide text-slate-500">Estimated price</span><br/>{travelers>1&&item.unitCost!==undefined?<>PHP {item.unitCost.toLocaleString()}/person<small className="block text-slate-500">PHP {item.estimatedCost.toLocaleString()} group</small></>:<>PHP {item.estimatedCost.toLocaleString()}</>}</p>
-            </article>)}</div>
-            {itinerary.accommodation && <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm"><div className="flex items-center gap-2 text-amber-200"><BedDouble size={17}/><span>{itinerary.accommodation.name} · PHP {itinerary.accommodation.nightlyRate.toLocaleString()}/night</span></div>{selectedDay.returnToStayAt&&<strong>Return by {selectedDay.returnToStayAt}</strong>}</div>}
-          </div>
-        </div>
-      </div>}
+      {activityEditor && editorDay && <ActivityEditorDialog editor={activityEditor} day={editorDay} activity={editorActivity} currency={itinerary?.currency || currency} modalRef={activityModalRef} titleRef={activityTitleRef} onClose={() => setActivityEditor(null)} onSubmit={submitActivity} />}
+      {selectedDay && itinerary && <DayDetailsDialog day={selectedDay} itinerary={itinerary} travelers={travelers} referenceCurrency={referenceCurrency} exchangeQuotes={exchangeQuotes} photoRefreshDay={photoRefreshDay} modalRef={dayModalRef} closeRef={dayCloseRef} onClose={() => setSelectedDay(null)} onRefreshPhotos={(day) => void refreshDayPhotos(day, true)} />}
     </div>
   );
 }

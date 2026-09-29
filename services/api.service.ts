@@ -25,52 +25,27 @@ export type {
   ForecastDay,
 } from '@/lib/contracts';
 
-import type { ItineraryResponse, WeatherData } from '@/lib/contracts';
-import type { PartyType } from '@/lib/domain';
+import type { DayPlan, ItineraryDayResponse, ItineraryResponse, WeatherData } from '@/lib/contracts';
+import type { CurrencyCode, PartyType } from '@/lib/domain';
 import { parseWeatherData } from '@/services/provider-response';
+import { handleResponse } from '@/services/api-response';
+import { fetchTripWithOptionalWeather } from '@/lib/trip-data';
+export { ApiError, handleResponse, isAuthenticationError } from '@/services/api-response';
 
-export class ApiError extends Error {
-  constructor(message: string, readonly status: number) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
-
-export function isAuthenticationError(error: unknown): boolean {
-  return error instanceof ApiError && (error.status === 401 || error.status === 403);
-}
-
-type TripOptions = { travelers?: number; partyType?: PartyType; startDate?: string; endDate?: string; latitude?: number; longitude?: number; interests?: string[]; preferredActivities?: string[]; travelStyle?: string; accommodationPreference?: string; transportationPreference?: string; weatherContext?: Array<{ date: string; description: string; precipitationProbability: number; tempMax: number }>; accommodationListingId?: string; externalAccommodation?: { hotelId: string; offerId: string; name: string; address: string; nightlyRate: number; isLive: boolean; selectionToken: string } };
+type TripOptions = { idempotencyKey?: string; currency?: CurrencyCode; travelers?: number; partyType?: PartyType; startDate?: string; endDate?: string; latitude?: number; longitude?: number; interests?: string[]; preferredActivities?: string[]; travelStyle?: string; accommodationPreference?: string; transportationPreference?: string; accommodationListingId?: string; externalAccommodation?: { hotelId: string; offerId: string; name: string; address: string; nightlyRate: number; currency: string; isLive: boolean; selectionToken: string }; selectedFlight?: { id: string; name: string; price: number; currency: string; fetchedAt: string; selectionToken: string }; selectedActivities?: Array<{ id: string; name: string; price: number; currency: string; fetchedAt: string; selectionToken: string }>; preTripCosts?: { startingLocation?: string; departureAirport?: string; passportCountry?: string; passportStatus?: 'valid' | 'needs_application' | 'needs_renewal' | 'not_sure'; airportTransferOutbound: number; airportTransferReturn: number; passport: number; visaOrAuthorization: number; departureTaxes: number; insurance: number; other: number } };
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
-
-export async function handleResponse<T>(res: Response): Promise<T> {
-  const text = await res.text();
-  let data: unknown = null;
-  if (text) {
-    try { data = JSON.parse(text); }
-    catch {
-      throw new Error(res.ok ? 'The server returned an invalid response.' : 'TravelMate could not reach a required service. Please try again.');
-    }
-  }
-  if (!res.ok) {
-    const error = data && typeof data === 'object' && 'error' in data ? String((data as { error?: unknown }).error || '') : '';
-    throw new ApiError(error || `Request failed (${res.status}).`, res.status);
-  }
-  return data as T;
-}
 
 // ─── Itinerary ─────────────────────────────────────────────────────────────────
 
 /**
  * Fetch a date-range AI-generated itinerary from the configured provider.
  *
- * Falls back to realistic mock data automatically when:
- *  - OPENAI_API_KEY is not configured on the server
- *  - The OpenAI request fails for any reason
+ * A disclosed mock is available only when the backend explicitly enables its
+ * non-production fallback. Configured-provider failures remain errors.
  *
  * @param destination  City / region name e.g. "Tokyo, Japan"
- * @param budget       Total group trip budget in PHP
+ * @param budget       Total group trip budget in the selected currency
  * @returns            Parsed ItineraryResponse ready to drive the itinerary UI
  */
 export async function fetchItineraryFromAI(
@@ -85,7 +60,7 @@ export async function fetchItineraryFromAI(
   try {
     res = await fetch('/api/itinerary', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...(options?.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : {}) },
       body: JSON.stringify({ destination: destination.trim(), budget, ...options }),
       signal: AbortSignal.timeout(90_000),
     });
@@ -96,14 +71,29 @@ export async function fetchItineraryFromAI(
   return handleResponse<ItineraryResponse>(res);
 }
 
+export async function refreshItineraryDayImages(destination: string, day: DayPlan): Promise<DayPlan> {
+  let res: Response;
+  try {
+    res = await fetch('/api/itinerary/images', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ destination, day }),
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch (error) {
+    throw new Error(error instanceof DOMException && error.name === 'TimeoutError' ? 'Activity photo refresh timed out.' : 'Activity photos are temporarily unavailable.');
+  }
+  const payload = await handleResponse<ItineraryDayResponse>(res);
+  return payload.day;
+}
+
 // ─── Weather ───────────────────────────────────────────────────────────────────
 
 /**
  * Fetch current weather plus any forecast available for the selected dates.
  *
- * Falls back to mock weather data automatically when:
- *  - OPENWEATHER_API_KEY is not configured on the server
- *  - The OpenWeatherMap request fails for any reason
+ * The backend uses its configured weather providers and returns an explicit
+ * unavailable state rather than fabricating weather.
  *
  * @param city  City name e.g. "Tokyo" or "Paris, FR"
  * @returns     WeatherData including alerts and daily forecast array
@@ -129,16 +119,16 @@ export async function fetchWeather(city: string, startDate?: string, endDate?: s
 // ─── Combined helper ───────────────────────────────────────────────────────────
 
 /**
- * Fetch both itinerary and weather in parallel.
- * Useful for the main trip planning flow where both are needed simultaneously.
+ * Fetch an itinerary and optional weather context in parallel. Weather
+ * provider failure must not prevent the itinerary from being generated.
  */
 export async function fetchTripData(
   destination: string,
   budget: number,
   options?: TripOptions,
-): Promise<{ itinerary: ItineraryResponse; weather: WeatherData }> {
-  const weather = await fetchWeather(destination, options?.startDate, options?.endDate, options);
-  const weatherContext = weather.forecast.map((day) => ({ date: day.date, description: day.description, precipitationProbability: day.precipitationProbability, tempMax: day.tempMax }));
-  const itinerary = await fetchItineraryFromAI(destination, budget, { ...options, weatherContext });
-  return { itinerary, weather };
+): Promise<{ itinerary: ItineraryResponse; weather: WeatherData | null }> {
+  return fetchTripWithOptionalWeather(
+    () => fetchItineraryFromAI(destination, budget, options),
+    () => fetchWeather(destination, options?.startDate, options?.endDate, options),
+  );
 }

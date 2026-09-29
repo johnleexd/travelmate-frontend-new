@@ -9,13 +9,18 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --test --experimental-strip-types tests/*.test.ts",
+    "contracts:sync": "node scripts/sync-api-contracts.mjs",
+    "contracts:check": "node scripts/sync-api-contracts.mjs --check",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@types/styled-components": "^5.1.36",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "geist": "^1.7.2",
+    "gsap": "^3.15.0",
     "lucide-react": "^1.21.0",
     "next": "16.2.9",
     "radix-ui": "^1.6.0",

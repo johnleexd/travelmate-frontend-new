@@ -2,8 +2,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 const DEMO_PASSWORD = 'Travel123!';
 const DEMO_ACCOUNTS = {
-  traveler: { email: 'traveler@travelmate.test', route: '/dashboard', heading: 'Dashboard' },
-  owner: { email: 'owner@travelmate.test', route: '/owner/dashboard', heading: 'Overview' },
+  traveler: { email: 'traveler@travelmate.test', route: '/dashboard', heading: 'Your travel home' },
+  owner: { email: 'owner@travelmate.test', route: '/owner/dashboard', heading: 'Run the stay behind the journey.' },
   admin: { email: 'admin@travelmate.test', route: '/admin/dashboard', heading: 'Overview' },
 } as const;
 
@@ -13,16 +13,12 @@ async function loginAs(page: Page, role: DemoRole) {
   const account = DEMO_ACCOUNTS[role];
   await page.goto('/');
   await page.getByRole('button', { name: 'Sign in', exact: true }).first().click();
+  if (role === 'owner') await page.getByRole('dialog').getByRole('button', { name: 'Owner', exact: true }).click();
+  await page.getByLabel('Email address').click();
   await page.getByLabel('Email address').fill(account.email);
   await page.getByLabel('Password').fill(DEMO_PASSWORD);
   const submit = page.getByRole('dialog').getByRole('button', { name: 'Sign in', exact: true });
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    await submit.click();
-    const navigated = await page.waitForURL(new RegExp(`${account.route}$`), { timeout: 5_000 })
-      .then(() => true)
-      .catch(() => false);
-    if (navigated) break;
-  }
+  await submit.click();
   await expect(page).toHaveURL(new RegExp(`${account.route}$`));
   await expect(page.getByRole('heading', { name: account.heading, exact: true }).first()).toBeVisible();
 }
@@ -40,6 +36,43 @@ async function expectNamedControls(page: Page, context: string) {
     .map((element) => element.outerHTML.slice(0, 180)));
   expect(unnamed, `${context} contains visible controls without accessible names`).toEqual([]);
 }
+
+test('sign-in submits the selected traveler or owner role', async ({ page }) => {
+  const submittedRoles: string[] = [];
+  await page.route('**/api/auth', async (route) => {
+    const body = route.request().postDataJSON() as { role: string };
+    submittedRoles.push(body.role);
+    await route.fulfill({
+      status: 403,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'Select the role registered to this account to sign in.' }),
+    });
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('button', { name: 'Traveler', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await dialog.getByLabel('Email address').fill(DEMO_ACCOUNTS.owner.email);
+  await dialog.getByLabel('Password').fill(DEMO_PASSWORD);
+  await dialog.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect(dialog.getByRole('status')).toContainText('Select the role registered to this account');
+  await dialog.getByRole('button', { name: 'Owner', exact: true }).click();
+  await dialog.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await expect.poll(() => submittedRoles).toEqual(['traveler', 'owner']);
+});
+
+test('sign-in keeps Google visible when OAuth is not configured', async ({ page }) => {
+  await page.route('**/api/auth/oauth/google/status', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({ available: false }),
+  }));
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('link', { name: 'Continue with Google' })).toBeVisible();
+  await expect(dialog.getByLabel('Email address')).toBeVisible();
+});
 
 test('owner and admin routes reject unauthenticated and wrong-role sessions', async ({ page }) => {
   for (const route of ['/owner/dashboard', '/admin/dashboard']) {

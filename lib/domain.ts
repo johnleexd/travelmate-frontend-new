@@ -1,7 +1,47 @@
-export type Role = 'traveler' | 'owner' | 'admin';
-export type ProfileStatus = 'unverified' | 'pending' | 'verified' | 'rejected';
-export type PaymentStatus = 'PAID_HELD' | 'Released' | 'FROZEN_HELD' | 'REFUNDED';
-export type PartyType = 'solo' | 'couple' | 'family' | 'friends';
+import type {
+  AuditEvent,
+  Booking,
+  Listing,
+  ModerationItem,
+  PartyType,
+  PublicUser,
+  SavedTrip,
+} from './generated/core-contracts';
+import type { CurrencyCode } from './generated/destination-contracts';
+
+export type {
+  AuditEvent,
+  Booking,
+  ItineraryGenerationSummary,
+  ItineraryVersion,
+  Listing,
+  ModerationItem,
+  PartyType,
+  PaymentStatus,
+  ProfileStatus,
+  PublicUser,
+  Role,
+  SavedTrip,
+} from './generated/core-contracts';
+export type { CurrencyCode } from './generated/destination-contracts';
+
+export const SUPPORTED_CURRENCIES = ['PHP', 'USD', 'EUR', 'JPY', 'KRW', 'THB', 'GBP', 'AUD', 'CAD', 'SGD', 'CNY', 'HKD', 'TWD', 'MYR', 'IDR', 'VND', 'INR', 'NZD', 'CHF', 'AED'] as const;
+export const ZERO_DECIMAL_CURRENCIES: readonly CurrencyCode[] = ['JPY', 'KRW', 'VND'];
+export const CURRENCY_NAMES: Record<CurrencyCode, string> = {
+  PHP: 'Philippine peso', USD: 'US dollar', EUR: 'Euro', JPY: 'Japanese yen', KRW: 'South Korean won',
+  THB: 'Thai baht', GBP: 'British pound', AUD: 'Australian dollar', CAD: 'Canadian dollar', SGD: 'Singapore dollar',
+  CNY: 'Chinese yuan', HKD: 'Hong Kong dollar', TWD: 'New Taiwan dollar', MYR: 'Malaysian ringgit', IDR: 'Indonesian rupiah',
+  VND: 'Vietnamese dong', INR: 'Indian rupee', NZD: 'New Zealand dollar', CHF: 'Swiss franc', AED: 'UAE dirham',
+};
+
+export function formatMoney(value: number, currency: CurrencyCode): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency,
+    currencyDisplay: 'code',
+    maximumFractionDigits: ZERO_DECIMAL_CURRENCIES.includes(currency) ? 0 : 2,
+  }).format(value);
+}
 
 export const PARTY_TYPE_LABELS: Record<PartyType, string> = {
   solo: 'Solo',
@@ -10,82 +50,36 @@ export const PARTY_TYPE_LABELS: Record<PartyType, string> = {
   friends: 'Friends / barkada',
 };
 
-export interface PublicUser {
-  id: string;
-  name: string;
-  email: string;
-  role: Role;
-  emailVerified: boolean;
-  profileStatus: ProfileStatus;
-  trustScore: number;
-  accountStatus: 'active' | 'suspended';
-  bio?: string;
-  phone?: string;
+export function partyBudgetLabel(partyType: PartyType, travelers: number): string {
+  if (partyType === 'solo') return 'Solo trip budget';
+  if (partyType === 'couple') return 'Combined couple budget';
+  if (partyType === 'family') return `Total family budget (${travelers} travelers)`;
+  return `Total barkada budget (${travelers} travelers)`;
+}
+
+export function partyBudgetExplanation(partyType: PartyType, travelers: number): string {
+  if (partyType === 'solo') return 'This entire amount is for you alone.';
+  if (partyType === 'couple') return 'Enter one combined budget for both travelers, not an amount per person.';
+  if (partyType === 'family') return `Enter one total budget shared by all ${travelers} family members.`;
+  return `Enter one total budget shared by all ${travelers} barkada members.`;
+}
+
+export function partySpendLabel(partyType: PartyType): string {
+  if (partyType === 'solo') return 'Estimated solo spend';
+  if (partyType === 'couple') return 'Estimated combined couple spend';
+  if (partyType === 'family') return 'Estimated family spend';
+  return 'Estimated barkada spend';
+}
+
+export function partyEstimateLabel(partyType: PartyType): string {
+  if (partyType === 'solo') return 'solo estimate';
+  if (partyType === 'couple') return 'combined couple estimate';
+  return 'group estimate';
 }
 
 export interface StoredUser extends PublicUser {
   passwordHash: string;
   passwordSalt: string;
-}
-
-export interface Listing {
-  id: string;
-  ownerId: string;
-  name: string;
-  category: 'stay' | 'activity' | 'food' | 'transport';
-  price: number;
-  capacity: number;
-  available: number;
-  status: 'pending' | 'approved' | 'rejected';
-  description: string;
-  municipality: string;
-  address: string;
-  amenities: string[];
-  imageUrl?: string;
-}
-
-export interface Booking {
-  id: string;
-  travelerId: string;
-  listingId: string;
-  amount: number;
-  guests: number;
-  nights: number;
-  status: 'confirmed' | 'change_requested' | 'cancel_requested' | 'cancelled' | 'completed';
-  paymentStatus: PaymentStatus;
-  createdAt: string;
-}
-
-export interface ModerationItem {
-  id: string;
-  kind: 'profile' | 'listing' | 'dispute';
-  subjectId: string;
-  title: string;
-  details: string;
-  status: 'pending' | 'approved' | 'rejected' | 'resolved';
-  createdAt: string;
-}
-
-export interface SavedTrip {
-  id: string;
-  userId: string;
-  destination: string;
-  budget: number;
-  startDate: string;
-  endDate: string;
-  travelers: number;
-  interests: string[];
-  itinerary: unknown;
-  weather: unknown;
-  createdAt: string;
-}
-
-export interface AuditEvent {
-  id: string;
-  actorId: string;
-  action: string;
-  targetId: string;
-  createdAt: string;
 }
 
 export interface Database {
@@ -129,13 +123,27 @@ export function travelersForParty(partyType: PartyType, requestedTravelers: numb
   return requestedTravelers;
 }
 
-/** Split whole-peso costs exactly; the first members absorb any PHP 1 remainder. */
-export function allocateEqualShares(total: number, travelers: number): number[] {
-  if (!Number.isInteger(total) || total < 0) throw new Error('Shared amount must be a non-negative whole peso value.');
+export function currencyFractionDigits(currency: CurrencyCode): 0 | 2 {
+  return ZERO_DECIMAL_CURRENCIES.includes(currency) ? 0 : 2;
+}
+
+export function hasValidCurrencyPrecision(value: number, currency: CurrencyCode): boolean {
+  if (!Number.isFinite(value)) return false;
+  const scale = 10 ** currencyFractionDigits(currency);
+  return Math.abs(value * scale - Math.round(value * scale)) < 1e-7;
+}
+
+/** Split money exactly in its smallest supported unit; the first members absorb any remainder. */
+export function allocateEqualShares(total: number, travelers: number, currency: CurrencyCode): number[] {
+  if (total < 0 || !hasValidCurrencyPrecision(total, currency)) {
+    throw new Error(`Shared amount must be a non-negative ${currency} value with at most ${currencyFractionDigits(currency)} decimal places.`);
+  }
   if (!Number.isInteger(travelers) || travelers < 1 || travelers > 20) throw new Error('Travelers must be between 1 and 20.');
-  const base = Math.floor(total / travelers);
-  const remainder = total - base * travelers;
-  return Array.from({ length: travelers }, (_, index) => base + (index < remainder ? 1 : 0));
+  const scale = 10 ** currencyFractionDigits(currency);
+  const minorUnitTotal = Math.round(total * scale);
+  const base = Math.floor(minorUnitTotal / travelers);
+  const remainder = minorUnitTotal - base * travelers;
+  return Array.from({ length: travelers }, (_, index) => (base + (index < remainder ? 1 : 0)) / scale);
 }
 
 /** Preserve the relative mix of estimates while keeping their exact whole-peso sum under a cap. */

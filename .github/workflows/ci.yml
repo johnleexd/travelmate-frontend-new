@@ -1,0 +1,114 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, unit, and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      BACKEND_URL: http://localhost:5000
+    steps:
+      - name: Check out frontend
+        uses: actions/checkout@v7
+      - name: Use Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+      - name: Run lint
+        run: npm run lint
+      - name: Run unit tests
+        run: npm test
+      - name: Build production application
+        run: npm run build
+
+  e2e:
+    name: Isolated browser suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: travelmate_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d travelmate_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CI: "true"
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/travelmate_ci?schema=public
+      DIRECT_URL: postgresql://postgres:postgres@localhost:5432/travelmate_ci?schema=public
+      FRONTEND_URL: http://localhost:3000
+      BACKEND_URL: http://localhost:5000
+      SESSION_SECRET: travelmate-ci-session-secret-at-least-32-characters
+      ACCOUNT_TOKEN_SECRET: travelmate-ci-account-token-secret-at-least-32-characters
+      AI_MOCK_FALLBACK: "true"
+    defaults:
+      run:
+        working-directory: travelmate-frontend-new
+    steps:
+      - name: Check out frontend
+        uses: actions/checkout@v7
+        with:
+          path: travelmate-frontend-new
+      - name: Check out backend
+        uses: actions/checkout@v7
+        with:
+          repository: johnleexd/travelmate-backend-api
+          token: ${{ secrets.BACKEND_REPO_TOKEN || github.token }}
+          path: travelmate-backend-api
+      - name: Use Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            travelmate-frontend-new/package-lock.json
+            travelmate-backend-api/package-lock.json
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Install backend dependencies
+        run: npm ci --prefix ../travelmate-backend-api
+      - name: Verify frontend API contract snapshot
+        run: npm run contracts:check
+      - name: Apply all migrations
+        run: npm run db:migrate --prefix ../travelmate-backend-api
+      - name: Seed deterministic test data
+        run: npm run db:seed --prefix ../travelmate-backend-api
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run complete browser suite
+        run: npx playwright test
+      - name: Upload browser diagnostics
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-${{ github.run_attempt }}
+          path: |
+            travelmate-frontend-new/playwright-report
+            travelmate-frontend-new/test-results
+          if-no-files-found: ignore
+          retention-days: 7

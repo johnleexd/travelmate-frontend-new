@@ -2,6 +2,21 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function proxy(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    const forwardedProtocol = request.headers
+      .get('x-forwarded-proto')
+      ?.split(',', 1)[0]
+      ?.trim()
+      .toLowerCase();
+    const usesHttps = request.nextUrl.protocol === 'https:' || forwardedProtocol === 'https';
+
+    if (!usesHttps) {
+      const secureUrl = request.nextUrl.clone();
+      secureUrl.protocol = 'https:';
+      return NextResponse.redirect(secureUrl, 308);
+    }
+  }
+
   const token = request.cookies.get('travelmate_session')?.value;
 
   const url = request.nextUrl.clone();
@@ -24,8 +39,6 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/dashboard',
-    '/owner/dashboard',
-    '/admin/dashboard',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

@@ -8,7 +8,7 @@ export default defineConfig({
   reporter: process.env.CI ? [['line'], ['html', { open: 'never' }]] : 'line',
   use: {
     baseURL: 'http://localhost:3000',
-    channel: 'chrome',
+    channel: process.env.CI ? undefined : 'chrome',
     screenshot: 'only-on-failure',
     trace: 'retain-on-failure',
   },

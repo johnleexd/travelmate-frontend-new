@@ -5,7 +5,7 @@ import { moveActivity, removeActivity, upsertActivity } from '../lib/itinerary-e
 
 const plan = (): ItineraryResponse => ({
   destination: 'Cebu', totalBudget: 10_000, currency: 'PHP', travelers: 2,
-  accommodation: { listingId: 'stay', name: 'Stay', address: 'Cebu', nightlyRate: 1_000, nights: 1, total: 1_000 },
+  accommodation: { listingId: 'stay', name: 'Stay', address: 'Cebu', nightlyRate: 1_000, nights: 1, total: 1_000, currency: 'PHP' },
   budgetSummary: { accommodation: 3_400, food: 2_200, activities: 2_000, transport: 1_400, reserve: 1_000, dailyAverage: 5_000, total: 10_000 },
   costSharing: { partyType: 'couple', travelers: 2, groupBudget: 10_000, plannedGroupSpend: 1_600, budgetShares: [5_000, 5_000], plannedSpendShares: [800, 800], accommodationShares: [500, 500], reserveShares: [4_200, 4_200] },
   days: [

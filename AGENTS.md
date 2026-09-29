@@ -4,13 +4,24 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
-# TravelMate Master Prompt Guidelines
+# TravelMate repository guidance
 
-Treat the master prompt as the single, complete, authoritative reference for the TravelMate project.
-Key Constraints:
-- **System Identity**: Name is strictly `TravelMate`. It is an AI-powered travel planning, budget tracking, and itinerary management system.
-- **Verification Gates**: Separate Email verification (blocks login) and Profile verification (does not block login, places in Limited Mode).
-- **Core Workflow**: Traveler Input Form -> Mathematical Budget Split Algorithm -> OpenAI & OpenWeatherMap APIs mapping -> 7-Day Panel render with weather alerts.
-- **PayMongo Integration**: Test Mode only. Hold/release is simulated (`PAID_HELD` -> `Released` / `FROZEN_HELD` / `REFUNDED`).
-- **Landing Page Structure**: Navbar -> Hero ("AI Travel Planning Made Real") -> Problem Section -> Traveler How It Works (5 steps) -> Host How It Works (5 steps) -> Budget Engine Explainer (7-day mock panels & weather) -> Trust & Safety -> Comparison Table -> Platform Preview -> FAQ accordion -> Dual CTA -> Footer.
+Read `../MASTERPROMPT.md` before analysis or changes. It is the authoritative
+product specification; this file does not define a second UI or feature contract.
+
+Current implementation constraints:
+
+- TravelMate is an AI-assisted travel planning system, not a generic chatbot.
+- The traveler lifecycle is **Define → Generate → Understand → Refine → Save →
+  Reopen** and supports validated trips from 1–14 days.
+- Budget calculations are deterministic. OpenAI or Gemini may generate a structured
+  itinerary, while OpenWeatherMap or Open-Meteo may supply date-matched weather.
+- Crowd information is a clearly labeled calendar estimate, not live foot traffic.
+- Email verification blocks login. Profile verification is separate and may place
+  an authenticated account in Limited Mode.
+- Payment behavior is explicitly simulated; a configured PayMongo key does not make
+  it a real payment integration.
+- Preserve working landing and dashboard behavior unless the owner asks for a
+  scoped change. Do not restore older fixed seven-day layouts or provider-only
+  assumptions.
 

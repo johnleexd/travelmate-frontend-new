@@ -1,6 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { allocateDailyBudget, allocateEqualShares, capCostsToBudget, splitBudget, travelersForParty } from '../lib/domain.ts';
+import { allocateDailyBudget, allocateEqualShares, capCostsToBudget, formatMoney, partyBudgetExplanation, partyBudgetLabel, partyEstimateLabel, partySpendLabel, splitBudget, SUPPORTED_CURRENCIES, ZERO_DECIMAL_CURRENCIES, travelersForParty } from '../lib/domain.ts';
+
+test('money formatting keeps the selected currency visible', () => {
+  assert.match(formatMoney(1234.5, 'EUR'), /EUR\s*1,234\.50/);
+  assert.match(formatMoney(1234, 'JPY'), /JPY\s*1,234/);
+});
+
+test('destination currencies include the requested Asian and global fallbacks', () => {
+  for (const currency of ['PHP', 'JPY', 'KRW', 'USD', 'EUR', 'THB'] as const) {
+    assert.ok(SUPPORTED_CURRENCIES.includes(currency));
+  }
+  assert.ok(ZERO_DECIMAL_CURRENCIES.includes('KRW'));
+  assert.match(formatMoney(1234, 'KRW'), /KRW\s*1,234/);
+});
 
 test('budget split reconciles exactly to total', () => {
   const result = splitBudget(35001, 2);
@@ -46,10 +59,23 @@ test('party types enforce solo, couple, and adjustable group sizes', () => {
   assert.throws(() => travelersForParty('friends', 1));
 });
 
-test('equal shares reconcile exactly even with a peso remainder', () => {
-  const shares = allocateEqualShares(10000, 3);
-  assert.deepEqual(shares, [3334, 3333, 3333]);
+test('budget copy states exactly who owns the entered total', () => {
+  assert.equal(partyBudgetLabel('solo', 1), 'Solo trip budget');
+  assert.match(partyBudgetExplanation('solo', 1), /you alone/);
+  assert.equal(partyBudgetLabel('couple', 2), 'Combined couple budget');
+  assert.match(partyBudgetExplanation('couple', 2), /both travelers/);
+  assert.equal(partyBudgetLabel('family', 5), 'Total family budget (5 travelers)');
+  assert.equal(partyBudgetLabel('friends', 7), 'Total barkada budget (7 travelers)');
+  assert.equal(partySpendLabel('couple'), 'Estimated combined couple spend');
+  assert.equal(partyEstimateLabel('solo'), 'solo estimate');
+});
+
+test('equal shares reconcile exactly in the selected currency minor units', () => {
+  const shares = allocateEqualShares(10000, 3, 'PHP');
+  assert.deepEqual(shares, [3333.34, 3333.33, 3333.33]);
   assert.equal(shares.reduce((sum, amount) => sum + amount, 0), 10000);
+  assert.deepEqual(allocateEqualShares(1000.50, 3, 'USD'), [333.50, 333.50, 333.50]);
+  assert.deepEqual(allocateEqualShares(10000, 3, 'JPY'), [3334, 3333, 3333]);
 });
 
 test('activity estimates are proportionally capped to the available group budget', () => {
