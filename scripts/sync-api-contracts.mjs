@@ -84,7 +84,7 @@ const coreSchemaNames = [
   'BudgetOptimizationSuggestion', 'BudgetOptimization', 'CostSharing',
   'BudgetSummary', 'ItineraryPreferences', 'ItineraryResponse',
   'PublicUser', 'CurrentUserResponse', 'AuthActionResponse', 'ProfileResponse',
-  'Listing', 'Booking', 'ModerationItem', 'SavedTrip', 'ItineraryVersion',
+  'Listing', 'Booking', 'ListingBlockedDate', 'Promotion', 'Review', 'Notification', 'PaymentTransaction', 'OwnerDocument', 'ModerationItem', 'SavedTrip', 'ItineraryVersion',
   'ItineraryGenerationSummary', 'AuditEvent', 'PlatformMetrics',
   'PlatformIntegrations', 'PlatformResponse', 'PlatformActionResponse',
   'ItineraryDayResponse',

@@ -2,7 +2,7 @@
 
 import type { CurrencyCode } from './destination-contracts';
 
-export type Role = "traveler" | "owner" | "admin";
+export type Role = "traveler" | "admin";
 
 export type ProfileStatus = "unverified" | "pending" | "verified" | "rejected";
 
@@ -248,16 +248,66 @@ export interface Booking {
   updatedAt: string;
 }
 
-export interface ListingBlockedDate { id: string; listingId: string; date: string; reason: string; }
-export interface Promotion { id: string; listingId: string; name: string; discountPct: number; startDate: string; endDate: string; active: boolean; }
-export interface Review { id: string; bookingId: string; listingId: string; travelerId: string; rating: number; comment: string; createdAt: string; }
-export interface Notification { id: string; userId: string; title: string; body: string; href: string; readAt?: string; createdAt: string; }
-export interface PaymentTransaction { id: string; bookingId: string; kind: string; status: string; amount: number; note: string; createdAt: string; }
-export interface OwnerDocument { id: string; ownerId: string; type: string; name: string; fileUrl: string; status: string; createdAt: string; }
+export interface ListingBlockedDate {
+  id: string;
+  listingId: string;
+  date: string;
+  reason: string;
+}
+
+export interface Promotion {
+  id: string;
+  listingId: string;
+  name: string;
+  discountPct: number;
+  startDate: string;
+  endDate: string;
+  active: boolean;
+}
+
+export interface Review {
+  id: string;
+  bookingId: string;
+  listingId: string;
+  travelerId: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  body: string;
+  href: string;
+  readAt?: string;
+  createdAt: string;
+}
+
+export interface PaymentTransaction {
+  id: string;
+  bookingId: string;
+  kind: string;
+  status: string;
+  amount: number;
+  note: string;
+  createdAt: string;
+}
+
+export interface OwnerDocument {
+  id: string;
+  ownerId: string;
+  type: string;
+  name: string;
+  fileUrl: string;
+  status: string;
+  createdAt: string;
+}
 
 export interface ModerationItem {
   id: string;
-  kind: "profile" | "listing" | "dispute";
+  kind: "profile" | "listing" | "dispute" | "report";
   subjectId: string;
   title: string;
   details: string;

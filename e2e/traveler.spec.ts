@@ -130,7 +130,7 @@ test('password recovery collects a reset code and strong replacement password', 
   await dialog.getByLabel('Confirm password', { exact: true }).fill('NewTravel123!');
   await dialog.getByRole('button', { name: 'Reset password' }).click();
 
-  await expect(dialog.getByRole('heading', { name: 'Welcome back.' })).toBeVisible();
+  await expect(dialog.getByRole('heading', { name: 'Welcome.' })).toBeVisible();
   await expect(dialog.getByText('Password reset complete. Sign in with your new password.')).toBeVisible();
   expect(actions).toEqual(['forgot-password', 'reset-password']);
 });

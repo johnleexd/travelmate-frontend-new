@@ -14,7 +14,6 @@ import {
   PencilLine,
   RotateCcw,
   Save,
-  ShieldCheck,
   Sparkles,
   WalletCards,
 } from 'lucide-react';
@@ -80,7 +79,6 @@ interface UpcomingTripSummary {
 
 interface TravelerJourneyOverviewProps {
   userName: string;
-  profileVerified: boolean;
   savedTripCount: number;
   currentPlan: { destination: string; days: number } | null;
   upcomingTrip: UpcomingTripSummary | null;
@@ -92,13 +90,12 @@ interface TravelerJourneyOverviewProps {
   onOpenSavedTrips: () => void;
   onOpenBudget: () => void;
   onOpenOptions: () => void;
-  onOpenAccount: () => void;
 }
 
 export function TravelerJourneyOverview({
-  userName, profileVerified, savedTripCount, currentPlan, upcomingTrip, referenceCurrency, exchangeQuotes,
+  userName, savedTripCount, currentPlan, upcomingTrip, referenceCurrency, exchangeQuotes,
   onStartPlanning, onOpenCurrentPlan, onOpenUpcomingTrip, onOpenSavedTrips,
-  onOpenBudget, onOpenOptions, onOpenAccount,
+  onOpenBudget, onOpenOptions,
 }: TravelerJourneyOverviewProps) {
   const [activeStep, setActiveStep] = useState(currentPlan ? 2 : savedTripCount > 0 ? 5 : 0);
   const [planningNote, setPlanningNote] = useState(0);
@@ -159,13 +156,13 @@ export function TravelerJourneyOverview({
       </section>
 
       <section aria-labelledby="lifecycle-title">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-semibold text-amber-300">The complete planning lifecycle</p><h2 id="lifecycle-title" className="mt-2 max-w-4xl text-3xl font-black tracking-[-0.045em] sm:text-5xl">Six states, one connected trip.</h2></div><p className="max-w-md text-sm leading-6 text-white/48">Select any state to see what you control, what the system handles, and what you receive.</p></div>
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-sm font-semibold text-[#ffcf70]">The complete planning lifecycle</p><h2 id="lifecycle-title" className="mt-2 max-w-4xl text-3xl font-black tracking-[-0.045em] sm:text-5xl">Six states, one connected trip.</h2></div><p className="max-w-md text-sm leading-6 text-white/48">Select any state to see what you control, what the system handles, and what you receive.</p></div>
         <div className="flex flex-col gap-px border border-white/10 bg-white/10 lg:min-h-[430px] lg:flex-row">
           {JOURNEY_STEPS.map((step, index) => {
             const Icon = step.icon;
             const active = activeStep === index;
             return (
-              <article key={step.title} data-journey-card data-lifecycle-card onMouseEnter={() => setActiveStep(index)} onFocus={() => setActiveStep(index)} className={`group overflow-hidden transition-[flex-grow,background-color,color] duration-500 ${active ? 'bg-amber-300 text-[#14231f] lg:flex-[2.4]' : 'bg-[#102622] text-white lg:flex-1'}`}>
+              <article key={step.title} data-journey-card data-lifecycle-card onMouseEnter={() => setActiveStep(index)} onFocus={() => setActiveStep(index)} className={`group overflow-hidden transition-[flex-grow,background-color,color] duration-500 ${active ? 'bg-[#ffcf70] text-[#102824] lg:flex-[2.4]' : 'bg-[#102824] text-white lg:flex-1'}`}>
                 <div className="flex min-h-[132px] w-full flex-col p-5 text-left sm:p-6 lg:h-full lg:min-h-[430px]">
                   <button type="button" onClick={() => setActiveStep(index)} aria-expanded={active} aria-label={`Explain ${step.title}`} className="flex w-full items-center justify-between gap-3 text-left"><span className={`grid h-10 w-10 shrink-0 place-items-center border ${active ? 'border-[#14231f]/25' : 'border-white/15'}`}><Icon size={18} /></span><span className={`text-[10px] font-bold ${active ? 'text-[#446057]' : 'text-white/38'}`}>{stepState(index)}</span></button>
                   <div className="mt-auto pt-8"><h3 className={`font-black tracking-[-0.04em] ${active ? 'text-2xl sm:text-3xl' : 'text-xl lg:[writing-mode:vertical-rl] lg:rotate-180'}`}>{active ? step.title : step.shortTitle}</h3><div className={`grid transition-[grid-template-rows,opacity] duration-500 ${active ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}><div className="overflow-hidden"><dl className="mt-6 space-y-4 text-sm leading-6"><div><dt className="text-xs font-black uppercase tracking-[0.12em] text-[#49635c]">You</dt><dd>{step.youDo}</dd></div><div><dt className="text-xs font-black uppercase tracking-[0.12em] text-[#49635c]">TravelMate</dt><dd>{step.systemDoes}</dd></div></dl><p className="mt-5 flex items-start gap-2 border-t border-[#14231f]/20 pt-4 text-xs font-bold leading-5"><Check size={15} className="mt-0.5 shrink-0" />{step.result}</p><button type="button" onClick={(event) => { event.stopPropagation(); runStepAction(index); }} className="mt-5 inline-flex items-center gap-2 border-b border-[#14231f] pb-1 text-xs font-black">{step.action}<ArrowRight size={14} /></button></div></div></div>
@@ -193,7 +190,6 @@ export function TravelerJourneyOverview({
         <div className="flex border-t border-[#14231f]/15 bg-[#cddbd1] lg:w-28 lg:flex-col lg:border-l lg:border-t-0"><button type="button" aria-label="Previous planning guidance" onClick={() => setPlanningNote((planningNote + PLANNING_NOTES.length - 1) % PLANNING_NOTES.length)} className="grid h-16 flex-1 place-items-center border-r border-[#14231f]/15 text-[#14231f] transition hover:bg-amber-300 lg:h-auto lg:border-b lg:border-r-0"><ArrowLeft size={18} /></button><button type="button" aria-label="Next planning guidance" onClick={() => setPlanningNote((planningNote + 1) % PLANNING_NOTES.length)} className="grid h-16 flex-1 place-items-center text-[#14231f] transition hover:bg-amber-300"><ArrowRight size={18} /></button></div>
       </section>
 
-      {!profileVerified && <section className="flex flex-col gap-5 border border-amber-300/25 bg-amber-300/8 p-6 sm:flex-row sm:items-center sm:justify-between"><div className="flex items-start gap-4"><ShieldCheck className="mt-1 shrink-0 text-amber-300" /><div><h2 className="font-bold">Account verification is separate from trip planning</h2><p className="mt-1 max-w-2xl text-sm leading-6 text-white/52">You can create and save plans in Limited Mode. Verification is only needed for trust-sensitive actions such as booking or publishing listings.</p></div></div><button type="button" onClick={onOpenAccount} className="min-h-11 shrink-0 border border-amber-300/40 px-4 py-2 text-sm font-bold text-amber-200 transition hover:bg-amber-300 hover:text-[#14231f]">Review account status</button></section>}
     </div>
   );
 }

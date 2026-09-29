@@ -25,7 +25,7 @@ renewal and HTTP-to-HTTPS redirect enabled as the outermost TLS boundary.
    the production `BACKEND_URL`.
 4. Deploy the immutable frontend revision and start it with `npm start` when the
    platform does not manage Next.js startup automatically.
-5. Verify `/`, `/dashboard`, `/owner/dashboard`, and `/admin/dashboard` are served
+5. Verify `/`, `/dashboard`, and `/admin/dashboard` are served
    over HTTPS and that unauthenticated dashboard visits redirect safely.
 
 ## Production smoke test
@@ -38,7 +38,7 @@ special attention to:
   of an already displayed plan;
 - PHP, USD, EUR, and JPY display without implicit currency conversion;
 - save, reload, manual edit, update/regenerate, duplicate, and delete;
-- responsive navigation at 390px plus owner/admin tablet widths;
+- responsive navigation at 390px plus admin tablet widths;
 - explicit unavailable states for external services rather than invented data.
 
 Record the release revision, environment, time, test account, and result. Delete

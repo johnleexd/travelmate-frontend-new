@@ -22,7 +22,7 @@ export function proxy(request: NextRequest) {
   const url = request.nextUrl.clone();
 
   // If path starts with dashboard routes
-  if (url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/owner/dashboard') || url.pathname.startsWith('/admin/dashboard')) {
+  if (url.pathname.startsWith('/dashboard') || url.pathname.startsWith('/admin/dashboard')) {
     if (!token) {
       // Redirect to landing page with alert
       url.pathname = '/';

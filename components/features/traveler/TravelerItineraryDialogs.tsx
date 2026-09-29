@@ -56,8 +56,8 @@ type DayDetailsDialogProps = {
 export function DayDetailsDialog({ day, itinerary, travelers, referenceCurrency, exchangeQuotes, photoRefreshDay, modalRef, closeRef, onClose, onRefreshPhotos }: DayDetailsDialogProps) {
   const [activeActivityIndex, setActiveActivityIndex] = useState(0);
   const activeActivity = day.activities[activeActivityIndex];
-  const heroImage = verifiedPlaceImage(activeActivity?.imageUrl) || verifiedPlaceImage(day.imageUrl);
-  const heroAttribution = activeActivity?.imageAttribution || day.imageAttribution;
+  const heroImage = verifiedPlaceImage(activeActivity?.imageUrl);
+  const heroAttribution = heroImage ? activeActivity?.imageAttribution : undefined;
   const goToActivity = (direction: -1 | 1) => {
     const activityCount = day.activities.length;
     if (activityCount === 0) return;
@@ -71,16 +71,20 @@ export function DayDetailsDialog({ day, itinerary, travelers, referenceCurrency,
           {heroImage ? <Image src={heroImage} alt={`${activeActivity?.title || day.theme} in ${itinerary.destination}`} fill sizes="(max-width: 900px) 100vw, 900px" className="object-contain" /> : <div className="grid h-full place-items-center text-center text-sm text-slate-500"><span><MapPin className="mx-auto mb-2"/>No verified place photo available.</span></div>}
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Close day details" title="Close details" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-md bg-slate-950/90 hover:bg-slate-800"><X size={20}/></button>
           <span className="absolute left-3 top-3 bg-slate-950/90 px-3 py-2 text-sm font-bold text-amber-300">DAY {day.day}</span>
-          <button type="button" disabled={day.activities.length === 0} onClick={() => goToActivity(-1)} aria-label="Previous activity" title="Previous activity" className="absolute left-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center bg-slate-950/90 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"><ChevronLeft size={21}/></button>
-          <button type="button" disabled={day.activities.length === 0} onClick={() => goToActivity(1)} aria-label="Next activity" title="Next activity" className="absolute right-3 top-1/2 grid size-11 -translate-y-1/2 place-items-center bg-slate-950/90 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"><ChevronRight size={21}/></button>
-          {activeActivity && <div aria-live="polite" className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#07111f] via-[#07111f]/95 to-[#07111f]/0 px-4 pb-3 pt-16 sm:px-6 sm:pb-4">
-            <div className="flex items-end justify-between gap-4">
+          <button type="button" disabled={day.activities.length < 2} onClick={() => goToActivity(-1)} aria-label="Previous activity" title="Previous activity" className="absolute left-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center bg-slate-950/90 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"><ChevronLeft size={21}/></button>
+          <button type="button" disabled={day.activities.length < 2} onClick={() => goToActivity(1)} aria-label="Next activity" title="Next activity" className="absolute right-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center bg-slate-950/90 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"><ChevronRight size={21}/></button>
+          <span className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-slate-950/90 px-3 py-1 text-xs text-white" aria-live="polite">{day.activities.length ? `Activity ${activeActivityIndex + 1} of ${day.activities.length}` : 'No activities'}</span>
+          {heroAttribution && <a href={heroAttribution.sourceUrl} target="_blank" rel="noreferrer" title={`${heroAttribution.creator} · ${heroAttribution.license}`} className="absolute right-3 top-14 max-w-[65%] truncate rounded bg-slate-950/85 px-2 py-1 text-[10px] text-slate-200">Photo: {heroAttribution.creator} · {heroAttribution.license}</a>}
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
+          {activeActivity && <div aria-live="polite" className="mb-5 border-b border-slate-700 pb-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-200 sm:text-xs">{activeActivity.time} · {activeActivity.category}</p>
-                <h3 className="mt-1 line-clamp-1 text-base font-bold text-white sm:text-lg">{activeActivity.title}</h3>
-                <p className="mt-1 line-clamp-2 max-w-2xl text-[11px] leading-4 text-slate-300 sm:text-xs sm:leading-5">{activeActivity.description}</p>
+                <h3 className="mt-1 break-words text-base font-bold text-white sm:text-lg">{activeActivity.title}</h3>
+                <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-300">{activeActivity.description}</p>
               </div>
-              <div className="shrink-0 text-right">
+              <div className="shrink-0 sm:text-right">
                 <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400 sm:text-[10px]">Estimated price</span>
                 <p className="font-mono text-xs font-semibold text-white sm:text-sm">{travelers > 1 && activeActivity.unitCost !== undefined ? `${formatMoney(activeActivity.unitCost, itinerary.currency)}/person` : formatMoney(activeActivity.estimatedCost, itinerary.currency)}</p>
                 {travelers > 1 && activeActivity.unitCost !== undefined && <p className="font-mono text-[9px] text-slate-400 sm:text-[10px]">{formatMoney(activeActivity.estimatedCost, itinerary.currency)} group</p>}
@@ -88,9 +92,6 @@ export function DayDetailsDialog({ day, itinerary, travelers, referenceCurrency,
               </div>
             </div>
           </div>}
-          {heroAttribution && <a href={heroAttribution.sourceUrl} target="_blank" rel="noreferrer" title={`${heroAttribution.creator} · ${heroAttribution.license}`} className="absolute right-3 top-14 max-w-[65%] truncate rounded bg-slate-950/85 px-2 py-1 text-[10px] text-slate-200">Photo: {heroAttribution.creator} · {heroAttribution.license}</a>}
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
           <div className="flex flex-wrap justify-between gap-3"><div><h2 id="day-dialog-title" className="text-xl font-bold">Day {day.day}: {day.theme}</h2><p id="day-dialog-description" className="text-sm text-slate-400">{day.date} · {itinerary.destination}</p></div><div className="text-right"><strong className="font-mono text-lg">{formatMoney(day.totalCost, itinerary.currency)}</strong><ReferenceAmount amount={day.totalCost} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/><p className="flex items-center justify-end gap-1 text-xs text-emerald-200"><BusFront size={13}/>Ride/boat fare {formatMoney(day.rideFare || 0, itinerary.currency)}</p><ReferenceAmount amount={day.rideFare || 0} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/><button type="button" disabled={photoRefreshDay === day.day} onClick={() => onRefreshPhotos(day)} className="mt-2 inline-flex items-center gap-1.5 rounded border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:border-cyan-500 hover:text-cyan-200 disabled:opacity-50"><RefreshCw size={13} className={photoRefreshDay === day.day ? 'animate-spin' : ''}/>{photoRefreshDay === day.day ? 'Refreshing photos...' : 'Refresh activity photos'}</button></div></div>
           {day.travelNote && <p className="mt-4 flex items-start gap-2 border-l-2 border-cyan-400 pl-3 text-sm text-cyan-100"><Clock3 size={16} className="mt-0.5 shrink-0"/>{day.travelNote}</p>}
           {day.crowdLevel && <div className="mt-3 rounded-md border border-violet-900 bg-violet-950/30 px-3 py-3 text-xs leading-5 text-violet-200"><p><strong className="capitalize">{day.crowdLevel} estimated crowd.</strong> {day.crowdNote}</p>{day.crowdRecommendation && <p className="mt-2 border-t border-violet-800/50 pt-2 text-white/65"><strong>Planning recommendation:</strong> {day.crowdRecommendation}</p>}{day.crowdFetchedAt && <p className="mt-2 text-[10px] text-white/35">Estimated {new Date(day.crowdFetchedAt).toLocaleString()} · refresh after {day.crowdRefreshAfter ? new Date(day.crowdRefreshAfter).toLocaleString() : 'not recorded'}</p>}</div>}

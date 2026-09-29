@@ -187,6 +187,11 @@
   font-variant-numeric: tabular-nums;
 }
 
+.admin-dashboard {
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
 .traveler-dashboard ::selection {
   color: #14231f;
   background: #fcd34d;

@@ -3,13 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight, BedDouble, Bell, CalendarDays, CloudSun, Compass, Home, LocateFixed, LogOut, MapPin, Plane, UserRound, WalletCards, X } from 'lucide-react';
+import { ArrowRight, Bell, CalendarDays, CloudSun, Compass, Home, LocateFixed, LogOut, MapPin, Plane, UserRound, WalletCards, X } from 'lucide-react';
 import { fetchTripData, fetchWeather, handleResponse, isAuthenticationError, refreshItineraryDayImages, type DayActivity, type ItineraryResponse, type WeatherData } from '@/services/api.service';
 import { CURRENCY_NAMES, formatMoney, partyBudgetExplanation, partyBudgetLabel, partySpendLabel, PARTY_TYPE_LABELS, SUPPORTED_CURRENCIES, ZERO_DECIMAL_CURRENCIES, type CurrencyCode, type PartyType } from '@/lib/domain';
-import { CEBU_COORDINATES as CEBU_COORDINATE_VALUES, CEBU_LOCATIONS as CEBU_LOCATION_VALUES } from '@/constants/cebu-locations';
+import { CEBU_LOCATIONS as CEBU_LOCATION_VALUES } from '@/constants/cebu-locations';
 import type { PlatformActionResponse, PlatformResponse, ProfileResponse, SavedTrip, TravelOptionsResponse } from '@/lib/contracts';
 import { moveActivity, removeActivity, upsertActivity } from '@/lib/itinerary-editor';
 import { applyConditionSnapshot } from '@/lib/conditions';
@@ -30,24 +31,22 @@ import { ActivityEditorDialog, DayDetailsDialog } from '@/components/features/tr
 import { parseTravelOptionsResponse } from '@/services/provider-response';
 import { addCalendarDays, localDateInputValue, regenerationDraftDates } from '@/lib/date';
 import { recommendAccommodation } from '@/lib/accommodation-recommendation';
-import { MarketplaceCards, TravelerBookingManager, TravelerNotifications } from '@/components/features/traveler/OwnerMarketplace';
+import { TravelerNotifications } from '@/components/features/traveler/TravelerNotifications';
 
-type Tab = 'overview' | 'planner' | 'budget' | 'compare' | 'market' | 'bookings' | 'notifications' | 'profile';
+type Tab = 'overview' | 'planner' | 'budget' | 'compare' | 'bookings' | 'notifications' | 'profile';
 type PreTripCostDraft = {
   airportTransfers: number; passport: number; visaOrAuthorization: number;
   departureTaxes: number; insurance: number; other: number;
 };
 const EMPTY_PRE_TRIP_COSTS: PreTripCostDraft = { airportTransfers: 0, passport: 0, visaOrAuthorization: 0, departureTaxes: 0, insurance: 0, other: 0 };
-const CEBU_COORDINATES: Record<string, { latitude: number; longitude: number }> = CEBU_COORDINATE_VALUES;
 const CEBU_LOCATIONS: readonly string[] = CEBU_LOCATION_VALUES;
 const TAB_COPY: Record<Tab, { title: string; description: string }> = {
   overview: { title: 'Your travel home', description: 'See what TravelMate does, where your plans are, and the single best action to take next.' },
   planner: { title: 'Start a new trip', description: 'Begin with four essentials. Optional preferences simply help make the itinerary more personal.' },
   budget: { title: 'Does this plan fit your budget?', description: 'Review estimated spending, remaining money, and optional ways to reduce cost.' },
   compare: { title: 'Compare available travel options', description: 'Check flights, stays, and activities for the destination and dates already in your plan.' },
-  market: { title: 'Browse local stays', description: 'Review approved TravelMate listings and keep their estimated cost connected to your trip.' },
-  bookings: { title: 'Saved trips and bookings', description: 'Return to plans you deliberately saved and manage existing accommodation requests.' },
-  notifications: { title: 'Travel updates that need you.', description: 'See owner decisions, completed stays, reviews, and important account events.' },
+  bookings: { title: 'Saved trips', description: 'Reopen and manage the trip plans you saved.' },
+  notifications: { title: 'Travel updates that need you.', description: 'Read account warnings, report updates, and other important notices.' },
   profile: { title: 'Your account', description: 'Manage contact information and understand what verification changes.' },
 };
 
@@ -271,6 +270,24 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
       return;
     }
     window.requestAnimationFrame(() => workspaceHeadingRef.current?.focus());
+  }, [tab]);
+  useEffect(() => {
+    if (tab !== 'notifications') return;
+    let active = true;
+    let loading = false;
+    const updateNotifications = async () => {
+      if (loading || document.visibilityState === 'hidden') return;
+      loading = true;
+      try {
+        const result = await api();
+        if (active) setData(current => current ? { ...current, notifications: result.notifications } : current);
+      } catch { /* Keep existing notifications available while offline. */ }
+      finally { loading = false; }
+    };
+    void updateNotifications();
+    const interval = window.setInterval(() => void updateNotifications(), 30_000);
+    window.addEventListener('focus', updateNotifications);
+    return () => { active = false; window.clearInterval(interval); window.removeEventListener('focus', updateNotifications); };
   }, [tab]);
   useModalAccessibility({
     active: selectedDay !== null,
@@ -689,14 +706,14 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
   };
 
   return (
-    <div ref={pageRef} className="traveler-dashboard min-h-screen w-full max-w-full overflow-x-hidden bg-[#0b1d1a] text-slate-100">
+    <div ref={pageRef} className="traveler-dashboard min-h-screen w-full max-w-full overflow-x-clip bg-[#0b1d1a] pt-20 text-slate-100">
       <a href="#traveler-main-content" className="sr-only z-[100] bg-[#f1ead8] px-4 py-2 font-bold text-[#14231f] focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to trip workspace</a>
-      <header className="sticky top-0 z-40 px-4 pt-4 sm:px-6">
+      <header className="fixed inset-x-0 top-0 z-40 px-4 pt-4 sm:px-6">
         <div className="mx-auto flex h-16 w-full max-w-[1380px] items-center justify-between border border-white/15 bg-[#102824]/88 px-4 text-white shadow-[0_18px_50px_rgba(8,24,22,.22)] backdrop-blur-xl sm:px-6">
-          <div className="flex shrink-0 items-center gap-3 font-semibold">
-            <span className="grid size-9 place-items-center bg-[#ffcf70] text-[#102824]"><Compass size={20} strokeWidth={2.2}/></span>
+          <Link href="/" className="group flex shrink-0 items-center gap-3 font-semibold" aria-label="TravelMate home">
+            <span className="grid size-9 place-items-center bg-[#ffcf70] text-[#102824] transition-transform duration-500 group-hover:-rotate-6"><Compass size={20} strokeWidth={2.2}/></span>
             <span className="text-lg">TravelMate</span>
-          </div>
+          </Link>
           <button type="button" onClick={() => setProfileMenuOpen(true)} aria-label={`Open profile menu for ${data.user.name}`} aria-haspopup="dialog" aria-expanded={profileMenuOpen} aria-controls="traveler-profile-menu" className="flex min-w-0 items-center gap-2 border border-white/15 bg-white/[0.04] py-1.5 pl-1.5 pr-3 text-left transition-colors hover:border-[#ffcf70]/50 hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffcf70] sm:gap-3">
             <span className="grid size-9 shrink-0 place-items-center bg-[#ffcf70] text-xs font-black text-[#102824]">{userInitials}</span>
             <span className="min-w-0"><strong className="block max-w-40 truncate text-xs font-bold text-white sm:text-sm">{data.user.name}</strong><span className="hidden max-w-48 truncate text-[10px] text-white/60 sm:block">{data.user.email}</span></span>
@@ -717,7 +734,7 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
               <span className="grid size-12 shrink-0 place-items-center bg-[#ffcf70] text-sm font-black text-[#102824]">{userInitials}</span>
               <span className="min-w-0"><strong className="block truncate text-sm text-white">{data.user.name}</strong><span className="mt-1 block truncate text-xs text-white/55">{data.user.email}</span></span>
             </div>
-            <div className="mt-4 flex items-center justify-between border-b border-white/10 pb-4 text-xs"><span className="text-white/55">Profile status</span><span className={`border px-2 py-1 font-bold ${data.user.profileStatus === 'verified' ? 'border-emerald-300/35 bg-emerald-300/10 text-emerald-200' : 'border-[#ffcf70]/35 bg-[#ffcf70]/10 text-[#ffcf70]'}`}>{data.user.profileStatus === 'verified' ? 'Verified' : 'Limited Mode'}</span></div>
+            <div className="mt-4 flex items-center justify-between border-b border-white/10 pb-4 text-xs"><span className="text-white/55">Email status</span><span className={`border px-2 py-1 font-bold ${data.user.emailVerified ? 'border-emerald-300/35 bg-emerald-300/10 text-emerald-200' : 'border-[#ffcf70]/35 bg-[#ffcf70]/10 text-[#ffcf70]'}`}>{data.user.emailVerified ? 'Verified' : 'Email not verified'}</span></div>
           </div>
           <div className="mt-auto border-t border-white/10 p-5 sm:p-6">
             <button type="button" onClick={() => { setProfileMenuOpen(false); setTab('profile'); }} className="flex min-h-12 w-full items-center gap-3 border border-white/15 px-4 text-sm font-semibold text-white/85 transition-colors hover:border-[#ffcf70]/50 hover:bg-white/[0.06]"><UserRound size={17} className="text-[#ffcf70]"/>Account settings<ArrowRight size={16} className="ml-auto"/></button>
@@ -734,7 +751,7 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
             <nav aria-label="Traveler workspace" className="traveler-mobile-nav flex max-w-full snap-x gap-px overflow-x-auto border border-white/10 bg-white/10 p-px lg:flex-col lg:overflow-visible">
               {([['overview','Home',Home],['planner','Plan a trip',MapPin],['bookings','Saved trips',CalendarDays],['notifications','Notifications',Bell]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => id === 'planner' ? startNewTrip() : setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}{id === 'notifications' && data.notifications.filter((item) => !item.readAt).length > 0 && <span className="ml-auto bg-amber-300 px-1.5 text-[10px] font-black text-[#14231f]">{data.notifications.filter((item) => !item.readAt).length}</span>}</button>)}
               <div className="hidden px-4 pb-2 pt-6 text-[10px] font-bold uppercase tracking-[0.16em] text-white/28 lg:block">Use with a plan</div>
-              {([['budget','Budget review',WalletCards],['compare','Travel options',Plane],['market','Local stays',BedDouble]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}</button>)}
+              {([['budget','Budget review',WalletCards],['compare','Travel options',Plane]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}</button>)}
             </nav>
             <div className="mt-8 hidden border-t border-white/10 pt-5 lg:block"><p className="max-w-[23ch] text-xs leading-5 text-white/38">Start with Plan a trip. Budget and travel options become useful after TravelMate creates your itinerary.</p></div>
           </div>
@@ -743,14 +760,13 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
         <main id="traveler-main-content" tabIndex={-1} className="min-w-0 w-full max-w-[calc(100vw-2rem)] overflow-x-hidden pb-20 pt-5 outline-none lg:max-w-none lg:pt-10">
           <div className="mb-7 flex flex-col items-start gap-3 border-b border-white/10 pb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
             <div className="min-w-0 max-w-4xl"><h1 ref={workspaceHeadingRef} tabIndex={-1} className="break-words text-[clamp(2rem,4vw,3.75rem)] font-black leading-[0.96] tracking-[-0.05em] outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1d1a]">{currentTabCopy.title}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-white/52">{currentTabCopy.description}</p></div>
-            <span className={`w-fit shrink-0 border px-3 py-2 text-[11px] font-bold tracking-wide ${data.user.profileStatus==='verified'?'border-emerald-400/40 bg-emerald-400/10 text-emerald-200':'border-amber-300/40 bg-amber-300/10 text-amber-200'}`}>{data.user.profileStatus==='verified'?'Verified profile':'Limited Mode'}</span>
+            <span className={`w-fit shrink-0 border px-3 py-2 text-[11px] font-bold tracking-wide ${data.user.emailVerified?'border-emerald-400/40 bg-emerald-400/10 text-emerald-200':'border-amber-300/40 bg-amber-300/10 text-amber-200'}`}>{data.user.emailVerified?'Email verified':'Email not verified'}</span>
           </div>
           {message && <div role="status" aria-live="polite" className="mb-6 border-l-2 border-amber-300 bg-white/[0.055] px-4 py-3 text-sm text-white/80">{message}</div>}
 
           {tab === 'overview' && <TravelerJourneyOverview
             userName={data.user.name}
-            profileVerified={data.user.profileStatus === 'verified'}
-            savedTripCount={data.trips.length}
+                        savedTripCount={data.trips.length}
             currentPlan={itinerary ? { destination: itinerary.destination, days: itinerary.days.length } : null}
             upcomingTrip={upcomingTrip ? { destination: upcomingTrip.destination, startDate: upcomingTrip.startDate, endDate: upcomingTrip.endDate, travelers: upcomingTrip.travelers, budget: upcomingTrip.budget, currency: upcomingTrip.currency } : null}
             referenceCurrency={referenceCurrency}
@@ -761,7 +777,6 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
             onOpenSavedTrips={() => setTab('bookings')}
             onOpenBudget={() => setTab('budget')}
             onOpenOptions={() => setTab('compare')}
-            onOpenAccount={() => setTab('profile')}
           />}
 
           {tab === 'planner' && <>
@@ -777,12 +792,12 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
 
               <section aria-label="Trip brief" className="relative overflow-hidden border border-amber-200/20 bg-[#ffcf70] p-4 text-[#14231f] shadow-[0_18px_55px_rgba(0,0,0,.14)] sm:p-5">
                 <div className="absolute right-0 top-0 h-full w-1/3 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,.42),transparent_52%)]" aria-hidden="true" />
-                <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div><p className="text-[10px] font-black uppercase tracking-[.18em] text-[#49635c]">Your trip brief</p><h2 className="mt-1 text-xl font-black tracking-[-0.035em]">Shape the outline, then let TravelMate fill the days.</h2></div>
-                  <div className="grid grid-cols-1 gap-2 text-xs sm:grid-cols-3 lg:min-w-[540px]">
-                    <div className="flex items-center gap-3 border border-[#14231f]/15 bg-white/25 px-3 py-2"><MapPin size={16} className="shrink-0 text-[#b24d32]" /><span><span className="block text-[10px] font-bold uppercase tracking-wider text-[#49635c]">Going to</span><strong className="block truncate">{selectedDestination ? destination : 'Choose a destination'}</strong></span></div>
-                    <div className="flex items-center gap-3 border border-[#14231f]/15 bg-white/25 px-3 py-2"><CalendarDays size={16} className="shrink-0 text-[#b24d32]" /><span><span className="block text-[10px] font-bold uppercase tracking-wider text-[#49635c]">When</span><strong className="block">{startDate} → {endDate}</strong></span></div>
-                    <div className="flex items-center gap-3 border border-[#14231f]/15 bg-white/25 px-3 py-2"><WalletCards size={16} className="shrink-0 text-[#b24d32]" /><span><span className="block text-[10px] font-bold uppercase tracking-wider text-[#49635c]">Budget</span><strong className="block">{currencyResolved && Number.isFinite(budget) ? formatMoney(budget, currency) : 'Set after destination'}</strong></span></div>
+                <div className="relative flex min-w-0 flex-col gap-4">
+                  <div className="min-w-0"><p className="text-[10px] font-black uppercase tracking-[.18em] text-[#49635c]">Your trip brief</p><h2 className="mt-1 text-xl font-black tracking-[-0.035em]">Shape the outline, then let TravelMate fill the days.</h2></div>
+                  <div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(min(100%,14rem),1fr))] gap-2 text-xs">
+                    <div className="flex min-w-0 items-start gap-3 border border-[#14231f]/15 bg-white/25 px-3 py-3"><MapPin size={16} className="mt-0.5 shrink-0 text-[#b24d32]" /><span className="min-w-0 flex-1"><span className="block text-[10px] font-bold uppercase tracking-wider text-[#49635c]">Going to</span><strong className="mt-1 block leading-5 [overflow-wrap:anywhere]">{selectedDestination ? destination : 'Choose a destination'}</strong></span></div>
+                    <div className="flex min-w-0 items-start gap-3 border border-[#14231f]/15 bg-white/25 px-3 py-3"><CalendarDays size={16} className="mt-0.5 shrink-0 text-[#b24d32]" /><span className="min-w-0 flex-1"><span className="block text-[10px] font-bold uppercase tracking-wider text-[#49635c]">When</span><strong className="mt-1 flex flex-wrap gap-x-1 leading-5"><time dateTime={startDate} className="whitespace-nowrap">{startDate}</time><span>→</span><time dateTime={endDate} className="whitespace-nowrap">{endDate}</time></strong></span></div>
+                    <div className="flex min-w-0 items-start gap-3 border border-[#14231f]/15 bg-white/25 px-3 py-3"><WalletCards size={16} className="mt-0.5 shrink-0 text-[#b24d32]" /><span className="min-w-0 flex-1"><span className="block text-[10px] font-bold uppercase tracking-wider text-[#49635c]">Budget</span><strong className="mt-1 block leading-5 [overflow-wrap:anywhere]">{currencyResolved && Number.isFinite(budget) ? formatMoney(budget, currency) : 'Set after destination'}</strong></span></div>
                   </div>
                 </div>
               </section>
@@ -841,7 +856,7 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
               referenceCurrency={referenceCurrency}
               exchangeQuotes={exchangeQuotes}
               onSave={() => void (manualDirty ? saveManualChanges() : saveCurrentTrip())}
-              onBookAccommodation={(listingId, nights) => void action({ action: 'book', listingId, guests: travelers, nights, checkIn: startDate, checkOut: endDate }, 'Booking request sent to the owner. No payment was charged.')}
+              onBookAccommodation={(listingId, nights) => void action({ action: 'book', listingId, guests: travelers, nights, checkIn: startDate, checkOut: endDate }, 'Booking request sent for admin review. No payment was charged.')}
               onReorderActivity={reorderActivity}
               onEditActivity={(dayIndex, activityIndex) => setActivityEditor({ dayIndex, activityIndex })}
               onRemoveActivity={confirmRemoveActivity}
@@ -885,7 +900,6 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
             onSelectLiveStay={(stay) => { setSelectedStayId(''); setSelectedLiveStayId(stay.id); setTab('planner'); setMessage(`${stay.name} selected for the itinerary. Its signed offer price will be verified by the server.`); }}
             onAddActivity={addComparedActivity}
           />}
-          {tab === 'market' && <div className="space-y-5"><div className="flex flex-wrap items-end justify-between gap-3 border-b border-white/10 pb-5"><label className="w-full max-w-sm text-xs text-white/45">Show approved owner stays in<select value={localMunicipality||''} onChange={e=>{const location=e.target.value;const point=CEBU_COORDINATES[location];confirmDestination({id:-CEBU_LOCATIONS.indexOf(location)-1,name:location,region:'Cebu',country:'Philippines',countryCode:'PH',latitude:point.latitude,longitude:point.longitude,label:`${location}, Cebu, Philippines`,placeType:'City or municipality',contextLabel:`City or municipality • ${location}, Cebu, Philippines`});}} className="mt-2 min-h-12 w-full border border-white/15 bg-[#071a16] px-4 text-white"><option value="" disabled>Select a supported Cebu location</option>{CEBU_LOCATIONS.map(location=><option key={location} value={location}>{location}, Cebu</option>)}</select></label><p className="text-sm text-white/45">{stayOptions.length} approved {stayOptions.length===1?'stay':'stays'} found</p></div><MarketplaceCards listings={stayOptions} data={data} startDate={startDate} endDate={endDate} travelers={travelers} busy={busy} action={action}/></div>}
           {tab === 'bookings' && <div className="space-y-8">
             <SavedTripLifecycle
               trips={data.trips}
@@ -898,13 +912,9 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
               onAction={action}
               onDelete={(trip)=>{if(window.confirm(`Permanently delete the archived trip to ${trip.destination}? This also removes its version history and cannot be undone.`))void action({action:'delete-trip',id:trip.id},'Archived trip permanently deleted.').then(ok=>{if(ok&&editingTripId===trip.id)setEditingTripId(null);});}}
             />
-            <TravelerBookingManager data={data} busy={busy} action={action}/>
-            <section className="hidden" aria-hidden="true">
-              <h2 className="font-bold">Accommodation bookings ({data.bookings.length})</h2>
-              {data.bookings.length===0?<p className="mt-3 text-sm text-slate-400">No accommodation bookings yet.</p>:data.bookings.map(item=><article key={item.id} className="border-b border-slate-800 py-4 flex flex-wrap justify-between gap-3"><div><strong>{data.listings.find(x=>x.id===item.listingId)?.name || item.listingId}</strong><p className="text-xs text-slate-400">{item.status} · {item.paymentStatus} · {item.nights > 1 ? `${item.nights} nights · ` : ''}PHP {item.amount.toLocaleString()}</p></div><div className="flex gap-2"><button disabled={busy||item.status==='cancelled'||item.status==='completed'} onClick={()=>void action({action:'request-change',id:item.id,reason:'Traveler requested a modification.'},'Modification sent for review.')} className="border border-slate-600 px-2 py-1 rounded text-xs disabled:opacity-40">Change</button><button disabled={busy||item.status==='cancelled'||item.status==='completed'} onClick={()=>void action({action:'request-cancel',id:item.id,reason:'Traveler requested cancellation.'},'Cancellation sent for review.')} className="border border-red-700 text-red-300 px-2 py-1 rounded text-xs disabled:opacity-40">Cancel</button></div></article>)}</section>
           </div>}
           {tab === 'notifications' && <TravelerNotifications data={data} busy={busy} action={action}/>} 
-          {tab === 'profile' && <TravelerAccountCenter user={data.user} busy={busy} onSaveProfile={saveProfile} onSubmitVerification={(phone,bio)=>action({action:'submit-profile',phone,bio},'Profile submitted for admin review.')} />}
+          {tab === 'profile' && <TravelerAccountCenter user={data.user} busy={busy} onSaveProfile={saveProfile} onReport={(title,details)=>action({action:'submit-report',title,details},'Your report was sent to the admin.')}  />}
         </main>
       </div>
       {activityEditor && editorDay && <ActivityEditorDialog editor={activityEditor} day={editorDay} activity={editorActivity} currency={itinerary?.currency || currency} modalRef={activityModalRef} titleRef={activityTitleRef} onClose={() => setActivityEditor(null)} onSubmit={submitActivity} />}

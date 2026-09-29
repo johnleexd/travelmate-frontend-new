@@ -3,7 +3,6 @@ import { expect, test, type Page } from '@playwright/test';
 const DEMO_PASSWORD = 'Travel123!';
 const DEMO_ACCOUNTS = {
   traveler: { email: 'traveler@travelmate.test', route: '/dashboard', heading: 'Your travel home' },
-  owner: { email: 'owner@travelmate.test', route: '/owner/dashboard', heading: 'Run the stay behind the journey.' },
   admin: { email: 'admin@travelmate.test', route: '/admin/dashboard', heading: 'Overview' },
 } as const;
 
@@ -13,7 +12,6 @@ async function loginAs(page: Page, role: DemoRole) {
   const account = DEMO_ACCOUNTS[role];
   await page.goto('/');
   await page.getByRole('button', { name: 'Sign in', exact: true }).first().click();
-  if (role === 'owner') await page.getByRole('dialog').getByRole('button', { name: 'Owner', exact: true }).click();
   await page.getByLabel('Email address').click();
   await page.getByLabel('Email address').fill(account.email);
   await page.getByLabel('Password').fill(DEMO_PASSWORD);
@@ -37,28 +35,29 @@ async function expectNamedControls(page: Page, context: string) {
   expect(unnamed, `${context} contains visible controls without accessible names`).toEqual([]);
 }
 
-test('sign-in submits the selected traveler or owner role', async ({ page }) => {
-  const submittedRoles: string[] = [];
+test('shared login and signup have no role selector', async ({ page }) => {
+  const submissions: Record<string, unknown>[] = [];
   await page.route('**/api/auth', async (route) => {
-    const body = route.request().postDataJSON() as { role: string };
-    submittedRoles.push(body.role);
-    await route.fulfill({
-      status: 403,
-      contentType: 'application/json',
-      body: JSON.stringify({ error: 'Select the role registered to this account to sign in.' }),
-    });
+    if (route.request().method() === 'GET') return route.fulfill({ status: 401, json: { error: 'Unauthenticated.' } });
+    submissions.push(route.request().postDataJSON());
+    await route.fulfill({ status: 401, json: { error: 'Invalid email or password.' } });
   });
   await page.goto('/');
   await page.getByRole('button', { name: 'Sign in', exact: true }).first().click();
   const dialog = page.getByRole('dialog');
-  await expect(dialog.getByRole('button', { name: 'Traveler', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await dialog.getByLabel('Email address').fill(DEMO_ACCOUNTS.owner.email);
-  await dialog.getByLabel('Password').fill(DEMO_PASSWORD);
-  await dialog.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect(dialog.getByRole('status')).toContainText('Select the role registered to this account');
-  await dialog.getByRole('button', { name: 'Owner', exact: true }).click();
-  await dialog.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await expect.poll(() => submittedRoles).toEqual(['traveler', 'owner']);
+  await expect(dialog.getByRole('heading', { name: 'Welcome.', exact: true })).toBeVisible();
+  await expect(dialog.getByText('Sign in as', { exact: true })).toHaveCount(0);
+  for (const role of ['traveler', 'admin'] as const) {
+    await dialog.getByLabel('Email address').fill(DEMO_ACCOUNTS[role].email);
+    await dialog.getByLabel('Password').fill(DEMO_PASSWORD);
+    await dialog.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await expect.poll(() => submissions.length).toBe(role === 'traveler' ? 1 : 2);
+  }
+  expect(submissions.every((body) => !('role' in body))).toBe(true);
+  await dialog.getByRole('button', { name: 'Create an account', exact: true }).click();
+  await expect(dialog.getByLabel('Full name')).toBeVisible();
+  await expect(dialog.getByText('I am creating an account as', { exact: true })).toHaveCount(0);
+  await expect(dialog.getByRole('button', { name: /Owner|Traveler|Admin/i })).toHaveCount(0);
 });
 
 test('sign-in keeps Google visible when OAuth is not configured', async ({ page }) => {
@@ -74,110 +73,33 @@ test('sign-in keeps Google visible when OAuth is not configured', async ({ page 
   await expect(dialog.getByLabel('Email address')).toBeVisible();
 });
 
-test('owner and admin routes reject unauthenticated and wrong-role sessions', async ({ page }) => {
-  for (const route of ['/owner/dashboard', '/admin/dashboard']) {
+test('admin routes reject unauthenticated and wrong-role sessions', async ({ page }) => {
+  for (const route of ['/admin/dashboard']) {
     await page.goto(route);
     await expect(page).toHaveURL(new RegExp(`/\\?auth_error=unauthenticated$`));
   }
 
   await loginAs(page, 'traveler');
-  for (const route of ['/owner/dashboard', '/admin/dashboard']) {
+  for (const route of ['/admin/dashboard']) {
     await page.goto(route);
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('heading', { name: /AI Travel Planning Made Real/i })).toBeVisible();
   }
 });
 
-test('owner listing submission can be approved by an admin and removed by its owner', async ({ page }) => {
-  const listingName = `E2E Owner Listing ${Date.now()}`;
-  let listingId = '';
-
-  try {
-    await loginAs(page, 'owner');
-    await page.getByRole('button', { name: 'Listings', exact: true }).click();
-    await page.getByRole('button', { name: 'New listing', exact: true }).click();
-
-    const listingDialog = page.locator('form').filter({ hasText: 'Listing editor' });
-    await listingDialog.getByLabel('Name').fill(listingName);
-    await listingDialog.getByLabel('Category').selectOption('stay');
-    await listingDialog.getByLabel('City / municipality').selectOption('Cordova');
-    await listingDialog.getByLabel('Price (PHP)').fill('2450');
-    await listingDialog.getByLabel('Capacity').fill('4');
-    await listingDialog.getByLabel('Address').fill('E2E Test Address, Cordova, Cebu');
-    await listingDialog.getByLabel('Amenities (comma separated)').fill('Wi-Fi, Breakfast');
-    await listingDialog.getByLabel('Description').fill('Temporary listing created by the browser workflow test.');
-    await listingDialog.getByRole('button', { name: 'Submit listing', exact: true }).click();
-
-    await expect(page.getByRole('status')).toContainText('Listing submitted for approval.');
-    await page.getByPlaceholder('Search listings').fill(listingName);
-    const ownerRow = page.getByRole('row').filter({ hasText: listingName });
-    await expect(ownerRow).toContainText('pending');
-
-    const ownerData = await page.request.get('/api/platform?scope=owner').then((response) => response.json()) as {
-      listings?: Array<{ id: string; name: string }>;
-    };
-    listingId = ownerData.listings?.find((listing) => listing.name === listingName)?.id || '';
-    expect(listingId).not.toBe('');
-
-    await loginAs(page, 'admin');
-    await page.getByRole('button', { name: /Moderation/ }).click();
-    const moderationCard = page.locator('article').filter({ hasText: listingName });
-    await expect(moderationCard).toHaveCount(1);
-    await moderationCard.getByRole('button', { name: 'Approve', exact: true }).click();
-    await expect(page.getByRole('status')).toContainText('Action persisted and added to the audit log.');
-    await expect(moderationCard).toHaveCount(0);
-
-    await loginAs(page, 'owner');
-    await page.getByRole('button', { name: 'Listings', exact: true }).click();
-    await page.getByPlaceholder('Search listings').fill(listingName);
-    const approvedRow = page.getByRole('row').filter({ hasText: listingName });
-    await expect(approvedRow).toContainText('approved');
-
-    page.once('dialog', (dialog) => dialog.accept());
-    await approvedRow.getByTitle('Delete listing').click();
-    await expect(page.getByRole('status')).toContainText('Listing deleted.');
-    await expect(approvedRow).toHaveCount(0);
-    listingId = '';
-  } finally {
-    if (listingId) {
-      await page.request.post('/api/auth', { data: { action: 'logout' } }).catch(() => undefined);
-      await loginAs(page, 'owner').catch(() => undefined);
-      await page.request.post('/api/platform', { data: { action: 'delete-listing', id: listingId } }).catch(() => undefined);
-    }
-  }
+test('removed owner dashboard returns not found', async ({ page }) => {
+  const response = await page.goto('/owner/dashboard');
+  expect(response?.status()).toBe(404);
 });
 
-test('owner listing editor is labelled, focuses its first field, and closes with Escape', async ({ page }) => {
-  await loginAs(page, 'owner');
-  await page.getByRole('button', { name: 'Listings', exact: true }).click();
-  const opener = page.getByRole('button', { name: 'New listing', exact: true });
-  await opener.click();
-
-  const dialog = page.getByRole('dialog', { name: 'New listing' });
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByLabel('Name')).toBeFocused();
-  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('hidden');
-  await dialog.getByRole('button', { name: 'Close listing editor' }).focus();
-  await page.keyboard.press('Shift+Tab');
-  await expect(dialog.getByRole('button', { name: 'Submit listing' })).toBeFocused();
-  await page.keyboard.press('Tab');
-  await expect(dialog.getByRole('button', { name: 'Close listing editor' })).toBeFocused();
-
-  await page.keyboard.press('Escape');
-  await expect(dialog).toBeHidden();
-  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
-  await expect(opener).toBeFocused();
-});
-
-test('owner and admin workspaces avoid page overflow at tablet and desktop widths', async ({ page }) => {
+test('admin workspace avoid page overflow at tablet and desktop widths', async ({ page }) => {
   const assertPageFits = async (label: string) => {
     const dimensions = await page.evaluate(() => ({ viewport: window.innerWidth, document: document.documentElement.scrollWidth }));
     expect(dimensions.document, `${label} exceeds the ${dimensions.viewport}px viewport`).toBeLessThanOrEqual(dimensions.viewport);
   };
 
   const workspaces = [
-    { role: 'owner' as const, tabs: ['Overview', 'Listings', 'Bookings', 'Finance', 'Profile'] },
-    { role: 'admin' as const, tabs: ['Overview', 'Moderation', 'Users', 'Listings', 'Payments', 'Audit & health'] },
+    { role: 'admin' as const, tabs: ['Overview', 'Users', 'Reports', 'System Health'] },
   ];
 
   for (const workspace of workspaces) {

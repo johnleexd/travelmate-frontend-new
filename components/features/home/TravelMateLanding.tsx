@@ -37,8 +37,6 @@ import {
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 type AuthMode = 'login' | 'register' | 'verify' | 'forgot' | 'reset';
-type AuthRole = 'traveler' | 'owner';
-type WorkflowRole = 'traveler' | 'host';
 
 const travelerSteps = [
   ['Set the brief', 'Choose a destination, travel dates, budget, and interests.', '/cordova-cclex.png'],
@@ -46,14 +44,6 @@ const travelerSteps = [
   ['Compare options', 'Review clearly sourced stays, flights, and activities when providers are available.', '/cordova-resort.png'],
   ['Build the days', 'Generate an itinerary that considers cost, timing, weather, and your preferences.', '/cordova-nalusuan.png'],
   ['Refine and save', 'Edit activities, monitor the budget, and return to the plan from your account.', '/cordova-10000-roses.png'],
-] as const;
-
-const hostSteps = [
-  ['Create your profile', 'Open an owner account for a Cebu-based travel business.', '/solea-mactan.jpg'],
-  ['Submit details', 'Complete the profile information needed for a transparent platform review.', '/cordova-resort.png'],
-  ['Publish an offering', 'Describe the location, capacity, price, and experience travelers can expect.', '/cordova-seafood.png'],
-  ['Manage availability', 'Keep listing details and traveler requests organized in one workspace.', '/cordova-nalusuan.png'],
-  ['Earn confidence', 'Build trust through accurate information, visible status, and an auditable trail.', '/cordova-mangrove.png'],
 ] as const;
 
 const exampleDays = [
@@ -81,7 +71,7 @@ const faqs = [
   ['What happens when a travel provider is unavailable?', 'Your saved itinerary remains accessible. TravelMate explains that fresh pricing is unavailable instead of presenting old or mock results as live.'],
   ['Does TravelMate purchase flights or hotels?', 'No. TravelMate is a planning system. Provider results are availability references, not completed bookings.'],
   ['How are weather and crowd conditions handled?', 'Weather is matched to relevant dates when forecasts are available. Crowd information is shown only with a valid source; otherwise it is marked unavailable or estimated.'],
-  ['Why do I need to verify my email?', 'Email verification protects account access and must be completed before login. Profile verification is separate and does not prevent itinerary planning.'],
+  ['Why do I need to verify my email?', 'Email verification protects account access and must be completed before login. Once your email is verified, you can plan and save trips without admin approval.'],
 ] as const;
 
 const planningPrinciples = [
@@ -109,8 +99,6 @@ export default function TravelMateLanding() {
   const [open, setOpen] = useState(false);
   const [menu, setMenu] = useState(false);
   const [mode, setMode] = useState<AuthMode>('login');
-  const [role, setRole] = useState<AuthRole>('traveler');
-  const [workflowRole, setWorkflowRole] = useState<WorkflowRole>('traveler');
   const [activeStep, setActiveStep] = useState(0);
   const [principle, setPrinciple] = useState(0);
   const [email, setEmail] = useState('');
@@ -137,7 +125,7 @@ export default function TravelMateLanding() {
         }
         const { user } = await handleResponse<CurrentUserResponse>(response);
         if (mounted) {
-          setDashboardPath(user.role === 'admin' ? '/admin/dashboard' : user.role === 'owner' ? '/owner/dashboard' : '/dashboard');
+          setDashboardPath(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
           setSessionChecked(true);
         }
       } catch {
@@ -207,7 +195,6 @@ export default function TravelMateLanding() {
         start: 'top top+=110',
         end: 'bottom bottom-=120',
         pin: '.preview-copy',
-        pinSpacing: false,
       });
     });
 
@@ -271,13 +258,13 @@ export default function TravelMateLanding() {
     setBusy(true);
     try {
       if (mode === 'login') {
-        const data = await auth({ action: 'login', email, password, role });
+        const data = await auth({ action: 'login', email, password });
         if (!data.redirect) throw new Error('Login succeeded but no dashboard route was returned.');
         setDashboardPath(data.redirect);
         setSessionChecked(true);
         router.push(data.redirect);
       } else if (mode === 'register') {
-        const data = await auth({ action: 'register', name, email, password, role });
+        const data = await auth({ action: 'register', name, email, password });
         setCode(data.verificationCode || '');
         setMode('verify');
         setMessage(data.message || 'Account created. Enter the development activation code to verify your email.');
@@ -321,7 +308,7 @@ export default function TravelMateLanding() {
     }
   }
 
-  const workflowSteps = workflowRole === 'traveler' ? travelerSteps : hostSteps;
+  const workflowSteps = travelerSteps;
 
   return (
     <div ref={pageRef} className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#f2efe6] font-sans text-[#142421] selection:bg-[#ffcf70] selection:text-[#142421]">
@@ -340,16 +327,16 @@ export default function TravelMateLanding() {
             <a className="transition-colors hover:text-white" href="#preview">Product</a>
             <a className="transition-colors hover:text-white" href="#faq">Questions</a>
           </nav>
-          <div className="hidden items-center gap-1 md:flex">
+          <div className="hidden items-center gap-1 lg:flex">
             <button type="button" onClick={openAccount} disabled={!sessionChecked} aria-busy={!sessionChecked} title={sessionChecked ? undefined : 'Checking your session'} className="px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/10 disabled:cursor-wait">{dashboardPath || !sessionChecked ? 'Dashboard' : 'Sign in'}</button>
             <button type="button" onClick={startPlanning} className="bg-[#ffcf70] px-5 py-2.5 text-sm font-bold text-[#102824] hover:bg-[#ffe1a1]">Plan a trip</button>
           </div>
-          <button type="button" aria-expanded={menu} aria-controls="mobile-navigation" aria-label={menu ? 'Close navigation' : 'Open navigation'} onClick={() => setMenu((current) => !current)} className="grid size-10 place-items-center border border-white/20 md:hidden">
+          <button type="button" aria-expanded={menu} aria-controls="mobile-navigation" aria-label={menu ? 'Close navigation' : 'Open navigation'} onClick={() => setMenu((current) => !current)} className="grid size-10 place-items-center border border-white/20 lg:hidden">
             {menu ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
         {menu && (
-          <nav id="mobile-navigation" aria-label="Mobile navigation" className="mx-auto max-w-[1380px] border-x border-b border-white/15 bg-[#102824] px-4 py-5 text-white shadow-2xl md:hidden">
+          <nav id="mobile-navigation" aria-label="Mobile navigation" className="mx-auto max-w-[1380px] border-x border-b border-white/15 bg-[#102824] px-4 py-5 text-white shadow-2xl lg:hidden">
             <div className="grid gap-1 text-sm font-semibold">
               {([['Why TravelMate', '#features'], ['How it works', '#workflow'], ['Budget', '#budget'], ['Product', '#preview'], ['Questions', '#faq']] as const).map(([label, href]) => <a key={href} href={href} onClick={() => setMenu(false)} className="border-b border-white/10 px-2 py-3 text-white/75 hover:text-white">{label}</a>)}
               <div className="mt-4 grid grid-cols-2 gap-2">
@@ -443,17 +430,13 @@ export default function TravelMateLanding() {
         <section id="workflow" className="scroll-mt-24 px-5 py-32 sm:px-8 md:py-44">
           <div className="mx-auto max-w-[1380px]">
             <div className="flex flex-col gap-10 border-b border-[#142421]/25 pb-10 lg:flex-row lg:items-end lg:justify-between">
-              <div><p className="text-sm font-medium text-[#4d625d]">Choose the path that fits</p><h2 className="mt-5 max-w-4xl text-balance text-5xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl">A clear flow from first detail to useful action.</h2></div>
-              <div className="grid grid-cols-2 border border-[#142421]" aria-label="Workflow audience">
-                <button type="button" aria-pressed={workflowRole === 'traveler'} onClick={() => { setWorkflowRole('traveler'); setActiveStep(0); }} className={`px-5 py-3 text-sm font-semibold ${workflowRole === 'traveler' ? 'bg-[#142421] text-white' : 'hover:bg-[#142421]/5'}`}>Traveler flow</button>
-                <button type="button" aria-pressed={workflowRole === 'host'} onClick={() => { setWorkflowRole('host'); setActiveStep(0); }} className={`border-l border-[#142421] px-5 py-3 text-sm font-semibold ${workflowRole === 'host' ? 'bg-[#142421] text-white' : 'hover:bg-[#142421]/5'}`}>Owner flow</button>
-              </div>
+              <div><p className="text-sm font-medium text-[#4d625d]">From idea to itinerary</p><h2 className="mt-5 max-w-4xl text-balance text-5xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl">A clear flow from first detail to useful action.</h2></div>
             </div>
-            <div className="mt-12 flex min-h-[620px] flex-col gap-2 md:h-[620px] md:flex-row" aria-label={`${workflowRole} workflow`}>
+            <div className="mt-12 flex min-h-[620px] flex-col gap-2 md:h-[620px] md:flex-row" aria-label="Traveler workflow">
               {workflowSteps.map(([title, description, image], index) => {
                 const active = index === activeStep;
                 return (
-                  <button key={`${workflowRole}-${title}`} type="button" aria-expanded={active} onClick={() => setActiveStep(index)} onFocus={() => setActiveStep(index)} onMouseEnter={() => setActiveStep(index)} className={`group relative min-h-24 overflow-hidden text-left transition-[flex] duration-700 ease-out md:min-h-0 ${active ? 'flex-[4]' : 'flex-1'}`}>
+                  <button key={title} type="button" aria-expanded={active} onClick={() => setActiveStep(index)} onFocus={() => setActiveStep(index)} onMouseEnter={() => setActiveStep(index)} className={`group relative min-h-24 overflow-hidden text-left transition-[flex] duration-700 ease-out md:min-h-0 ${active ? 'flex-[4]' : 'flex-1'}`}>
                     <Image src={image} alt="" fill sizes={active ? '(min-width: 768px) 55vw, 100vw' : '(min-width: 768px) 15vw, 100vw'} className="object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
                     <div className={`absolute inset-0 transition-colors duration-500 ${active ? 'bg-[linear-gradient(180deg,rgba(6,25,22,.05),rgba(6,25,22,.9))]' : 'bg-[#102824]/72'}`} />
                     <div className="absolute inset-0 flex flex-col justify-end p-5 text-white sm:p-7">
@@ -516,10 +499,10 @@ export default function TravelMateLanding() {
         </section>
 
         <section id="preview" className="scroll-mt-24 bg-[#d9e5dd] px-5 py-32 sm:px-8 md:py-44 lg:min-h-[1900px]">
-          <div className="mx-auto grid max-w-[1380px] gap-16 lg:grid-cols-[.68fr_1.32fr] lg:gap-24">
+          <div className="mx-auto grid max-w-[1380px] gap-16 lg:grid-cols-[.9fr_1.1fr] lg:gap-24">
             <div className="preview-copy self-start">
               <p className="text-sm font-medium text-[#4d625d]">The trip remains the context</p>
-              <h2 className="mt-6 text-balance text-5xl font-semibold leading-[.96] tracking-[-.055em] sm:text-6xl">Move between details without losing the plan.</h2>
+              <h2 className="mt-6 text-balance text-4xl font-semibold leading-[.96] tracking-[-.055em] sm:text-5xl xl:text-6xl">Move between details without losing the plan.</h2>
               <p className="mt-7 max-w-lg text-lg leading-8 text-[#4d625d]">Itinerary, budget, travel options, conditions, and saved trips stay connected to the same trip record.</p>
               <button type="button" onClick={startPlanning} className="group mt-9 inline-flex items-center gap-3 border-b border-[#142421] pb-2 font-semibold">Build your first plan <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" /></button>
             </div>
@@ -555,10 +538,10 @@ export default function TravelMateLanding() {
 
         <section className="grid lg:grid-cols-2">
           <article className="bg-[#ffcf70] px-5 py-24 text-[#142421] sm:px-8 sm:py-28 lg:px-[max(2rem,calc((100vw-1380px)/2))] lg:pr-16">
-            <Users size={29} /><h2 className="mt-16 max-w-xl text-5xl font-semibold leading-[.96] tracking-[-.055em] sm:text-6xl">Bring the trip you have in mind.</h2><p className="mt-6 max-w-lg text-lg leading-8 text-[#40524e]">Start with your destination, dates, budget, and interests. TravelMate will help organize the rest.</p><button type="button" onClick={() => { setRole('traveler'); show('register'); }} className="group mt-9 inline-flex items-center gap-3 bg-[#102824] px-6 py-3.5 font-semibold text-white">Create traveler account <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" /></button>
+            <Users size={29} /><h2 className="mt-16 max-w-xl text-5xl font-semibold leading-[.96] tracking-[-.055em] sm:text-6xl">Bring the trip you have in mind.</h2><p className="mt-6 max-w-lg text-lg leading-8 text-[#40524e]">Start with your destination, dates, budget, and interests. TravelMate will help organize the rest.</p><button type="button" onClick={() => { show('register'); }} className="group mt-9 inline-flex items-center gap-3 bg-[#102824] px-6 py-3.5 font-semibold text-white">Create traveler account <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" /></button>
           </article>
           <article className="bg-[#d9e5dd] px-5 py-24 text-[#142421] sm:px-8 sm:py-28 lg:px-16">
-            <Hotel size={29} /><h2 className="mt-16 max-w-xl text-5xl font-semibold leading-[.96] tracking-[-.055em] sm:text-6xl">Put a better local option on the map.</h2><p className="mt-6 max-w-lg text-lg leading-8 text-[#40524e]">Create an owner profile and manage approved Cebu listings from a focused workspace.</p><button type="button" onClick={() => { setRole('owner'); show('register'); }} className="group mt-9 inline-flex items-center gap-3 border border-[#142421] px-6 py-3.5 font-semibold hover:bg-[#142421] hover:text-white">Create owner account <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" /></button>
+            <Hotel size={29} /><h2 className="mt-16 max-w-xl text-5xl font-semibold leading-[.96] tracking-[-.055em] sm:text-6xl">Keep every trip in one place.</h2><p className="mt-6 max-w-lg text-lg leading-8 text-[#40524e]">Sign in to explore your plans, organize the details, and make the most of every journey.</p><button type="button" onClick={() => show('login')} className="group mt-9 inline-flex items-center gap-3 border border-[#142421] px-6 py-3.5 font-semibold hover:bg-[#142421] hover:text-white">Sign in to TravelMate <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" /></button>
           </article>
         </section>
       </main>
@@ -570,7 +553,7 @@ export default function TravelMateLanding() {
         </div>
       </footer>
 
-      {open && <AuthDialog mode={mode} setMode={setMode} role={role} setRole={setRole} email={email} setEmail={setEmail} password={password} setPassword={setPassword} confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword} name={name} setName={setName} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onResendVerification={() => void resendVerification()} onClose={() => setOpen(false)} containerRef={authDialogRef} closeButtonRef={closeButtonRef} />}
+      {open && <AuthDialog mode={mode} setMode={setMode} email={email} setEmail={setEmail} password={password} setPassword={setPassword} confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword} name={name} setName={setName} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onResendVerification={() => void resendVerification()} onClose={() => setOpen(false)} containerRef={authDialogRef} closeButtonRef={closeButtonRef} />}
     </div>
   );
 }
@@ -589,8 +572,6 @@ function PreviewCard({ image, alt, dark, warm = false, title, children }: { imag
 type AuthDialogProps = {
   mode: AuthMode;
   setMode: (mode: AuthMode) => void;
-  role: AuthRole;
-  setRole: (role: AuthRole) => void;
   email: string;
   setEmail: (value: string) => void;
   password: string;
@@ -610,9 +591,14 @@ type AuthDialogProps = {
   closeButtonRef: RefObject<HTMLButtonElement | null>;
 };
 
-function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, setPassword, confirmPassword, setConfirmPassword, name, setName, code, setCode, message, busy, onSubmit, onResendVerification, onClose, containerRef, closeButtonRef }: AuthDialogProps) {
-  const title = mode === 'login' ? 'Welcome back.' : mode === 'register' ? 'Make room for the trip.' : mode === 'verify' ? 'Verify your email.' : mode === 'forgot' ? 'Recover your account.' : 'Choose a new password.';
-  const description = mode === 'login' ? 'Return to your saved plans and pick up where you left off.' : mode === 'register' ? 'Create an account to generate, edit, and save a trip plan.' : mode === 'verify' ? 'Enter the single-use code sent to your email address.' : mode === 'forgot' ? 'Enter your verified account email to request a short-lived reset code.' : `Enter the reset code issued for ${email} and choose a strong new password.`;
+function AuthDialog({ mode, setMode, email, setEmail, password, setPassword, confirmPassword, setConfirmPassword, name, setName, code, setCode, message, busy, onSubmit, onResendVerification, onClose, containerRef, closeButtonRef }: AuthDialogProps) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (contentRef.current) contentRef.current.scrollTop = 0;
+  }, [mode]);
+
+  const title = mode === 'login' ? 'Welcome.' : mode === 'register' ? 'Make room for the trip.' : mode === 'verify' ? 'Verify your email.' : mode === 'forgot' ? 'Recover your account.' : 'Choose a new password.';
+  const description = mode === 'login' ? 'Sign in to TravelMate and make your next journey a little easier.' : mode === 'register' ? 'Create an account to generate, edit, and save a trip plan.' : mode === 'verify' ? 'Enter the single-use code sent to your email address.' : mode === 'forgot' ? 'Enter your verified account email to request a short-lived reset code.' : `Enter the reset code issued for ${email} and choose a strong new password.`;
   const submitLabel = busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : mode === 'register' ? 'Create account' : mode === 'verify' ? 'Verify email' : mode === 'forgot' ? 'Send reset code' : 'Reset password';
   const strength = getPasswordStrength(password);
   const strengthIndicator = {
@@ -621,27 +607,28 @@ function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, s
     medium: { label: 'Getting stronger', segments: 2, bar: 'bg-[#c18417]', text: 'text-[#8f6211]' },
     strong: { label: 'Strong', segments: 3, bar: 'bg-[#16745f]', text: 'text-[#12624f]' },
   }[strength];
-  const inputClass = 'mt-2 w-full border border-[#142421]/22 bg-white px-4 py-3.5 font-normal text-[#142421] outline-none placeholder:text-[#7b8985] focus:border-[#142421] focus:ring-2 focus:ring-[#ffcf70]';
+  const inputClass = 'mt-2 min-h-12 w-full min-w-0 scroll-my-4 border border-[#142421]/22 bg-white px-4 py-3 text-base font-normal text-[#142421] outline-none placeholder:text-[#7b8985] focus:border-[#142421] focus:ring-2 focus:ring-[#ffcf70]';
 
   return (
-    <div ref={containerRef} className="fixed inset-0 z-[80] grid place-items-center overflow-y-auto bg-[#061714]/90 p-3 backdrop-blur-md sm:p-6" onMouseDown={onClose}>
-      <section role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title" aria-describedby="auth-dialog-description" onMouseDown={(event) => event.stopPropagation()} className="relative my-4 grid max-h-[calc(100vh-2rem)] w-full max-w-5xl overflow-y-auto bg-[#f2efe6] text-[#142421] shadow-[0_35px_120px_rgba(0,0,0,.45)] lg:grid-cols-[.88fr_1.12fr]">
-        <div className="relative hidden min-h-[720px] overflow-hidden lg:block">
+    <div ref={containerRef} className="fixed inset-x-0 top-0 z-[80] flex h-dvh items-center justify-center overflow-hidden bg-[#061714]/90 backdrop-blur-md sm:p-6" onMouseDown={onClose}>
+      <section role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title" aria-describedby="auth-dialog-description" onMouseDown={(event) => event.stopPropagation()} className="relative grid h-full max-h-full w-full min-w-0 grid-rows-[minmax(0,1fr)] overflow-hidden bg-[#f2efe6] text-[#142421] shadow-[0_35px_120px_rgba(0,0,0,.45)] sm:h-auto sm:max-w-lg lg:max-w-5xl lg:grid-cols-[.88fr_1.12fr]">
+        <div className="relative hidden min-h-0 overflow-hidden lg:block">
           <Image src="/mountain-hero-bg.png" alt="Mountain landscape at dusk" fill sizes="40vw" className="object-cover transition-transform duration-700 ease-out hover:scale-105" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,20,18,.18),rgba(4,20,18,.88))]" />
           <div className="absolute inset-x-0 bottom-0 p-10 text-white"><Compass size={28} className="text-[#ffcf70]" /><p className="mt-12 text-4xl font-semibold leading-[1.02] tracking-[-.045em]">Your plan stays useful because it stays yours.</p><ul className="mt-8 space-y-4 border-t border-white/25 pt-6 text-sm text-white/68"><li className="flex items-center gap-3"><Check size={17} className="text-[#ffcf70]" />Reopen saved trips from any signed-in session</li><li className="flex items-center gap-3"><Check size={17} className="text-[#ffcf70]" />Edit individual itinerary activities</li><li className="flex items-center gap-3"><Check size={17} className="text-[#ffcf70]" />Keep budget and condition context attached</li></ul></div>
         </div>
-        <div className="relative p-6 sm:p-10 lg:p-12">
-          <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Close account dialog" className="absolute right-5 top-5 grid size-11 place-items-center border border-[#142421]/20 hover:bg-[#142421] hover:text-white"><X size={19} /></button>
-          <a href="#top" className="inline-flex items-center gap-3 font-semibold" onClick={onClose}><span className="grid size-9 place-items-center bg-[#ffcf70]"><Compass size={19} /></span>TravelMate</a>
-          <h2 id="auth-dialog-title" className="mt-12 max-w-md pr-10 text-5xl font-semibold leading-[.98] tracking-[-.055em]">{title}</h2>
-          <p id="auth-dialog-description" className="mt-5 max-w-md leading-7 text-[#596b66]">{description}</p>
-          {message && <p role="status" aria-live="polite" className="mt-6 border-l-2 border-[#b6780d] bg-[#ffcf70]/35 p-4 text-sm leading-6">{message}</p>}
-          <form onSubmit={onSubmit} autoComplete="on" className="mt-8 space-y-5">
+        <div className="flex min-h-0 min-w-0 flex-col">
+          <header className="flex shrink-0 items-center justify-between gap-4 px-5 pb-4 pt-[max(1rem,env(safe-area-inset-top))] sm:px-8 sm:py-5 lg:px-10">
+            <a href="#top" className="inline-flex min-h-11 items-center gap-3 font-semibold" onClick={onClose}><span className="grid size-9 place-items-center bg-[#ffcf70]"><Compass size={19} /></span>TravelMate</a>
+            <button ref={closeButtonRef} type="button" onClick={onClose} aria-label="Close account dialog" className="grid size-11 shrink-0 place-items-center border border-[#142421]/20 hover:bg-[#142421] hover:text-white"><X size={19} /></button>
+          </header>
+          <div ref={contentRef} className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 [overflow-wrap:anywhere] sm:px-8 sm:pb-8 sm:pt-5 lg:px-10">
+          <h2 id="auth-dialog-title" className="max-w-md text-4xl font-semibold leading-[1.05] tracking-[-.055em] sm:text-5xl">{title}</h2>
+          <p id="auth-dialog-description" className="mt-4 max-w-md text-sm leading-6 text-[#596b66] sm:text-base sm:leading-7">{description}</p>
+          {message && <p role="status" aria-live="polite" className="mt-5 border-l-2 border-[#b6780d] bg-[#ffcf70]/35 p-4 text-sm leading-6">{message}</p>}
+          <form onSubmit={onSubmit} autoComplete="on" className="mt-6 space-y-5 sm:mt-8">
             {mode === 'login' && <><div><a href="/api/auth/oauth/google" className="flex min-h-12 w-full items-center justify-center gap-3 border border-[#142421]/25 bg-white px-5 py-3.5 font-semibold transition hover:border-[#142421] hover:bg-[#faf8f1]"><span aria-hidden="true" className="grid size-7 place-items-center rounded-full border border-[#142421]/15 font-bold text-[#4285f4]">G</span>Continue with Google</a><p className="mt-2 text-xs text-[#71807c]">Google uses your saved account role. New Google accounts start as travelers.</p></div><div className="flex items-center gap-3 text-xs text-[#71807c]"><span className="h-px flex-1 bg-[#142421]/15"/><span>or use email and password</span><span className="h-px flex-1 bg-[#142421]/15"/></div></>}
-            {mode === 'login' && <fieldset><legend className="mb-3 text-sm font-semibold">Sign in as</legend><div className="grid grid-cols-2 border border-[#142421]"><button type="button" aria-pressed={role === 'traveler'} onClick={() => setRole('traveler')} className={`px-3 py-3.5 text-sm font-semibold ${role === 'traveler' ? 'bg-[#142421] text-white' : 'hover:bg-[#142421]/5'}`}>Traveler</button><button type="button" aria-pressed={role === 'owner'} onClick={() => setRole('owner')} className={`border-l border-[#142421] px-3 py-3.5 text-sm font-semibold ${role === 'owner' ? 'bg-[#142421] text-white' : 'hover:bg-[#142421]/5'}`}>Owner</button></div></fieldset>}
             {mode === 'register' && <>
-              <fieldset><legend className="mb-3 text-sm font-semibold">I am creating an account as</legend><div className="grid grid-cols-2 border border-[#142421]"><button type="button" aria-pressed={role === 'traveler'} onClick={() => setRole('traveler')} className={`px-3 py-3.5 text-sm font-semibold ${role === 'traveler' ? 'bg-[#142421] text-white' : 'hover:bg-[#142421]/5'}`}>Traveler</button><button type="button" aria-pressed={role === 'owner'} onClick={() => setRole('owner')} className={`border-l border-[#142421] px-3 py-3.5 text-sm font-semibold ${role === 'owner' ? 'bg-[#142421] text-white' : 'hover:bg-[#142421]/5'}`}>Property owner</button></div></fieldset>
               <label className="block text-sm font-semibold" htmlFor="auth-name">Full name<input id="auth-name" required minLength={2} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} className={inputClass} placeholder="Your name" /></label>
             </>}
             {(mode === 'login' || mode === 'register' || mode === 'forgot') && <label className="block text-sm font-semibold" htmlFor="auth-email">Email address<input id="auth-email" name="email" required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className={inputClass} placeholder="you@example.com" /></label>}
@@ -657,7 +644,8 @@ function AuthDialog({ mode, setMode, role, setRole, email, setEmail, password, s
             <button disabled={busy} className="mt-2 inline-flex w-full items-center justify-center gap-2 bg-[#142421] px-5 py-4 font-semibold text-white hover:bg-[#23423c] disabled:cursor-wait disabled:opacity-55">{submitLabel}<ArrowRight size={18} /></button>
             {mode === 'verify' && <button disabled={busy || !email} type="button" onClick={onResendVerification} className="w-full border border-[#142421]/25 px-5 py-3 text-sm font-semibold text-[#405a53] hover:border-[#142421] hover:text-[#142421] disabled:opacity-50">Resend verification code</button>}
           </form>
-          <div className="mt-6 flex items-center justify-between gap-3 text-sm font-semibold"><button type="button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')} className="border-b border-[#142421] pb-1">{mode === 'login' ? 'Create an account' : 'Back to sign in'}</button>{mode === 'login' && <button type="button" onClick={() => setMode('forgot')} className="text-[#596b66] hover:text-[#142421]">Forgot password?</button>}</div>
+          <div className="mt-5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm font-semibold"><button type="button" onClick={() => setMode(mode === 'login' ? 'register' : 'login')} className="min-h-11 underline underline-offset-4">{mode === 'login' ? 'Create an account' : 'Back to sign in'}</button>{mode === 'login' && <button type="button" onClick={() => setMode('forgot')} className="min-h-11 text-[#596b66] hover:text-[#142421]">Forgot password?</button>}</div>
+          </div>
         </div>
       </section>
     </div>
