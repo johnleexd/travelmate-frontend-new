@@ -69,8 +69,12 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
   const router = useRouter();
   const [data, setData] = useState<PlatformResponse | null>(null);
   const [selectedTab, setSelectedTab] = useState<Tab>('overview');
+  const [message, setMessage] = useState('');
+  const sectionVersionRef = useRef(0);
   const tab = initialTab === 'planner' ? 'planner' : selectedTab;
   const setTab = useCallback((nextTab: Tab) => {
+    sectionVersionRef.current += 1;
+    setMessage('');
     setSelectedTab(nextTab);
     if (initialTab === 'planner' && nextTab !== 'planner') router.replace('/dashboard');
   }, [initialTab, router]);
@@ -104,7 +108,6 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
   const [conditionsBusy, setConditionsBusy] = useState(false);
   const [busy, setBusy] = useState(false);
   const [generationFailed, setGenerationFailed] = useState(false);
-  const [message, setMessage] = useState('');
   const [editingTripId, setEditingTripId] = useState<string | null>(null);
   const [regenerationTargetId, setRegenerationTargetId] = useState<string | null>(null);
   const [activityEditor, setActivityEditor] = useState<{ dayIndex: number; activityIndex: number | null } | null>(null);
@@ -272,7 +275,7 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
     window.requestAnimationFrame(() => workspaceHeadingRef.current?.focus());
   }, [tab]);
   useEffect(() => {
-    if (tab !== 'notifications') return;
+    if (!data?.user.id) return;
     let active = true;
     let loading = false;
     const updateNotifications = async () => {
@@ -288,7 +291,7 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
     const interval = window.setInterval(() => void updateNotifications(), 30_000);
     window.addEventListener('focus', updateNotifications);
     return () => { active = false; window.clearInterval(interval); window.removeEventListener('focus', updateNotifications); };
-  }, [tab]);
+  }, [tab, data?.user.id]);
   useModalAccessibility({
     active: selectedDay !== null,
     containerRef: dayModalRef,
@@ -491,9 +494,10 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
   }
 
   async function action(body: Record<string, unknown>, success: string): Promise<boolean> {
+    const sectionVersion = sectionVersionRef.current;
     setBusy(true); setMessage('');
-    try { await api(body); await refresh(); setMessage(success); return true; }
-    catch (error) { setMessage(error instanceof Error ? error.message : 'Action failed.'); return false; }
+    try { await api(body); await refresh(); if (sectionVersion === sectionVersionRef.current) setMessage(success); return true; }
+    catch (error) { if (sectionVersion === sectionVersionRef.current) setMessage(error instanceof Error ? error.message : 'Action failed.'); return false; }
     finally { setBusy(false); }
   }
 

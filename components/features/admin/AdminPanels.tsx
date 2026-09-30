@@ -7,7 +7,7 @@ import type { PlatformResponse, PublicUser } from '@/lib/contracts';
 import { useModalAccessibility } from '@/hooks/use-modal-accessibility';
 
 export type AdminTab = 'overview' | 'users' | 'reports' | 'health';
-type Action = (body: Record<string, unknown>, success?: string) => Promise<boolean>;
+type Action = (body: Record<string, unknown>, success?: string, onError?: (message: string) => void) => Promise<boolean>;
 const panel = 'min-w-0 border border-white/10 bg-[#102622] p-5 sm:p-7';
 const button = 'min-h-11 border border-white/25 px-4 py-2 text-sm font-semibold hover:bg-white/10 disabled:opacity-50';
 
@@ -72,9 +72,8 @@ export function UsersView({ users, search, filter, busy, onSearch, onFilter, onA
           sendingRef.current = true;
           setWarningError('');
           try {
-            const sent = await onAction({ action: 'admin-user-warning', id: warningUser.id, message: warning.trim() }, `Warning sent to ${warningUser.name}.`);
+            const sent = await onAction({ action: 'admin-user-warning', id: warningUser.id, message: warning.trim() }, `Warning sent to ${warningUser.name}.`, setWarningError);
             if (sent) setWarningUser(null);
-            else setWarningError('The warning could not be sent. Please try again.');
           } finally { sendingRef.current = false; }
         }}>
           <label className="block text-sm font-semibold">Warning message<textarea ref={messageRef} required minLength={10} maxLength={2000} rows={5} value={warning} onChange={event => setWarning(event.target.value)} placeholder="Explain the issue and what the traveler needs to change." className="mt-2 block w-full resize-y border border-white/25 bg-[#071a16] p-3 text-base font-normal"/></label>

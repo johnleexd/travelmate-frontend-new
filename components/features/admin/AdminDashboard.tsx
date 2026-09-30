@@ -34,6 +34,7 @@ export default function AdminDashboard() {
   const [data, setData] = useState<PlatformResponse | null>(null);
   const [tab, setTab] = useState<Tab>('overview');
   const [message, setMessage] = useState('');
+  const sectionVersionRef = useRef(0);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [busy, setBusy] = useState(false);
@@ -54,14 +55,15 @@ export default function AdminDashboard() {
     ScrollTrigger.refresh();
   }, { scope: pageRef, dependencies: [data, tab], revertOnUpdate: true });
 
-  async function act(body: Record<string, unknown>, success = 'Action persisted and added to the audit log.') {
+  async function act(body: Record<string, unknown>, success = 'Action persisted and added to the audit log.', onError?: (message: string) => void) {
+    const sectionVersion = sectionVersionRef.current;
     setBusy(true); setMessage('');
-    try { await request(body); setMessage(success); await refresh().catch(() => undefined); return true; }
-    catch (error) { setMessage(error instanceof Error ? error.message : 'Action failed.'); return false; }
+    try { await request(body); if (sectionVersion === sectionVersionRef.current) setMessage(success); await refresh().catch(() => undefined); return true; }
+    catch (error) { const message = error instanceof Error ? error.message : 'Action failed.'; if (sectionVersion === sectionVersionRef.current) { setMessage(message); onError?.(message); } return false; }
     finally { setBusy(false); }
   }
   async function logout() { await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) }); router.replace('/'); }
-  function openTab(next: Tab) { setTab(next); setFilter('all'); setSearch(''); }
+  function openTab(next: Tab) { sectionVersionRef.current += 1; setMessage(''); setTab(next); setFilter('all'); setSearch(''); }
 
   const users = useMemo(() => data?.directory.filter((item) => (filter === 'all' || item.role === filter || item.accountStatus === filter) && `${item.name} ${item.email}`.toLowerCase().includes(search.toLowerCase())) ?? [], [data, filter, search]);
   if (!data) return <DashboardLoadState label="the admin control room" error={loadError} onRetry={() => { setLoadError(''); void loadInitial(); }}/ >;
