@@ -16,7 +16,7 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const TAB_COPY: Record<Tab, { title: string; description: string }> = {
   overview: { title: 'Overview', description: 'See the health of the traveler journey and act on its most important constraint.' },
-  reports: { title: 'Reports', description: 'Review problems reported by travelers and track their resolution.' },
+  reports: { title: 'Reports', description: 'Review traveler reports and suspension appeals, and send decisions back to travelers.' },
   health: { title: 'System Health', description: 'Check service configuration, recent generation failures, and account activity.' },
   users: { title: 'Users', description: 'Manage traveler and admin access without exposing private data across roles.' },
 };
@@ -68,7 +68,7 @@ export default function AdminDashboard() {
   const users = useMemo(() => data?.directory.filter((item) => (filter === 'all' || item.role === filter || item.accountStatus === filter) && `${item.name} ${item.email}`.toLowerCase().includes(search.toLowerCase())) ?? [], [data, filter, search]);
   if (!data) return <DashboardLoadState label="the admin control room" error={loadError} onRetry={() => { setLoadError(''); void loadInitial(); }}/ >;
 
-  const pending = data.moderation.filter(item => item.kind === 'report' && item.status === 'pending').length;
+  const pending = data.moderation.filter(item => (item.kind === 'report' || item.kind === 'appeal') && item.status === 'pending').length;
   const copy = TAB_COPY[tab];
   const adminInitials = data.user.name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'AD';
   const nav: Array<[Tab, string, LucideIcon]> = [['overview', 'Overview', Activity], ['users', 'Users', Users], ['reports', 'Reports', Bell], ['health', 'System Health', HeartPulse]];

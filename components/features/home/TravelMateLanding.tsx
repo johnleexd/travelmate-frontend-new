@@ -125,7 +125,7 @@ export default function TravelMateLanding() {
         }
         const { user } = await handleResponse<CurrentUserResponse>(response);
         if (mounted) {
-          setDashboardPath(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
+          setDashboardPath(user.accountStatus === 'suspended' ? '/account/appeal' : user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
           setSessionChecked(true);
         }
       } catch {

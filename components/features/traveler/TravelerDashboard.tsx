@@ -149,13 +149,13 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
   const loadInitial = async () => {
     try { setData(await api()); }
     catch (error) {
-      if (isAuthenticationError(error)) { router.replace('/'); return; }
+      if (isAuthenticationError(error)) { router.replace('/account/appeal'); return; }
       setLoadError(error instanceof Error ? error.message : 'TravelMate could not load your workspace.');
     }
   };
   useEffect(() => {
     void api().then(setData).catch((error: unknown) => {
-      if (isAuthenticationError(error)) { router.replace('/'); return; }
+      if (isAuthenticationError(error)) { router.replace('/account/appeal'); return; }
       setLoadError(error instanceof Error ? error.message : 'TravelMate could not load your workspace.');
     });
   }, [router]);
@@ -284,14 +284,14 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
       try {
         const result = await api();
         if (active) setData(current => current ? { ...current, notifications: result.notifications } : current);
-      } catch { /* Keep existing notifications available while offline. */ }
+      } catch (error) { if (active && isAuthenticationError(error)) router.replace('/account/appeal'); }
       finally { loading = false; }
     };
     void updateNotifications();
     const interval = window.setInterval(() => void updateNotifications(), 30_000);
     window.addEventListener('focus', updateNotifications);
     return () => { active = false; window.clearInterval(interval); window.removeEventListener('focus', updateNotifications); };
-  }, [tab, data?.user.id]);
+  }, [tab, data?.user.id, router]);
   useModalAccessibility({
     active: selectedDay !== null,
     containerRef: dayModalRef,

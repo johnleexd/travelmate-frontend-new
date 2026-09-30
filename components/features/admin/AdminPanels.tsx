@@ -12,7 +12,7 @@ const panel = 'min-w-0 border border-white/10 bg-[#102622] p-5 sm:p-7';
 const button = 'min-h-11 border border-white/25 px-4 py-2 text-sm font-semibold hover:bg-white/10 disabled:opacity-50';
 
 export function Overview({ data, onOpen }: { data: PlatformResponse; onOpen: (tab: AdminTab) => void }) {
-  const openReports = data.moderation.filter(item => item.kind === 'report' && item.status === 'pending').length;
+  const openReports = data.moderation.filter(item => (item.kind === 'report' || item.kind === 'appeal') && item.status === 'pending').length;
   const metrics = [
     ['Traveler accounts', data.directory.filter(item => item.role === 'traveler').length, Users],
     ['Active accounts', data.directory.filter(item => item.accountStatus === 'active').length, Activity],
@@ -87,18 +87,20 @@ export function UsersView({ users, search, filter, busy, onSearch, onFilter, onA
 }
 
 export function ReportsView({ data, busy, onAction }: { data: PlatformResponse; busy: boolean; onAction: Action }) {
-  const reports = data.moderation.filter(item => item.kind === 'report');
+  const reports = data.moderation.filter(item => item.kind === 'report' || item.kind === 'appeal');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [decisionMessage, setDecisionMessage] = useState('');
+  const [decisionError, setDecisionError] = useState('');
   const selectedReport = reports.find(report => report.id === selectedId);
   const reporter = data.directory.find(user => user.id === selectedReport?.subjectId);
   const modalRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   useModalAccessibility({ active: Boolean(selectedReport), containerRef: modalRef, initialFocusRef: closeRef, onClose: () => setSelectedId(null) });
   return <div className="space-y-4">{reports.length === 0 ? <p className={panel}>No traveler reports yet. Travelers can report a problem from their account page.</p> : reports.map(report => <article data-admin-card key={report.id} className={panel}>
-    <div className="flex flex-wrap items-start justify-between gap-3"><h2 className="min-w-0 break-words text-lg font-bold"><button type="button" className="text-left [overflow-wrap:anywhere] hover:underline" onClick={() => setSelectedId(report.id)} aria-haspopup="dialog">{report.title}</button></h2>{report.status !== 'pending' && <span className="text-sm text-[#ffcf70]"><span className="sr-only">Status: </span>Resolved</span>}</div>
+    <div className="flex flex-wrap items-start justify-between gap-3"><h2 className="min-w-0 break-words text-lg font-bold"><button type="button" className="text-left [overflow-wrap:anywhere] hover:underline" onClick={() => { setSelectedId(report.id); setDecisionMessage(''); setDecisionError(''); }} aria-haspopup="dialog">{report.title}</button></h2>{report.status !== 'pending' && <span className="text-sm text-[#ffcf70]"><span className="sr-only">Status: </span>{report.status === 'approved' ? 'Approved' : report.status === 'rejected' ? 'Rejected' : 'Resolved'}</span>}</div>
     <p className="mt-2 break-words text-xs text-white/50">{data.directory.find(user => user.id === report.subjectId)?.name || 'Former account'} · {new Date(report.createdAt).toLocaleString()}</p>
     <p className="mt-4 line-clamp-3 whitespace-pre-wrap text-sm leading-7 text-white/75 [overflow-wrap:anywhere]">{report.details}</p>
-    <div className="mt-5 flex flex-wrap gap-3"><button type="button" className={button} onClick={() => setSelectedId(report.id)} aria-haspopup="dialog">View full report</button>{report.status === 'pending' && <button disabled={busy} className={button} onClick={() => void onAction({ action: 'resolve-report', id: report.id }, '')}>Mark resolved</button>}</div>
+    <div className="mt-5 flex flex-wrap gap-3"><button type="button" className={button} onClick={() => { setSelectedId(report.id); setDecisionMessage(''); setDecisionError(''); }} aria-haspopup="dialog">{report.kind === 'appeal' ? 'Review appeal' : 'View full report'}</button>{report.kind === 'report' && report.status === 'pending' && <button disabled={busy} className={button} onClick={() => void onAction({ action: 'resolve-report', id: report.id }, '')}>Mark resolved</button>}</div>
   </article>)}
   {selectedReport && createPortal(<div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 p-3 text-slate-100 sm:p-6" onMouseDown={event => { if (event.target === event.currentTarget) setSelectedId(null); }}>
     <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="report-dialog-title" tabIndex={-1} className="flex max-h-[calc(100dvh-1.5rem)] w-full min-w-0 max-w-2xl flex-col border border-white/20 bg-[#102622] shadow-2xl sm:max-h-[calc(100dvh-3rem)]">
@@ -108,12 +110,21 @@ export function ReportsView({ data, busy, onAction }: { data: PlatformResponse; 
         <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
           <div><dt className="text-white/50">Reported by</dt><dd className="mt-1 [overflow-wrap:anywhere]">{reporter?.name || 'Former account'}{reporter?.email && <span className="mt-1 block text-white/65">{reporter.email}</span>}</dd></div>
           <div><dt className="text-white/50">Submitted</dt><dd className="mt-1">{new Date(selectedReport.createdAt).toLocaleString()}</dd></div>
-          <div><dt className="text-white/50">Status</dt><dd className="mt-1 text-[#ffcf70]">{selectedReport.status === 'pending' ? 'Open' : 'Resolved'}</dd></div>
+          <div><dt className="text-white/50">Status</dt><dd className="mt-1 text-[#ffcf70]">{selectedReport.status === 'pending' ? 'Open' : selectedReport.status === 'approved' ? 'Approved' : selectedReport.status === 'rejected' ? 'Rejected' : 'Resolved'}</dd></div>
           <div><dt className="text-white/50">Report ID</dt><dd className="mt-1 [overflow-wrap:anywhere]">{selectedReport.id}</dd></div>
         </dl>
         <h4 className="mt-6 font-bold">Details</h4><p className="mt-2 whitespace-pre-wrap text-sm leading-7 text-white/80 [overflow-wrap:anywhere]">{selectedReport.details}</p>
+        {selectedReport.kind === 'appeal' && selectedReport.status === 'pending' && <form className="mt-6 border-t border-white/15 pt-5" onSubmit={async event => {
+          event.preventDefault();
+          if (busy) return;
+          if (decisionMessage.trim().length < 10) { setDecisionError('Enter at least 10 characters explaining your decision.'); return; }
+          const decision = (event.nativeEvent as SubmitEvent).submitter?.getAttribute('value');
+          if (!decision) return;
+          setDecisionError('');
+          await onAction({ action: 'review-appeal', id: selectedReport.id, decision, message: decisionMessage.trim() }, 'Appeal decision sent to the traveler.', setDecisionError);
+        }}><label className="block text-sm font-bold">Decision message to traveler<textarea required minLength={10} maxLength={2000} rows={4} value={decisionMessage} onChange={event => setDecisionMessage(event.target.value)} className="mt-2 block w-full border border-white/25 bg-[#071a16] p-3 text-base font-normal" placeholder="Explain why access is being restored or why the suspension remains."/></label>{decisionError && <p role="alert" className="mt-3 text-sm text-red-300">{decisionError}</p>}<div className="mt-4 flex flex-wrap gap-3"><button type="submit" value="approved" disabled={busy} className={`${button} bg-[#ffcf70] text-[#102824]`}>Approve & restore access</button><button type="submit" value="rejected" disabled={busy} className={button}>Reject appeal</button></div></form>}
       </div>
-      <div className="flex shrink-0 flex-wrap justify-end gap-3 border-t border-white/15 p-4 sm:px-6"><button type="button" className={button} onClick={() => setSelectedId(null)}>Close</button>{selectedReport.status === 'pending' && <button type="button" disabled={busy} className={button} onClick={() => void onAction({ action: 'resolve-report', id: selectedReport.id }, '')}>{busy ? 'Saving...' : 'Mark resolved'}</button>}</div>
+      <div className="flex shrink-0 flex-wrap justify-end gap-3 border-t border-white/15 p-4 sm:px-6"><button type="button" className={button} onClick={() => setSelectedId(null)}>Close</button>{selectedReport.kind === 'report' && selectedReport.status === 'pending' && <button type="button" disabled={busy} className={button} onClick={() => void onAction({ action: 'resolve-report', id: selectedReport.id }, '')}>{busy ? 'Saving...' : 'Mark resolved'}</button>}</div>
     </div>
   </div>, document.body)}
   </div>;
