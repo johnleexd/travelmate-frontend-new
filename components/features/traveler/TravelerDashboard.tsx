@@ -303,21 +303,6 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
     if (!data || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     const media = gsap.matchMedia();
-    media.add('(min-width: 1024px)', () => {
-      const rail = document.querySelector<HTMLElement>('[data-traveler-rail]');
-      const shell = document.querySelector<HTMLElement>('[data-traveler-shell]');
-      if (!rail || !shell) return;
-
-      const pin = ScrollTrigger.create({
-        trigger: shell,
-        start: 'top top+=80',
-        end: 'bottom bottom-=32',
-        pin: rail,
-        pinSpacing: false,
-      });
-      return () => pin.kill();
-    });
-
     gsap.utils.toArray<HTMLElement>('[data-dashboard-image]').forEach((image) => {
       gsap.fromTo(image, { autoAlpha: 0.58, scale: 0.88 }, {
         autoAlpha: 1,
@@ -749,7 +734,7 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
 
       {tab !== 'overview' && <div className="border-b border-white/10 bg-[#102622] px-4 py-3 sm:px-6"><div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-1 text-xs text-white/52"><strong className="text-white/78">Current trip context</strong><span>{selectedDestination ? destination : 'Choose and confirm a destination'}</span><span>{startDate} to {endDate}</span><span>{currencyResolved && Number.isFinite(budget) ? formatMoney(budget, currency) : 'Currency auto-detected after destination'}{currencyResolved&&<ReferenceAmount amount={budget} currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>}</span>{itinerary && <span className="text-emerald-200">Generated plan available</span>}</div></div>}
 
-      <div data-traveler-shell className="mx-auto grid w-full max-w-[1600px] grid-cols-[minmax(0,1fr)] gap-0 px-4 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-10 lg:px-6 xl:gap-14">
+      <div className="mx-auto grid w-full max-w-[1600px] grid-cols-[minmax(0,1fr)] gap-0 px-4 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-10 lg:px-6 xl:gap-14">
         <aside className="min-w-0 max-w-[calc(100vw-2rem)] py-4 lg:sticky lg:top-24 lg:max-w-none lg:self-start lg:py-8">
           <div data-traveler-rail className="lg:flex lg:h-[calc(100vh-144px)] lg:w-[248px] lg:flex-col">
             <nav aria-label="Traveler workspace" className="traveler-mobile-nav flex max-w-full snap-x gap-px overflow-x-auto border border-white/10 bg-white/10 p-px lg:flex-col lg:overflow-visible">

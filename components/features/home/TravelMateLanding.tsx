@@ -155,7 +155,7 @@ export default function TravelMateLanding() {
       oauth_code_invalid: 'Google did not return a valid sign-in code. Please try again.',
       oauth_token_invalid: 'Google could not verify this sign-in. Please try again.',
       oauth_rate_limited: 'Too many Google sign-in attempts. Wait a minute and try again.',
-      oauth_unavailable: 'Google sign-in was interrupted. Start a new sign-in attempt.',
+      oauth_unavailable: 'Google sign-in is temporarily unavailable. Please try again in a moment.',
       oauth_not_configured: 'Google sign-in has not been set up yet. Use email and password for now.',
       account_link_required: 'An account already uses this email. Sign in with your password first; Google cannot be linked automatically.',
       account_suspended: 'This account is suspended. Contact TravelMate support.',
