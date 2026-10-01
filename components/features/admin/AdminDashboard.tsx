@@ -9,21 +9,23 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
   Activity, ArrowRight, BarChart3, Bell, BookOpenCheck, Building2, CalendarCheck,
   CheckCircle2, CircleDollarSign, ClipboardCheck, Compass, Database, FileCheck2,
-  FileClock, HeartPulse, ListChecks, LogOut, Search, ShieldCheck, Star, Tags,
+  FileClock, HeartPulse, ListChecks, LogOut, MessageSquareText, Search, ShieldCheck, Star, Tags,
   Users, WalletCards, type LucideIcon,
 } from 'lucide-react';
 import type { PaymentStatus } from '@/lib/domain';
 import type { Listing, ModerationItem, PlatformActionResponse, PlatformResponse, PublicUser } from '@/lib/contracts';
 import { handleResponse, isAuthenticationError } from '@/services/api.service';
 import { DashboardLoadState } from '@/components/common/DashboardLoadState';
+import { UserFeedbackView } from '@/components/features/admin/UserFeedbackView';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-type Tab = 'overview' | 'moderation' | 'users' | 'listings' | 'bookings' | 'marketplace' | 'payments' | 'audit';
+type Tab = 'overview' | 'moderation' | 'users' | 'feedback' | 'listings' | 'bookings' | 'marketplace' | 'payments' | 'audit';
 const TAB_COPY: Record<Tab, { title: string; description: string }> = {
   overview: { title: 'Overview', description: 'See the health of the traveler-to-owner journey and act on its most important constraint.' },
   moderation: { title: 'Moderation', description: 'Review owner identity, traveler profiles, listings, and booking disputes with their supporting context.' },
   users: { title: 'Users', description: 'Manage traveler and owner access without exposing private data across roles.' },
+  feedback: { title: 'User feedback', description: 'Read traveler ratings and comments linked to saved itineraries.' },
   listings: { title: 'Listings', description: 'Control what travelers can discover and understand why each inventory record is approved or restricted.' },
   bookings: { title: 'Bookings', description: 'Trace every owner–traveler request from pending decision through completion or cancellation.' },
   marketplace: { title: 'Marketplace quality', description: 'Audit availability blocks, promotions, reviews, gallery coverage, and conversion signals.' },
@@ -95,7 +97,7 @@ export default function AdminDashboard() {
   const listingName = (id: string) => data.listings.find((item) => item.id === id)?.name || id;
   const userName = (id: string) => data.directory.find((item) => item.id === id)?.name || id;
   const copy = TAB_COPY[tab];
-  const nav: Array<[Tab, string, LucideIcon]> = [['overview', 'Overview', Activity], ['moderation', 'Moderation', ClipboardCheck], ['users', 'Users', Users], ['listings', 'Listings', ListChecks], ['bookings', 'Bookings', CalendarCheck], ['marketplace', 'Marketplace', Tags], ['payments', 'Payments', WalletCards], ['audit', 'Audit & health', FileClock]];
+  const nav: Array<[Tab, string, LucideIcon]> = [['overview', 'Overview', Activity], ['moderation', 'Moderation', ClipboardCheck], ['users', 'Users', Users], ['feedback', 'User feedback', MessageSquareText], ['listings', 'Listings', ListChecks], ['bookings', 'Bookings', CalendarCheck], ['marketplace', 'Marketplace', Tags], ['payments', 'Payments', WalletCards], ['audit', 'Audit & health', FileClock]];
 
   return <div ref={pageRef} className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#0b1d1a] text-slate-100">
     <a href="#admin-main-content" className="sr-only z-[100] bg-[#f1ead8] px-4 py-2 font-bold text-[#14231f] focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to admin workspace</a>
@@ -124,6 +126,7 @@ export default function AdminDashboard() {
         {tab === 'overview' && <Overview data={data} activeOwners={activeOwners} activeTravelers={activeTravelers} pendingBookings={pendingBookings} onOpen={openTab}/>} 
         {tab === 'moderation' && <Moderation data={data} busy={busy} userName={userName} listingName={listingName} onAction={act}/>} 
         {tab === 'users' && <UsersView users={users} search={search} filter={filter} busy={busy} onSearch={setSearch} onFilter={setFilter} onAction={act}/>} 
+        {tab === 'feedback' && <UserFeedbackView/>}
         {tab === 'listings' && <ListingsView listings={listings} data={data} search={search} filter={filter} busy={busy} userName={userName} onSearch={setSearch} onFilter={setFilter} onAction={act}/>} 
         {tab === 'bookings' && <BookingsView data={data} listingName={listingName} userName={userName}/>} 
         {tab === 'marketplace' && <MarketplaceView data={data} listingName={listingName} userName={userName}/>} 

@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowRight, BedDouble, Bell, CalendarDays, CloudSun, Compass, Home, LocateFixed, LogOut, MapPin, Plane, UserRound, WalletCards, X } from 'lucide-react';
+import { ArrowRight, BedDouble, Bell, CalendarDays, CloudSun, Compass, Home, LocateFixed, LogOut, MapPin, MessageSquareText, Plane, UserRound, WalletCards, X } from 'lucide-react';
 import { fetchTripData, fetchWeather, handleResponse, isAuthenticationError, refreshItineraryDayImages, type DayActivity, type ItineraryResponse, type WeatherData } from '@/services/api.service';
 import { CURRENCY_NAMES, formatMoney, partyBudgetExplanation, partyBudgetLabel, partySpendLabel, PARTY_TYPE_LABELS, SUPPORTED_CURRENCIES, ZERO_DECIMAL_CURRENCIES, type CurrencyCode, type PartyType } from '@/lib/domain';
 import { CEBU_COORDINATES as CEBU_COORDINATE_VALUES, CEBU_LOCATIONS as CEBU_LOCATION_VALUES } from '@/constants/cebu-locations';
@@ -31,8 +31,9 @@ import { parseTravelOptionsResponse } from '@/services/provider-response';
 import { addCalendarDays, localDateInputValue, regenerationDraftDates } from '@/lib/date';
 import { recommendAccommodation } from '@/lib/accommodation-recommendation';
 import { MarketplaceCards, TravelerBookingManager, TravelerNotifications } from '@/components/features/traveler/OwnerMarketplace';
+import { TravelerFeedback } from '@/components/features/traveler/TravelerFeedback';
 
-type Tab = 'overview' | 'planner' | 'budget' | 'compare' | 'market' | 'bookings' | 'notifications' | 'profile';
+type Tab = 'overview' | 'planner' | 'budget' | 'compare' | 'market' | 'bookings' | 'notifications' | 'feedback' | 'profile';
 type PreTripCostDraft = {
   airportTransfers: number; passport: number; visaOrAuthorization: number;
   departureTaxes: number; insurance: number; other: number;
@@ -48,6 +49,7 @@ const TAB_COPY: Record<Tab, { title: string; description: string }> = {
   market: { title: 'Browse local stays', description: 'Review approved TravelMate listings and keep their estimated cost connected to your trip.' },
   bookings: { title: 'Saved trips and bookings', description: 'Return to plans you deliberately saved and manage existing accommodation requests.' },
   notifications: { title: 'Travel updates that need you.', description: 'See owner decisions, completed stays, reviews, and important account events.' },
+  feedback: { title: 'Share your feedback', description: 'Tell the TravelMate team what worked in a saved itinerary and what can improve.' },
   profile: { title: 'Your account', description: 'Manage contact information and understand what verification changes.' },
 };
 
@@ -732,7 +734,7 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
         <aside className="min-w-0 max-w-[calc(100vw-2rem)] py-4 lg:sticky lg:top-24 lg:max-w-none lg:self-start lg:py-8">
           <div data-traveler-rail className="lg:flex lg:h-[calc(100vh-144px)] lg:w-[248px] lg:flex-col">
             <nav aria-label="Traveler workspace" className="traveler-mobile-nav flex max-w-full snap-x gap-px overflow-x-auto border border-white/10 bg-white/10 p-px lg:flex-col lg:overflow-visible">
-              {([['overview','Home',Home],['planner','Plan a trip',MapPin],['bookings','Saved trips',CalendarDays],['notifications','Notifications',Bell]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => id === 'planner' ? startNewTrip() : setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}{id === 'notifications' && data.notifications.filter((item) => !item.readAt).length > 0 && <span className="ml-auto bg-amber-300 px-1.5 text-[10px] font-black text-[#14231f]">{data.notifications.filter((item) => !item.readAt).length}</span>}</button>)}
+              {([['overview','Home',Home],['planner','Plan a trip',MapPin],['bookings','Saved trips',CalendarDays],['notifications','Notifications',Bell],['feedback','Feedback',MessageSquareText]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => id === 'planner' ? startNewTrip() : setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}{id === 'notifications' && data.notifications.filter((item) => !item.readAt).length > 0 && <span className="ml-auto bg-amber-300 px-1.5 text-[10px] font-black text-[#14231f]">{data.notifications.filter((item) => !item.readAt).length}</span>}</button>)}
               <div className="hidden px-4 pb-2 pt-6 text-[10px] font-bold uppercase tracking-[0.16em] text-white/28 lg:block">Use with a plan</div>
               {([['budget','Budget review',WalletCards],['compare','Travel options',Plane],['market','Local stays',BedDouble]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}</button>)}
             </nav>
@@ -746,6 +748,7 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
             <span className={`w-fit shrink-0 border px-3 py-2 text-[11px] font-bold tracking-wide ${data.user.profileStatus==='verified'?'border-emerald-400/40 bg-emerald-400/10 text-emerald-200':'border-amber-300/40 bg-amber-300/10 text-amber-200'}`}>{data.user.profileStatus==='verified'?'Verified profile':'Limited Mode'}</span>
           </div>
           {message && <div role="status" aria-live="polite" className="mb-6 border-l-2 border-amber-300 bg-white/[0.055] px-4 py-3 text-sm text-white/80">{message}</div>}
+          {tab === 'feedback' && <TravelerFeedback trips={data.trips}/>}
 
           {tab === 'overview' && <TravelerJourneyOverview
             userName={data.user.name}
