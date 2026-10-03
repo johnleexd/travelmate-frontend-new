@@ -11,6 +11,7 @@ import type { PlatformActionResponse, PlatformResponse } from '@/lib/contracts';
 import { handleResponse, isAuthenticationError } from '@/services/api.service';
 import { DashboardLoadState } from '@/components/common/DashboardLoadState';
 import { useModalAccessibility } from '@/hooks/use-modal-accessibility';
+import { signOut } from '@/services/session.service';
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -62,7 +63,12 @@ export default function AdminDashboard() {
     catch (error) { const message = error instanceof Error ? error.message : 'Action failed.'; if (sectionVersion === sectionVersionRef.current) { setMessage(message); onError?.(message); } return false; }
     finally { setBusy(false); }
   }
-  async function logout() { await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) }); router.replace('/'); }
+  async function logout() {
+    setProfileMenuOpen(false);
+    setMessage('');
+    try { await signOut(); router.replace('/'); }
+    catch (error) { setMessage(error instanceof Error ? error.message : 'Could not sign out. Please try again.'); }
+  }
   function openTab(next: Tab) { sectionVersionRef.current += 1; setMessage(''); setTab(next); setFilter('all'); setSearch(''); }
 
   const users = useMemo(() => data?.directory.filter((item) => (filter === 'all' || item.role === filter || item.accountStatus === filter) && `${item.name} ${item.email}`.toLowerCase().includes(search.toLowerCase())) ?? [], [data, filter, search]);

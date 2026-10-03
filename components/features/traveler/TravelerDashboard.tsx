@@ -34,6 +34,7 @@ import { parseTravelOptionsResponse } from '@/services/provider-response';
 import { addCalendarDays, localDateInputValue, regenerationDraftDates } from '@/lib/date';
 import { recommendAccommodation } from '@/lib/accommodation-recommendation';
 import { TravelerNotifications } from '@/components/features/traveler/TravelerNotifications';
+import { signOut } from '@/services/session.service';
 
 type Tab = 'overview' | 'planner' | 'budget' | 'compare' | 'bookings' | 'notifications' | 'profile';
 type PreTripCostDraft = {
@@ -610,7 +611,12 @@ export default function TravelerDashboard({ initialTab }: { initialTab?: Tab }) 
     finally { setBusy(false); }
   }
 
-  async function logout() { await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) }); router.replace('/'); }
+  async function logout() {
+    setProfileMenuOpen(false);
+    setMessage('');
+    try { await signOut(); router.replace('/'); }
+    catch (error) { setMessage(error instanceof Error ? error.message : 'Could not sign out. Please try again.'); }
+  }
   if (!data) return <DashboardLoadState label="your TravelMate workspace" variant={tab === 'planner' ? 'planner' : 'traveler'} error={loadError} onRetry={() => { setLoadError(''); void loadInitial(); }} />;
   const tripDays = Math.floor((new Date(`${endDate}T00:00:00.000Z`).getTime() - new Date(`${startDate}T00:00:00.000Z`).getTime()) / 86_400_000) + 1;
   const maximumEndDate = addCalendarDays(startDate, 13);
