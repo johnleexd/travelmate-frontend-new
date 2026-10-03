@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { handleResponse, isAuthenticationError } from '@/services/api.service';
 import type { ModerationItem, Notification, PublicUser } from '@/lib/contracts';
+import { AccountDetailsSkeleton } from '@/components/common/ContentSkeletons';
 
 type AppealData = { user: PublicUser; appeals: ModerationItem[]; notifications: Notification[] };
 
@@ -12,22 +13,24 @@ export default function AppealPage() {
   const router = useRouter();
   const [data, setData] = useState<AppealData | null>(null);
   const [message, setMessage] = useState('');
+  const [loadError, setLoadError] = useState('');
   const [details, setDetails] = useState('');
   const [busy, setBusy] = useState(false);
   const refresh = useCallback(async () => {
     const response = await fetch('/api/account/appeal', { cache: 'no-store' });
     setData(await handleResponse<AppealData>(response));
   }, []);
+  const handleLoadError = useCallback((error: unknown) => {
+    if (isAuthenticationError(error)) router.replace('/?auth_error=unauthenticated');
+    else setLoadError(error instanceof Error ? error.message : 'Could not load your appeal.');
+  }, [router]);
   useEffect(() => {
-    const load = () => { void refresh().catch(error => {
-      if (isAuthenticationError(error)) router.replace('/?auth_error=unauthenticated');
-      else setMessage(error instanceof Error ? error.message : 'Could not load your appeal.');
-    }); };
+    const load = () => { void refresh().then(() => setLoadError('')).catch(handleLoadError); };
     load();
     const interval = window.setInterval(load, 30_000);
     window.addEventListener('focus', load);
     return () => { window.clearInterval(interval); window.removeEventListener('focus', load); };
-  }, [refresh, router]);
+  }, [refresh, handleLoadError]);
   const pending = data?.appeals.some(appeal => appeal.status === 'pending');
   return <main className="min-h-screen bg-[#0b1d1a] px-4 py-8 text-white sm:px-6">
     <div className="mx-auto max-w-3xl">
@@ -35,7 +38,8 @@ export default function AppealPage() {
       <h1 className="mt-8 text-3xl font-bold">{data?.user.accountStatus === 'active' ? 'Your account access is restored' : 'Account suspension & appeal'}</h1>
       <p className="mt-3 text-sm leading-6 text-white/65">{data?.user.accountStatus === 'active' ? 'You can return to trip planning. Your appeal history and account notices are below.' : 'Your trip-planning access is paused. Your saved trips are preserved. Read your account notices and explain why you believe your account should be restored.'}</p>
       {message && <p role="status" className="mt-5 border-l-2 border-[#ffcf70] bg-white/5 p-4 text-sm">{message}</p>}
-      {!data ? <p className="mt-6">Loading account details…</p> : <>
+      {loadError && <div role="alert" className="mt-6 border border-red-300/30 bg-[#102622] p-5"><p className="text-sm text-red-200">{loadError}</p><button type="button" className="mt-4 min-h-11 bg-[#ffcf70] px-5 text-sm font-bold text-[#102824]" onClick={() => { setLoadError(''); void refresh().catch(handleLoadError); }}>Try again</button></div>}
+      {!data ? !loadError && <AccountDetailsSkeleton /> : <>
         {data.user.accountStatus === 'active' ? <Link href="/dashboard" className="mt-6 inline-block bg-[#ffcf70] px-5 py-3 font-bold text-[#102824]">Return to dashboard</Link> : pending ? <div className="mt-6 border border-[#ffcf70]/40 bg-[#102622] p-5"><h2 className="font-bold text-[#ffcf70]">Appeal awaiting review</h2><p className="mt-2 text-sm text-white/70">An admin will review your message. Their decision will appear here. You already have a pending appeal.</p></div> : <form className="mt-6 border border-white/15 bg-[#102622] p-5" onSubmit={async event => {
           event.preventDefault(); if (busy) return;
           if (details.trim().length < 10) { setMessage('Enter at least 10 characters.'); return; }

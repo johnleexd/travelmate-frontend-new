@@ -66,7 +66,7 @@ export default function AdminDashboard() {
   function openTab(next: Tab) { sectionVersionRef.current += 1; setMessage(''); setTab(next); setFilter('all'); setSearch(''); }
 
   const users = useMemo(() => data?.directory.filter((item) => (filter === 'all' || item.role === filter || item.accountStatus === filter) && `${item.name} ${item.email}`.toLowerCase().includes(search.toLowerCase())) ?? [], [data, filter, search]);
-  if (!data) return <DashboardLoadState label="the admin control room" error={loadError} onRetry={() => { setLoadError(''); void loadInitial(); }}/ >;
+  if (!data) return <DashboardLoadState label="the admin control room" variant="admin" error={loadError} onRetry={() => { setLoadError(''); void loadInitial(); }}/ >;
 
   const pending = data.moderation.filter(item => (item.kind === 'report' || item.kind === 'appeal') && item.status === 'pending').length;
   const copy = TAB_COPY[tab];

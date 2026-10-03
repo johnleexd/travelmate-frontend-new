@@ -1,17 +1,11 @@
 'use client';
 
-import { AlertTriangle, LoaderCircle, RotateCw } from 'lucide-react';
+import { AlertTriangle, RotateCw } from 'lucide-react';
+import { WorkspaceSkeleton, type WorkspaceSkeletonVariant } from './WorkspaceSkeleton';
 
-export function DashboardLoadState({ label, error, onRetry }: { label: string; error?: string; onRetry?: () => void }) {
+export function DashboardLoadState({ label, error, onRetry, variant = 'traveler' }: { label: string; error?: string; onRetry?: () => void; variant?: WorkspaceSkeletonVariant }) {
   if (!error) {
-    return (
-      <main className="grid min-h-screen place-items-center bg-[#07111f] px-5 text-slate-300" aria-busy="true" aria-live="polite">
-        <div className="flex items-center gap-3">
-          <LoaderCircle className="animate-spin text-amber-300" aria-hidden="true" />
-          <span>Loading {label}...</span>
-        </div>
-      </main>
-    );
+    return <WorkspaceSkeleton label={`Loading ${label}...`} variant={variant} />;
   }
 
   return (
