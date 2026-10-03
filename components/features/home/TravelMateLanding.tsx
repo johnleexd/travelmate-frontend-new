@@ -25,7 +25,8 @@ import {
   X,
 } from 'lucide-react';
 import { ApiError, handleResponse } from '@/services/api.service';
-import type { AuthActionResponse, CurrentUserResponse } from '@/lib/contracts';
+import type { AuthActionResponse } from '@/lib/contracts';
+import { fetchCurrentUser } from '@/services/session.service';
 import { useModalAccessibility } from '@/hooks/use-modal-accessibility';
 import {
   getPasswordStrength,
@@ -110,37 +111,38 @@ export default function TravelMateLanding() {
   const [busy, setBusy] = useState(false);
   const [dashboardPath, setDashboardPath] = useState<string | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
+  const [sessionUnavailable, setSessionUnavailable] = useState(false);
+  const refreshSessionRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     let mounted = true;
+    let pending = false;
+    const controller = new AbortController();
     const refreshSession = async () => {
+      if (pending) return;
+      pending = true;
       try {
-        const response = await fetch('/api/auth', { cache: 'no-store' });
-        if (!response.ok) {
-          if (mounted) {
-            setDashboardPath(null);
-            setSessionChecked(true);
-          }
-          return;
-        }
-        const { user } = await handleResponse<CurrentUserResponse>(response);
+        const user = await fetchCurrentUser(controller.signal);
         if (mounted) {
-          setDashboardPath(user.accountStatus === 'suspended' ? '/account/appeal' : user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
-          setSessionChecked(true);
+          setDashboardPath(user ? user.accountStatus === 'suspended' ? '/account/appeal' : user.role === 'admin' ? '/admin/dashboard' : '/dashboard' : null);
+          setSessionUnavailable(false);
         }
       } catch {
-        if (mounted) {
-          setDashboardPath(null);
-          setSessionChecked(true);
-        }
+        if (mounted) setSessionUnavailable(true);
+      } finally {
+        pending = false;
+        if (mounted) setSessionChecked(true);
       }
     };
     const handlePageShow = () => { void refreshSession(); };
+    refreshSessionRef.current = handlePageShow;
 
     void refreshSession();
     window.addEventListener('pageshow', handlePageShow);
     return () => {
       mounted = false;
+      controller.abort();
+      refreshSessionRef.current = () => {};
       window.removeEventListener('pageshow', handlePageShow);
     };
   }, []);
@@ -232,11 +234,20 @@ export default function TravelMateLanding() {
       router.push(dashboardPath);
       return;
     }
+    if (sessionUnavailable) {
+      setSessionChecked(false);
+      refreshSessionRef.current();
+      return;
+    }
     show('login');
   };
 
   const startPlanning = () => {
     setMenu(false);
+    if (sessionUnavailable && !dashboardPath) {
+      openAccount();
+      return;
+    }
     if (dashboardPath) {
       router.push(dashboardPath === '/dashboard' ? '/dashboard?tab=planner' : dashboardPath);
       return;
@@ -328,7 +339,7 @@ export default function TravelMateLanding() {
             <a className="transition-colors hover:text-white" href="#faq">Questions</a>
           </nav>
           <div className="hidden items-center gap-1 lg:flex">
-            <button type="button" onClick={openAccount} disabled={!sessionChecked} aria-busy={!sessionChecked} title={sessionChecked ? undefined : 'Checking your session'} className="px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/10 disabled:cursor-wait">{dashboardPath || !sessionChecked ? 'Dashboard' : 'Sign in'}</button>
+            <button type="button" onClick={openAccount} disabled={!sessionChecked} aria-busy={!sessionChecked} title={!sessionChecked ? 'Checking your session' : sessionUnavailable ? 'Your session could not be checked. Try again.' : undefined} className="px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/10 disabled:cursor-wait">{dashboardPath || !sessionChecked ? 'Dashboard' : sessionUnavailable ? 'Retry connection' : 'Sign in'}</button>
             <button type="button" onClick={startPlanning} className="bg-[#ffcf70] px-5 py-2.5 text-sm font-bold text-[#102824] hover:bg-[#ffe1a1]">Plan a trip</button>
           </div>
           <button type="button" aria-expanded={menu} aria-controls="mobile-navigation" aria-label={menu ? 'Close navigation' : 'Open navigation'} onClick={() => setMenu((current) => !current)} className="grid size-10 place-items-center border border-white/20 lg:hidden">
@@ -340,7 +351,7 @@ export default function TravelMateLanding() {
             <div className="grid gap-1 text-sm font-semibold">
               {([['Why TravelMate', '#features'], ['How it works', '#workflow'], ['Budget', '#budget'], ['Product', '#preview'], ['Questions', '#faq']] as const).map(([label, href]) => <a key={href} href={href} onClick={() => setMenu(false)} className="border-b border-white/10 px-2 py-3 text-white/75 hover:text-white">{label}</a>)}
               <div className="mt-4 grid grid-cols-2 gap-2">
-                <button type="button" onClick={openAccount} disabled={!sessionChecked} aria-busy={!sessionChecked} title={sessionChecked ? undefined : 'Checking your session'} className="border border-white/25 px-4 py-3 disabled:cursor-wait">{dashboardPath || !sessionChecked ? 'Dashboard' : 'Sign in'}</button>
+                <button type="button" onClick={openAccount} disabled={!sessionChecked} aria-busy={!sessionChecked} title={!sessionChecked ? 'Checking your session' : sessionUnavailable ? 'Your session could not be checked. Try again.' : undefined} className="border border-white/25 px-4 py-3 disabled:cursor-wait">{dashboardPath || !sessionChecked ? 'Dashboard' : sessionUnavailable ? 'Retry connection' : 'Sign in'}</button>
                 <button type="button" onClick={startPlanning} className="bg-[#ffcf70] px-4 py-3 font-bold text-[#102824]">Plan a trip</button>
               </div>
             </div>
@@ -369,7 +380,7 @@ export default function TravelMateLanding() {
                 <Compass size={23} className="shrink-0 text-[#ffcf70]" aria-hidden="true" />
               </div>
               <div className="relative mt-4 aspect-[1.7] overflow-hidden">
-                <Image src="/cordova-nalusuan.png" alt="Clear water around Nalusuan Island in Cebu" fill sizes="(min-width: 1024px) 38vw, 90vw" className="object-cover" />
+                <Image src="/cordova-nalusuan.png" alt="Clear water around Nalusuan Island in Cebu" fill loading="eager" sizes="(min-width: 1024px) 38vw, 90vw" className="object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#081b18]/85 via-transparent to-transparent" />
                 <div className="absolute inset-x-4 bottom-4 flex items-end justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-white/72">Sample destination</p><p className="mt-1 text-2xl font-semibold">Nalusuan Island</p></div><MapPin size={20} className="mb-1 shrink-0 text-[#ffcf70]" aria-hidden="true" /></div>
               </div>
@@ -613,7 +624,7 @@ function AuthDialog({ mode, setMode, email, setEmail, password, setPassword, con
     <div ref={containerRef} className="fixed inset-x-0 top-0 z-[80] flex h-dvh items-center justify-center overflow-hidden bg-[#061714]/90 backdrop-blur-md sm:p-6" onMouseDown={onClose}>
       <section role="dialog" aria-modal="true" aria-labelledby="auth-dialog-title" aria-describedby="auth-dialog-description" onMouseDown={(event) => event.stopPropagation()} className="relative grid h-full max-h-full w-full min-w-0 grid-rows-[minmax(0,1fr)] overflow-hidden bg-[#f2efe6] text-[#142421] shadow-[0_35px_120px_rgba(0,0,0,.45)] sm:h-auto sm:max-w-lg lg:max-w-5xl lg:grid-cols-[.88fr_1.12fr]">
         <div className="relative hidden min-h-0 overflow-hidden lg:block">
-          <Image src="/mountain-hero-bg.png" alt="Mountain landscape at dusk" fill sizes="40vw" className="object-cover transition-transform duration-700 ease-out hover:scale-105" />
+          <Image src="/mountain-hero-bg.png" alt="Mountain landscape at dusk" fill loading="eager" sizes="40vw" className="object-cover transition-transform duration-700 ease-out hover:scale-105" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,20,18,.18),rgba(4,20,18,.88))]" />
           <div className="absolute inset-x-0 bottom-0 p-10 text-white"><Compass size={28} className="text-[#ffcf70]" /><p className="mt-12 text-4xl font-semibold leading-[1.02] tracking-[-.045em]">Your plan stays useful because it stays yours.</p><ul className="mt-8 space-y-4 border-t border-white/25 pt-6 text-sm text-white/68"><li className="flex items-center gap-3"><Check size={17} className="text-[#ffcf70]" />Reopen saved trips from any signed-in session</li><li className="flex items-center gap-3"><Check size={17} className="text-[#ffcf70]" />Edit individual itinerary activities</li><li className="flex items-center gap-3"><Check size={17} className="text-[#ffcf70]" />Keep budget and condition context attached</li></ul></div>
         </div>
