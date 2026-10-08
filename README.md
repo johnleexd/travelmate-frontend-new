@@ -115,8 +115,8 @@ estimates without live traffic. See the backend README for provider configuratio
 
 `.github/workflows/ci.yml` runs lint, unit tests, and the production build, then
 runs the complete Playwright suite against an ephemeral PostgreSQL 16 database.
-The E2E job checks out `Unpayedme/travelmate-backend-api` by default, with an
-immutable SHA from its latest successful backend CI run on `main`. Override the
+The E2E job checks out `johnleexd/travelmate-backend-api` by default, with the
+compatible backend release's immutable SHA pinned in the workflow. Override the
 repository with `BACKEND_REPOSITORY` and pin a deployed commit with `BACKEND_REVISION`
 when needed. It records the selected revision, compares the API contracts,
 applies all migrations, generates unique test passwords, seeds demo users/listings, starts both

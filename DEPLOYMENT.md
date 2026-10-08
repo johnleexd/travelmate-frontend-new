@@ -25,18 +25,16 @@ internal image optimizer can read them; the outer proxy still enforces public HT
 
 ## Paired backend in CI
 
-CI resolves the latest successful push of the backend CI workflow on `main` to
-its full commit SHA, then checks out that immutable revision. To pair with a
-particular deployed release instead, set `BACKEND_REVISION` to its full
-40-character SHA; a manual run may override it with `backend_revision`.
-`BACKEND_REPOSITORY` defaults to the current backend
-origin, `Unpayedme/travelmate-backend-api`; set the variable explicitly if the
-deployment uses another repository. A private backend requires `BACKEND_REPO_TOKEN`
-with Contents read for checkout and Actions read for automatic revision resolution.
-The [workflow-runs API](https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-workflow)
-provides the successful run's `head_sha`. CI fails early if no suitable revision is
-available, records the checked-out SHA,
-and compares API contracts before executing the browser suite. Update this pairing
+CI checks out the compatible backend release's full commit SHA, pinned in the
+workflow. To pair with a particular deployed release instead, set `BACKEND_REVISION`
+to its full 40-character SHA; a manual run may override it with `backend_revision`.
+`BACKEND_REPOSITORY` defaults to the published backend repository,
+`johnleexd/travelmate-backend-api`; set the variable explicitly if the deployment
+uses another repository. A private backend requires `BACKEND_REPO_TOKEN` with
+Contents read for checkout. The workflow retains automatic successful-run lookup
+as a fallback if its default pin is removed; that lookup also requires Actions read.
+CI rejects an invalid revision, records the checked-out SHA, and compares API
+contracts before executing the browser suite. Update this pairing
 when a pinned backend release changes. Publish compatible backend changes first;
 CI never silently checks out a moving backend branch.
 
