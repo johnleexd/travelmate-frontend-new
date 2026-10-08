@@ -3,13 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "workspaces": [
+    "vendor/braces"
+  ],
   "scripts": {
     "predev": "node scripts/clean-image-cache.mjs",
-    "dev": "next dev",
+    "dev": "node scripts/dev.mjs",
+    "dev:frontend": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "test": "node --test --experimental-strip-types tests/*.test.ts",
+    "test:production": "node --test tests-production/*.test.mjs",
     "contracts:sync": "node scripts/sync-api-contracts.mjs",
     "contracts:check": "node scripts/sync-api-contracts.mjs --check",
     "test:e2e": "playwright test",
@@ -20,14 +25,15 @@
     "@types/styled-components": "^5.1.36",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "embla-carousel-react": "8.6.0",
     "geist": "^1.7.2",
     "gsap": "^3.15.0",
+    "leaflet": "1.9.4",
     "lucide-react": "^1.21.0",
-    "next": "16.2.9",
+    "next": "16.3.8",
     "radix-ui": "^1.6.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "shadcn": "^4.11.0",
     "styled-components": "^6.4.3",
     "tailwind-merge": "^3.6.0",
     "tw-animate-css": "^1.4.0"
@@ -35,12 +41,21 @@
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
+    "@types/leaflet": "1.9.21",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "braces": "3.0.4-travelmate.1",
     "eslint": "^9",
-    "eslint-config-next": "16.2.9",
+    "eslint-config-next": "16.3.8",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "sharp": "0.35.5",
+    "source-map-js": "1.2.2",
+    "micromatch": {
+      "braces": "3.0.4-travelmate.1"
+    }
   }
 }

@@ -1,14 +1,14 @@
 import { expect, test, type Page } from '@playwright/test';
+import { demoPassword } from './demo-credentials';
 
 const DEMO_EMAIL = 'traveler@travelmate.test';
-const DEMO_PASSWORD = 'Travel123!';
 
 async function login(page: Page) {
   await page.goto('/');
   await page.getByRole('button', { name: 'Sign in', exact: true }).first().click();
   await page.getByLabel('Email address').click();
   await page.getByLabel('Email address').fill(DEMO_EMAIL);
-  await page.getByLabel('Password').fill(DEMO_PASSWORD);
+  await page.getByLabel('Password').fill(demoPassword('traveler'));
   const submit = page.getByRole('dialog').getByRole('button', { name: 'Sign in', exact: true });
   await submit.click();
   await expect(page).toHaveURL(/\/dashboard$/);
@@ -94,7 +94,7 @@ test('registration requires a strong password and matching confirmation', async 
   await expect(dialog.getByLabel('Password strength: Strong')).toBeVisible();
   await confirmation.fill('DifferentPass1!');
   await dialog.getByRole('button', { name: 'Create account' }).click();
-  await expect(dialog.getByText('Passwords do not match. Re-enter the same password in both fields.')).toBeVisible();
+  await expect(dialog.getByText('Confirm password does not match Password. Enter the same value in both fields.')).toBeVisible();
 
   await confirmation.fill('StrongPass1!');
   await expect(confirmation).toHaveAttribute('aria-invalid', 'false');
@@ -103,10 +103,14 @@ test('registration requires a strong password and matching confirmation', async 
 test('password recovery collects a reset code and strong replacement password', async ({ page }) => {
   const actions: string[] = [];
   await page.route('**/api/auth', async (route) => {
+    if (route.request().method() === 'GET') {
+      await route.fulfill({ status: 401, contentType: 'application/json', body: JSON.stringify({ error: 'Unauthenticated.' }) });
+      return;
+    }
     const body = route.request().postDataJSON() as { action?: string };
     actions.push(String(body.action || ''));
     if (body.action === 'forgot-password') {
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ resetCode: 'A1B2C3D4', message: 'Reset code issued.' }) });
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ message: 'Check your email for a reset code.' }) });
       return;
     }
     if (body.action === 'reset-password') {
@@ -125,7 +129,8 @@ test('password recovery collects a reset code and strong replacement password', 
   await dialog.getByRole('button', { name: 'Send reset code' }).click();
 
   await expect(dialog.getByRole('heading', { name: 'Choose a new password.' })).toBeVisible();
-  await expect(dialog.getByLabel('Password reset code')).toHaveValue('A1B2C3D4');
+  await expect(dialog.getByLabel('Password reset code')).toHaveValue('');
+  await dialog.getByLabel('Password reset code').fill('A1B2C3D4');
   await dialog.getByLabel('Password', { exact: true }).fill('NewTravel123!');
   await dialog.getByLabel('Confirm password', { exact: true }).fill('NewTravel123!');
   await dialog.getByRole('button', { name: 'Reset password' }).click();
@@ -301,7 +306,7 @@ test('trip planning derives destination context and clears it when the destinati
   await expect(accommodation).not.toContainText('Tokyo Station Hotel');
 });
 
-test('a saved trip can be duplicated and survives reload', async ({ page }) => {
+test('a saved trip survives reload and cannot be duplicated', async ({ page }) => {
   await login(page);
   const destination = `E2E Persistence ${Date.now()}`;
   const date = new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10);
@@ -332,13 +337,15 @@ test('a saved trip can be duplicated and survives reload', async ({ page }) => {
     const tripCards = page.locator('article').filter({ hasText: destination });
     await expect(tripCards).toHaveCount(1);
 
-    await tripCards.first().getByRole('button', { name: 'Duplicate', exact: true }).click();
-    await expect(page.getByRole('status')).toContainText('Trip duplicated.');
-    await expect(tripCards).toHaveCount(2);
+    await expect(tripCards.first().getByRole('button', { name: 'Duplicate', exact: true })).toHaveCount(0);
+    const tripId = (await created.json()).result.id as string;
+    const duplicate = await page.request.post('/api/platform', { data: { action: 'duplicate-trip', id: tripId } });
+    expect(duplicate.status()).toBe(400);
+    expect((await duplicate.json()).error).toContain('no longer available');
 
     await page.reload();
     await page.getByRole('button', { name: 'Saved trips', exact: true }).click();
-    await expect(tripCards).toHaveCount(2);
+    await expect(tripCards).toHaveCount(1);
   } finally {
     const platform = await page.request.get('/api/platform?scope=traveler').then((response) => response.json()) as { trips?: Array<{ id: string; destination: string }> };
     for (const trip of platform.trips?.filter((item) => item.destination === destination) || []) {

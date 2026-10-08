@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { signOut } from '@/services/session.service';
+import { signOut, signedOutLocation } from '@/services/session.service';
 import { handleResponse, isAuthenticationError } from '@/services/api.service';
 import type { ModerationItem, Notification, PublicUser } from '@/lib/contracts';
 import { AccountDetailsSkeleton } from '@/components/common/ContentSkeletons';
@@ -35,7 +35,7 @@ export default function AppealPage() {
   const pending = data?.appeals.some(appeal => appeal.status === 'pending');
   return <main className="min-h-screen bg-[#0b1d1a] px-4 py-8 text-white sm:px-6">
     <div className="mx-auto max-w-3xl">
-      <header className="flex items-center justify-between gap-4 border-b border-white/15 pb-5"><Link href="/" className="text-xl font-bold text-[#ffcf70]">TravelMate</Link><button type="button" className="min-h-11 border border-white/20 px-4 text-sm" onClick={async () => { setMessage(''); try { await signOut(); router.replace('/'); } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not sign out. Please try again.'); } }}>Sign out</button></header>
+      <header className="flex items-center justify-between gap-4 border-b border-white/15 pb-5"><Link href="/" className="text-xl font-bold text-[#ffcf70]">TravelMate</Link><button type="button" className="min-h-11 border border-white/20 px-4 text-sm" onClick={async () => { setMessage(''); try { router.replace(signedOutLocation(await signOut())); } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not sign out. Please try again.'); } }}>Sign out</button></header>
       <h1 className="mt-8 text-3xl font-bold">{data?.user.accountStatus === 'active' ? 'Your account access is restored' : 'Account suspension & appeal'}</h1>
       <p className="mt-3 text-sm leading-6 text-white/65">{data?.user.accountStatus === 'active' ? 'You can return to trip planning. Your appeal history and account notices are below.' : 'Your trip-planning access is paused. Your saved trips are preserved. Read your account notices and explain why you believe your account should be restored.'}</p>
       {message && <p role="status" className="mt-5 border-l-2 border-[#ffcf70] bg-white/5 p-4 text-sm">{message}</p>}

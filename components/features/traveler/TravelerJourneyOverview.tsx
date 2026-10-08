@@ -47,10 +47,10 @@ const JOURNEY_STEPS = [
     result: 'A plan shaped by your decisions.', action: 'Edit the itinerary', icon: PencilLine,
   },
   {
-    title: 'Save deliberately', shortTitle: 'Save',
-    youDo: 'Choose Save trip only after the draft is useful enough to keep.',
-    systemDoes: 'TravelMate stores the itinerary under your account. Generation alone never saves it.',
-    result: 'A persistent trip you can retrieve later.', action: 'Save or update the plan', icon: Save,
+    title: 'Keep your changes', shortTitle: 'Save',
+    youDo: 'Review the automatically saved plan, then save any manual edits you want to keep.',
+    systemDoes: 'Successful generation saves the trip under your account. Regeneration saves a new version; manual edits are saved when you choose Save changes.',
+    result: 'A persistent trip with version history you can retrieve later.', action: 'Save manual changes', icon: Save,
   },
   {
     title: 'Reopen anytime', shortTitle: 'Reopen',
@@ -62,11 +62,11 @@ const JOURNEY_STEPS = [
 
 const PLANNING_NOTES = [
   ['You only need four details', 'Destination, dates, travelers, and budget are enough to generate a first draft. Everything else improves personalization.'],
-  ['Generation and saving are different', 'Generate creates a temporary draft for review. Save trip is the deliberate action that keeps it in your account.'],
+  ['Generated plans save automatically', 'Successful generation keeps the plan in your account. Manual edits remain a draft until you choose Save changes. If automatic saving fails, the plan stays available on this page for you to save.'],
   ['Options are supporting evidence', 'Budget, flights, stays, weather, and crowd context help you judge one itinerary. They are not separate planning flows.'],
 ] as const;
 
-const HERO_EXPLANATION = 'You provide the trip boundaries. TravelMate builds a reviewable draft. You judge the itinerary, costs, options, and conditions, then edit and save only when it works for you.';
+const HERO_EXPLANATION = 'You provide the trip boundaries. TravelMate builds and saves a reviewable plan. You judge the itinerary, costs, options, and conditions, then edit the plan and save your changes.';
 
 interface UpcomingTripSummary {
   destination: string;
@@ -128,7 +128,7 @@ export function TravelerJourneyOverview({
     <div className="space-y-10">
       <section aria-labelledby="travel-home-title" className="grid grid-flow-dense gap-px border border-white/10 bg-white/10 lg:grid-cols-12">
         <article className="group relative min-h-[470px] overflow-hidden bg-[#102824] p-6 text-white sm:p-10 lg:col-span-8 lg:p-12">
-          <Image src="/cordova-nalusuan.png" alt="Island coastline near Cebu" fill sizes="(min-width: 1024px) 65vw, 100vw" className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.03]" />
+          <Image src="/cordova-nalusuan.png" alt="Island coastline near Cebu" fill loading="eager" fetchPriority="high" sizes="(min-width: 1024px) 65vw, 100vw" className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.03]" />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,27,24,.97)_0%,rgba(8,27,24,.9)_60%,rgba(8,27,24,.62)_100%)]" />
           <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(8,27,24,.62)_0%,rgba(8,27,24,.2)_52%,transparent_82%)]" />
           <div className="relative flex min-h-[370px] flex-col justify-between sm:min-h-[390px]">
@@ -151,7 +151,7 @@ export function TravelerJourneyOverview({
           </div>
           <p className="mt-6 text-sm leading-6 text-[#334b43]">{nextAction.detail}</p>
           {upcomingTrip && !currentPlan && <p className="mt-3 text-sm text-[#334b43]">{upcomingTrip.travelers} traveler{upcomingTrip.travelers === 1 ? '' : 's'} · {formatMoney(upcomingTrip.budget, upcomingTrip.currency)}<ReferenceAmount amount={upcomingTrip.budget} currency={upcomingTrip.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></p>}
-          <div className="mt-auto border-t border-[#14231f]/20 pt-6"><p className="text-xs font-black uppercase tracking-[.12em] text-[#49635c]">The distinction that matters</p><p className="mt-3 text-sm leading-6 text-[#334b43]"><strong className="text-[#14231f]">Generate</strong> makes a temporary draft. <strong className="text-[#14231f]">Save trip</strong> keeps it in your account.</p></div>
+          <div className="mt-auto border-t border-[#14231f]/20 pt-6"><p className="text-xs font-black uppercase tracking-[.12em] text-[#49635c]">How your plan is kept</p><p className="mt-3 text-sm leading-6 text-[#334b43]"><strong className="text-[#14231f]">Generate</strong> creates and automatically saves a plan. <strong className="text-[#14231f]">Save changes</strong> keeps your manual edits.</p></div>
         </aside>
       </section>
 
@@ -181,7 +181,7 @@ export function TravelerJourneyOverview({
           </div>)}
         </div>
         <div className="grid grid-flow-dense gap-px bg-white/10 md:grid-cols-12">
-          <article data-lifecycle-stack className="bg-[#14231f] p-6 sm:p-8 md:col-span-4"><CalendarCheck className="text-amber-300" /><h3 className="mt-8 text-xl font-black">Your responsibility</h3><p className="mt-3 text-sm leading-6 text-white/52">Provide honest preferences, review the result, choose changes, and save deliberately.</p></article>
+          <article data-lifecycle-stack className="bg-[#14231f] p-6 sm:p-8 md:col-span-4"><CalendarCheck className="text-amber-300" /><h3 className="mt-8 text-xl font-black">Your responsibility</h3><p className="mt-3 text-sm leading-6 text-white/52">Provide honest preferences, review the result, choose changes, and save your manual edits.</p></article>
           <article data-lifecycle-stack className="bg-[#14231f] p-6 sm:p-8 md:col-span-4"><WalletCards className="text-cyan-200" /><h3 className="mt-8 text-xl font-black">TravelMate’s responsibility</h3><p className="mt-3 text-sm leading-6 text-white/52">Keep the itinerary, estimates, provider options, and conditions connected and clearly labeled.</p></article>
           <article data-lifecycle-stack className="bg-[#14231f] p-6 sm:p-8 md:col-span-4"><CloudSun className="text-emerald-200" /><h3 className="mt-8 text-xl font-black">The product boundary</h3><p className="mt-3 text-sm leading-6 text-white/52">TravelMate assists planning. It does not promise availability, invent live data, or complete airline and hotel checkout.</p></article>
         </div>

@@ -42,10 +42,16 @@ const destinationSchemaNames = [
   'CurrencyCode',
   'FreshnessMetadata',
   'LocationSuggestion',
+  'AreaSuggestion',
+  'DestinationAreasResponse',
+  'AreaInterestProfile',
+  'AreaComparisonResponse',
   'TransportationOption',
   'DestinationContext',
   'ExchangeRateQuote',
+  'AccommodationQuote', 'PropertyPhoto', 'RoomOccupancy', 'ProviderAccommodation',
   'LiveAccommodation',
+  'NearbyAccommodation',
   'LocationSearchResponse',
   'AccommodationSearchResponse',
 ];
@@ -78,8 +84,11 @@ const generatedTravel = `// Generated from travelmate-backend-api/openapi/travel
 }).join('\n\n')}\n`;
 
 const coreSchemaNames = [
+  'NavigationMode', 'NavigationCoordinate', 'NavigationDestination', 'NavigationStep', 'NavigationRequest', 'NavigationRoute',
+  'DestinationAnchor', 'PriceEvidence', 'PlaceEvidence', 'PlanGrounding',
   'Role', 'ProfileStatus', 'PartyType', 'PaymentStatus',
-  'ImageAttribution', 'DayActivity', 'DayPlan', 'AccommodationPlan',
+  'AccommodationQuote', 'PropertyPhoto', 'RoomOccupancy',
+  'ImageAttribution', 'DayActivity', 'DayPlan', 'AccommodationPlan', 'PlannedAccommodation',
   'SelectedFlightCost', 'SelectedActivityCost', 'PreTripCosts', 'SelectedTravelCosts',
   'BudgetOptimizationSuggestion', 'BudgetOptimization', 'CostSharing',
   'BudgetSummary', 'ItineraryPreferences', 'ItineraryResponse',
@@ -87,7 +96,9 @@ const coreSchemaNames = [
   'Listing', 'Booking', 'ListingBlockedDate', 'Promotion', 'Review', 'Notification', 'PaymentTransaction', 'OwnerDocument', 'ModerationItem', 'SavedTrip', 'ItineraryVersion',
   'ItineraryGenerationSummary', 'AuditEvent', 'PlatformMetrics',
   'PlatformIntegrations', 'PlatformResponse', 'PlatformActionResponse',
+  'VisitedPlace', 'VisitRecordResponse', 'VisitedPlacesResponse', 'PageInfo', 'TripDetailResponse', 'TripVersionsResponse', 'NotificationsResponse',
   'ItineraryDayResponse',
+  'FeedbackSentiment', 'FeedbackCategory', 'FeedbackInput', 'FeedbackEntry', 'FeedbackListResponse', 'FeedbackDetailResponse', 'FeedbackSubmissionResponse', 'FeedbackItineraryResponse',
 ];
 const generatedCore = `// Generated from travelmate-backend-api/openapi/travelmate-api.json. Do not edit by hand.\n\nimport type { CurrencyCode } from './destination-contracts';\n\n${coreSchemaNames.map((name) => {
   const value = schemas?.[name];
@@ -106,7 +117,11 @@ if (process.argv.includes('--check')) {
     readFile(travelOutputPath, 'utf8').catch(() => ''),
     readFile(coreOutputPath, 'utf8').catch(() => ''),
   ]);
-  if (currentError !== generatedError || currentDestination !== generatedDestination || currentWeather !== generatedWeather || currentTravel !== generatedTravel || currentCore !== generatedCore) {
+  const normalizeLines = value => value.replace(/\r\n/g, '\n');
+  if ([
+    [currentError, generatedError], [currentDestination, generatedDestination],
+    [currentWeather, generatedWeather], [currentTravel, generatedTravel], [currentCore, generatedCore],
+  ].some(([current, generated]) => normalizeLines(current) !== normalizeLines(generated))) {
     console.error('Generated API contracts are stale. Run npm run contracts:sync.');
     process.exitCode = 1;
   }

@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
+import { oauthRequestHeaders } from '../../../../../lib/oauth-request-headers';
 
 export async function forwardGoogleOAuth(request: Request, path: string): Promise<Response> {
   const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
-  const cookie = request.headers.get('cookie');
   try {
     const upstream = await fetch(`${backendUrl}${path}${new URL(request.url).search}`, {
-      headers: cookie ? { cookie } : undefined,
+      headers: oauthRequestHeaders(request),
       redirect: 'manual',
       cache: 'no-store',
+      signal: AbortSignal.timeout(15_000),
     });
     const location = upstream.headers.get('location');
     if (upstream.status !== 302 || !location) throw new Error(`OAuth backend returned ${upstream.status}.`);

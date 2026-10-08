@@ -94,10 +94,10 @@ test('search skeletons clear after empty accommodation results and a provider er
     await route.fulfill({ status: 503, json: { error: 'Travel providers temporarily unavailable.' } });
   });
   await preparePlanner(page);
-  await expect(page.getByRole('status', { name: 'Loading accommodation options...' })).toBeVisible();
+  await expect(page.getByRole('status').filter({ hasText: 'Loading relevant accommodation...' })).toBeVisible();
   stays.release();
   await expect(page.getByText('No available stays.')).toBeVisible();
-  await expect(page.getByRole('status', { name: 'Loading accommodation options...' })).toHaveCount(0);
+  await expect(page.getByRole('status').filter({ hasText: 'Loading relevant accommodation...' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Travel options', exact: true }).click();
   await page.getByLabel('Starting location or departure airport').fill('Manila');
   await page.getByRole('button', { name: 'Compare prices', exact: true }).click();

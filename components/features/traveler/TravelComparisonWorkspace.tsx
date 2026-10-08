@@ -1,3 +1,5 @@
+import { StartingLocationField } from './StartingLocationField';
+import type { useStartingLocation } from '@/hooks/use-starting-location';
 import { ArrowRight, Plane, Ticket } from 'lucide-react';
 import { ProviderFreshness } from '@/components/common/ProviderFreshness';
 import { ReferenceAmount } from '@/components/common/ReferenceAmount';
@@ -25,7 +27,7 @@ type Props = {
   tripDays: number;
   referenceCurrency: CurrencyCode;
   exchangeQuotes: Partial<Record<CurrencyCode, ExchangeRateQuote>>;
-  onFlightOriginChange: (value: string) => void;
+  originControl: ReturnType<typeof useStartingLocation>;
   onSearch: () => void;
   onSelectFlight: (flight: FlightOption) => void;
   onToggleActivityCost: (activity: ActivityOption) => void;
@@ -43,7 +45,7 @@ function offerTime(value: string | undefined): string {
 export function TravelComparisonWorkspace({
   flightOrigin, destination, selectedDestination, startDate, endDate, travelers, busy, message,
   travelOptions, selectedFlightId, selectedActivityIds, stayOptions, liveAccommodations, stayFreshness, staysBusy, tripDays, referenceCurrency,
-  exchangeQuotes, onFlightOriginChange, onSearch, onSelectFlight, onToggleActivityCost, onSelectLocalStay, onSelectLiveStay, onAddActivity,
+  exchangeQuotes, originControl, onSearch, onSelectFlight, onToggleActivityCost, onSelectLocalStay, onSelectLiveStay, onAddActivity,
 }: Props) {
   return <div className="space-y-6">
     <section className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 sm:p-6">
@@ -52,7 +54,7 @@ export function TravelComparisonWorkspace({
         <div className="min-w-0"><h2 className="break-words font-bold">Search one trip across providers</h2><p className="mt-1 break-words text-sm text-slate-400">Compare normalized flight, hotel, and activity results. Prices are references only; TravelMate does not complete external bookings.</p></div>
       </div>
       <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <label className="text-xs text-slate-400">Starting location or departure airport<input value={flightOrigin} onChange={(event) => onFlightOriginChange(event.target.value)} placeholder="Cordova, Cebu or Austin (AUS)" className="mt-1 min-h-11 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 text-white"/></label>
+        <StartingLocationField control={originControl} id="comparison-origin" label="Starting location or departure airport" compact/>
         <label className="text-xs text-slate-400">Destination<input value={selectedDestination ? destination : ''} readOnly placeholder="Select in Plan a trip first" className="mt-1 min-h-11 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 text-slate-300"/></label>
         <label className="text-xs text-slate-400">Departure<input type="date" value={startDate} readOnly className="mt-1 min-h-11 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 text-slate-300"/></label>
         <label className="text-xs text-slate-400">Return<input type="date" value={endDate} readOnly className="mt-1 min-h-11 w-full rounded-lg border border-slate-800 bg-slate-900 px-3 text-slate-300"/></label>

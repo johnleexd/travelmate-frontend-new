@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
+import { demoPassword } from './demo-credentials';
 
-const DEMO_PASSWORD = 'Travel123!';
 const DEMO_ACCOUNTS = {
   traveler: { email: 'traveler@travelmate.test', route: '/dashboard', heading: 'Your travel home' },
   admin: { email: 'admin@travelmate.test', route: '/admin/dashboard', heading: 'Overview' },
@@ -14,7 +14,7 @@ async function loginAs(page: Page, role: DemoRole) {
   await page.getByRole('button', { name: 'Sign in', exact: true }).first().click();
   await page.getByLabel('Email address').click();
   await page.getByLabel('Email address').fill(account.email);
-  await page.getByLabel('Password').fill(DEMO_PASSWORD);
+  await page.getByLabel('Password').fill(demoPassword(role));
   const submit = page.getByRole('dialog').getByRole('button', { name: 'Sign in', exact: true });
   await submit.click();
   await expect(page).toHaveURL(new RegExp(`${account.route}$`));
@@ -49,7 +49,7 @@ test('shared login and signup have no role selector', async ({ page }) => {
   await expect(dialog.getByText('Sign in as', { exact: true })).toHaveCount(0);
   for (const role of ['traveler', 'admin'] as const) {
     await dialog.getByLabel('Email address').fill(DEMO_ACCOUNTS[role].email);
-    await dialog.getByLabel('Password').fill(DEMO_PASSWORD);
+    await dialog.getByLabel('Password').fill('MockLoginPassword1!');
     await dialog.getByRole('button', { name: 'Sign in', exact: true }).click();
     await expect.poll(() => submissions.length).toBe(role === 'traveler' ? 1 : 2);
   }

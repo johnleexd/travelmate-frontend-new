@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { ItineraryResponse } from '../lib/contracts.ts';
-import { moveActivity, removeActivity, upsertActivity } from '../lib/itinerary-editor.ts';
+import { moveActivity, recalculateItineraryCosts, removeActivity, upsertActivity } from '../lib/itinerary-editor.ts';
 
 const plan = (): ItineraryResponse => ({
   destination: 'Cebu', totalBudget: 10_000, currency: 'PHP', travelers: 2,
@@ -12,6 +12,16 @@ const plan = (): ItineraryResponse => ({
     { day: 1, date: '2026-10-01', theme: 'Arrival', imageUrl: '/beach-bg.png', totalCost: 1_300, activities: [{ time: '09:00', title: 'Museum', description: 'Visit', estimatedCost: 300, category: 'activity', icon: 'activity' }] },
     { day: 2, date: '2026-10-02', theme: 'Food', imageUrl: '/beach-bg.png', totalCost: 300, activities: [{ time: '12:00', title: 'Lunch', description: 'Eat', estimatedCost: 300, category: 'food', icon: 'food' }] },
   ],
+});
+
+test('editing a 31-day trip retains a 30-night quote and counts flight costs once', () => {
+  const original = plan();
+  const long: ItineraryResponse = { ...original, totalBudget: 100000, days: Array.from({ length: 31 }, (_, i) => ({ ...original.days[0], day: i + 1, date: new Date(Date.parse('2040-01-25') + i * 86400000).toISOString().slice(0, 10) })), accommodation: { ...original.accommodation!, nights: 30, nightlyRate: 100.03, quotedTotal: 3000.99, total: 3000.99 }, selectedTravelCosts: { activities: [], total: 500, flight: { id: 'flight', name: 'Trip flight', total: 500, currency: 'PHP', fetchedAt: new Date().toISOString() } } };
+  const edited = recalculateItineraryCosts(long);
+  assert.equal(edited.days.length, 31);
+  assert.equal(edited.days[30].totalCost, 300);
+  assert.equal(edited.budgetSummary.plannedSpend, 31 * 300 + 3000.99 + 500);
+  assert.equal(edited.budgetSummary.accommodationActual, 3000.99);
 });
 
 test('adding and editing activities recalculates costs', () => {
@@ -42,4 +52,20 @@ test('manual cost changes immediately refresh review-only budget alternatives', 
   assert.ok((result.budgetOptimization?.amountToTarget || 0) > 0);
   assert.equal(result.budgetOptimization?.suggestions.find((suggestion) => suggestion.category === 'activity')?.affectedActivityTitle, 'Premium island tour');
   assert.match(result.budgetOptimization?.disclaimer || '', /Nothing is changed automatically/);
+});
+
+
+test('shared fares retain their whole-party unit price and edits discard claimed provenance', () => {
+  const original = plan();
+  const fare = { status: 'estimate' as const, source: 'user-entered', basis: 'Shared daily taxi fare', fetchedAt: new Date().toISOString(), currency: 'PHP' as const, unit: 'shared-fare' as const, unitAmount: 300, quantity: 1, participants: 2, needsConfirmation: true };
+  original.days[0].activities[0].priceEvidence = fare;
+  original.days[0].activities[0].unitCost = 300;
+  assert.equal(recalculateItineraryCosts(original).days[0].activities[0].unitCost, 300);
+  original.grounding = { version: 1, nights: 1, categories: { accommodation: 1000 } } as NonNullable<ItineraryResponse['grounding']>;
+  const edited = upsertActivity(original, 0, 0, { time: '10:00', title: 'Changed taxi route', description: 'User entered', category: 'transport', estimatedCost: 500 });
+  assert.equal(edited.days[0].activities[0].priceEvidence?.unit, 'group');
+  assert.equal(edited.days[0].activities[0].priceEvidence?.unitAmount, 500);
+  assert.equal(edited.days[0].activities[0].priceEvidence?.status, 'estimate');
+  assert.equal(edited.days[0].activities[0].place, undefined);
+  assert.equal(edited.days[0].activities[0].imageUrl, undefined);
 });

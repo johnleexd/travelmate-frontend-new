@@ -2,6 +2,113 @@
 
 import type { CurrencyCode } from './destination-contracts';
 
+export type NavigationMode = "walking" | "cycling" | "driving";
+
+export interface NavigationCoordinate {
+  latitude: number;
+  longitude: number;
+}
+
+export interface NavigationDestination {
+  id: string;
+  name: string;
+  label: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface NavigationStep {
+  instruction: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  location: NavigationCoordinate;
+  maneuver: string;
+  modifier?: string;
+}
+
+export interface NavigationRequest {
+  origin: NavigationCoordinate;
+  destination: NavigationCoordinate;
+  mode: NavigationMode;
+}
+
+export interface NavigationRoute {
+  mode: NavigationMode;
+  origin: NavigationCoordinate;
+  destination: NavigationCoordinate;
+  geometry: Array<NavigationCoordinate>;
+  steps: Array<NavigationStep>;
+  distanceMeters: number;
+  durationSeconds: number;
+  originOffsetMeters: number;
+  destinationOffsetMeters: number;
+  fetchedAt: string;
+  provider: "osrm";
+}
+
+export interface DestinationAnchor {
+  city: string;
+  country: string;
+  countryCode: string;
+  latitude: number;
+  longitude: number;
+}
+
+export interface PriceEvidence {
+  status: "provider-quote" | "estimate" | "unavailable";
+  basis: string;
+  source: string;
+  sourceUrl?: string;
+  fetchedAt: string;
+  currency: "PHP" | "USD" | "EUR" | "JPY" | "KRW" | "THB" | "GBP" | "AUD" | "CAD" | "SGD" | "CNY" | "HKD" | "TWD" | "MYR" | "IDR" | "VND" | "INR" | "NZD" | "CHF" | "AED";
+  unitAmount: number;
+  quantity: number;
+  unit: "per-person" | "shared-fare" | "per-room-night" | "group" | "daily-per-person";
+  participants: number;
+  needsConfirmation: boolean;
+}
+
+export interface PlaceEvidence {
+  provider: string;
+  placeId: string;
+  name: string;
+  city: string;
+  country: string;
+  countryCode: string;
+  latitude: number;
+  longitude: number;
+  sourceUrl: string;
+  fetchedAt: string;
+  openingHours: string;
+  address: string;
+}
+
+export interface PlanGrounding {
+  version: number;
+  destination: { city: string; country: string; countryCode: string; latitude: number; longitude: number; };
+  startingLocation: string;
+  startDate: string;
+  endDate: string;
+  fetchedAt: string;
+  placeDataStatus: "live" | "fresh-cache" | "stale-cache" | "unavailable";
+  currency: "PHP" | "USD" | "EUR" | "JPY" | "KRW" | "THB" | "GBP" | "AUD" | "CAD" | "SGD" | "CNY" | "HKD" | "TWD" | "MYR" | "IDR" | "VND" | "INR" | "NZD" | "CHF" | "AED";
+  rooms: number;
+  nights: number;
+  foodDailyPerPerson: number;
+  accommodation: { status: "provider-quote" | "estimate" | "unavailable"; basis: string; source: string; sourceUrl?: string; fetchedAt: string; currency: "PHP" | "USD" | "EUR" | "JPY" | "KRW" | "THB" | "GBP" | "AUD" | "CAD" | "SGD" | "CNY" | "HKD" | "TWD" | "MYR" | "IDR" | "VND" | "INR" | "NZD" | "CHF" | "AED"; unitAmount: number; quantity: number; unit: "per-person" | "shared-fare" | "per-room-night" | "group" | "daily-per-person"; participants: number; needsConfirmation: boolean; };
+  additionalFees: number;
+  contingencyPercent: number;
+  contingencyAmount: number;
+  categories: { accommodation: number; food: number; activities: number; transportation: number; fees: number; contingency: number; };
+  subtotal: number;
+  total: number;
+  verifiedAmount: number;
+  estimatedAmount: number;
+  unknownPriceCount: number;
+  budgetStatus: "exceeds-budget" | "needs-confirmation" | "within-quoted-budget";
+  limitations: Array<string>;
+}
+
 export type Role = "traveler" | "admin";
 
 export type ProfileStatus = "unverified" | "pending" | "verified" | "rejected";
@@ -9,6 +116,40 @@ export type ProfileStatus = "unverified" | "pending" | "verified" | "rejected";
 export type PartyType = "solo" | "couple" | "family" | "friends";
 
 export type PaymentStatus = "PENDING" | "PAID_HELD" | "Released" | "FROZEN_HELD" | "REFUNDED";
+
+export interface AccommodationQuote {
+  provider: "expedia-rapid" | "liteapi";
+  propertyId: string;
+  roomId: string;
+  offerId: string;
+  roomType: string;
+  checkInDate: string;
+  checkOutDate: string;
+  occupancy: Array<{ adults: number; childAges: Array<number>; }>;
+  currency: "PHP" | "USD" | "EUR" | "JPY" | "KRW" | "THB" | "GBP" | "AUD" | "CAD" | "SGD" | "CNY" | "HKD" | "TWD" | "MYR" | "IDR" | "VND" | "INR" | "NZD" | "CHF" | "AED";
+  total: number;
+  nightlyAverage: number;
+  taxesAndFeesIncluded?: boolean;
+  payableAtProperty: Array<{ amount: number; currency: string; }>;
+  budgetTotal?: number;
+  guestNationality?: string;
+  taxDetails?: Array<{ description: string; included?: boolean; amount?: number; currency?: string; }>;
+  priceBreakdown: Array<{ label: string; amount: number; currency: string; }>;
+  approximateTotal?: { amount: number; currency: string; };
+  checkedAt: string;
+  isLive: boolean;
+  photoReferences: Array<string>;
+  revalidatedAt?: string;
+}
+
+export interface PropertyPhoto {
+  reference: string;
+  url: string;
+  caption: string;
+  attribution: { creator: string; license: string; sourceUrl: string; licenseUrl?: string; };
+}
+
+export type RoomOccupancy = Array<{ adults: number; childAges: Array<number>; }>;
 
 export interface ImageAttribution {
   creator: string;
@@ -28,6 +169,11 @@ export interface DayActivity {
   imageUrl?: string;
   imageAttribution?: ImageAttribution;
   placeVerification?: "supporting-source-found" | "unverified";
+  priceEvidence?: PriceEvidence;
+  place?: PlaceEvidence;
+  durationMinutes?: number;
+  travelMinutes?: number;
+  location?: string;
 }
 
 export interface DayPlan {
@@ -59,9 +205,24 @@ export interface AccommodationPlan {
   nights: number;
   total: number;
   currency: CurrencyCode;
-  source?: "travelmate" | "amadeus";
+  source?: "travelmate" | "amadeus" | "expedia-rapid" | "liteapi";
   offerId?: string;
   isLive?: boolean;
+  quotedTotal?: number;
+  rooms?: number;
+  fetchedAt?: string;
+  providerQuote?: AccommodationQuote;
+  photos?: Array<PropertyPhoto>;
+  latitude?: number;
+  longitude?: number;
+}
+
+export interface PlannedAccommodation {
+  name: string;
+  address: string;
+  source: "openstreetmap" | "manual" | "provider";
+  sourceId?: string;
+  type?: string;
 }
 
 export interface SelectedFlightCost {
@@ -70,6 +231,8 @@ export interface SelectedFlightCost {
   total: number;
   currency: CurrencyCode;
   fetchedAt: string;
+  isLive?: boolean;
+  source?: "amadeus";
 }
 
 export interface SelectedActivityCost {
@@ -80,6 +243,9 @@ export interface SelectedActivityCost {
   total: number;
   currency: CurrencyCode;
   fetchedAt: string;
+  isLive?: boolean;
+  priceBasis?: "per-person-assumption";
+  source?: "amadeus" | "travelmate";
 }
 
 export interface PreTripCosts {
@@ -160,6 +326,7 @@ export interface ItineraryPreferences {
   accommodation: string;
   transportation: string;
   activities: Array<string>;
+  pace?: "relaxed" | "balanced" | "active";
 }
 
 export interface ItineraryResponse {
@@ -178,6 +345,9 @@ export interface ItineraryResponse {
   days: Array<DayPlan>;
   budgetSummary: BudgetSummary;
   idempotentReplay?: boolean;
+  plannedAccommodation?: PlannedAccommodation;
+  grounding?: PlanGrounding;
+  groundingProof?: string;
 }
 
 export interface PublicUser {
@@ -188,6 +358,8 @@ export interface PublicUser {
   emailVerified: boolean;
   profileStatus: ProfileStatus;
   trustScore: number;
+  avatarUrl?: string;
+  createdAt?: string;
   accountStatus: "active" | "suspended";
   bio?: string;
   phone?: string;
@@ -200,10 +372,9 @@ export interface CurrentUserResponse {
 export interface AuthActionResponse {
   user?: PublicUser;
   redirect?: string;
-  verificationCode?: string;
-  resetCode?: string;
   message?: string;
   ok?: boolean;
+  emailAccepted?: boolean;
 }
 
 export interface ProfileResponse {
@@ -334,10 +505,12 @@ export interface SavedTrip {
   interests: Array<string>;
   itinerary: unknown;
   weather: unknown;
-  status: "active" | "archived";
+  status: "active" | "archived" | "completed";
   archivedAt?: string;
+  completedAt?: string;
   createdAt: string;
   updatedAt: string;
+  selectedAccommodation?: { name: string; address: string; selectionKind: "planned" | "quoted"; };
 }
 
 export interface ItineraryVersion {
@@ -406,12 +579,100 @@ export interface PlatformResponse {
   notifications: Array<Notification>;
   transactions: Array<PaymentTransaction>;
   ownerDocuments: Array<OwnerDocument>;
+  tripsPage?: PageInfo;
+  adminOverview?: { generatedPlans: number; averageRating: number | null; feedbackCount: number; generationDays: Array<{ date: string; completed: number; }>; recentCompleted: number; recentFailed: number; timeZone: string; };
+  notificationsUnreadCount?: number;
 }
 
 export interface PlatformActionResponse {
   result: unknown;
 }
 
+export interface VisitedPlace {
+  id: string;
+  tripId?: string;
+  placeKey: string;
+  name: string;
+  destination: string;
+  visitDate: string;
+  latitude?: number;
+  longitude?: number;
+  createdAt: string;
+}
+
+export interface VisitRecordResponse {
+  visit: VisitedPlace;
+  alreadyRecorded: boolean;
+}
+
+export interface VisitedPlacesResponse {
+  visits: Array<VisitedPlace>;
+  page: { total: number; hasMore: boolean; nextCursor?: string; };
+}
+
+export interface PageInfo {
+  total: number;
+  nextCursor: string | null;
+}
+
+export interface TripDetailResponse {
+  trip: SavedTrip;
+}
+
+export interface TripVersionsResponse {
+  versions: Array<ItineraryVersion>;
+  page: PageInfo;
+}
+
+export interface NotificationsResponse {
+  notifications: Array<Notification>;
+  unreadCount?: number;
+}
+
 export interface ItineraryDayResponse {
   day: DayPlan;
+  groundingProof?: string;
+}
+
+export type FeedbackSentiment = "not_analyzed" | "positive" | "neutral" | "negative";
+
+export type FeedbackCategory = "budget_accuracy" | "weather_info" | "ai_cohesion" | "route_efficiency";
+
+export interface FeedbackInput {
+  itineraryId: string;
+  rating: number;
+  category: FeedbackCategory;
+  comment: string;
+}
+
+export interface FeedbackEntry {
+  id: string;
+  userId: string | null;
+  itineraryId: string | null;
+  rating: number;
+  sentiment: FeedbackSentiment;
+  category: FeedbackCategory;
+  comment: string;
+  createdAt: string;
+  user: { id: string; name: string; email: string; avatarUrl?: string; } | null;
+  itinerary: { id: string; destination: string; } | null;
+}
+
+export interface FeedbackListResponse {
+  entries: Array<FeedbackEntry>;
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface FeedbackDetailResponse {
+  entry: FeedbackEntry;
+}
+
+export interface FeedbackSubmissionResponse {
+  result: { id: string; sentiment: FeedbackSentiment; createdAt: string; rating: number; category: FeedbackCategory; comment: string; updatedAt: string; };
+}
+
+export interface FeedbackItineraryResponse {
+  itinerary: { id: string; destination: string; startDate: string; endDate: string; budget: number; currency: CurrencyCode; travelers: number; updatedAt: string; itinerary: ItineraryResponse | null; };
 }

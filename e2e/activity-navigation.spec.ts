@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { mockPlanningLookups } from './helpers/mock-planning-lookups';
+
+test.beforeEach(async ({ page }) => { await mockPlanningLookups(page); });
 
 test('activity arrows work on short and narrow screens without a photo', async ({ page, context }) => {
   const date = '2026-10-10';

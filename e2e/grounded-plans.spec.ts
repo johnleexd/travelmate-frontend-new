@@ -1,0 +1,72 @@
+import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+
+const fixtures = JSON.parse(readFileSync(new URL('./fixtures/grounded-plans.json', import.meta.url), 'utf8'));
+for (const fixture of fixtures) {
+  test(`${fixture.anchor.countryCode}: planner sends selected destination and estimates, then displays group totals and honest missing photos`, async ({ page, context }) => {
+    await context.addCookies([{ name: 'travelmate_session', value: 'grounded-browser-fixture', domain: 'localhost', path: '/' }]);
+    const user = { id: 'grounded-browser', name: 'Test traveler', email: 'fixture@example.test', role: 'traveler', accountStatus: 'active', emailVerified: true };
+    const workspace = { user, trips: [], listings: [], bookings: [], notifications: [], directory: [], moderation: [], audit: [], itineraryGenerations: [], itineraryVersions: [], reviews: [], promotions: [], blockedDates: [], transactions: [], ownerDocuments: [], metrics: {} };
+    await page.route('**/api/platform**', route => route.fulfill({ json: { ...workspace, ...(route.request().method() === 'POST' ? { result: { id: 'fixture-trip', itinerary: fixture.itinerary } } : {}) } }));
+    await page.route('**/api/locations?**', route => route.fulfill({ json: { locations: [fixture.location] } }));
+    await page.route('**/api/destination-context?**', route => route.fulfill({ json: { currency: fixture.currency, currencySource: 'country-code', transportation: [], transportationMessage: 'No verified transport data.' } }));
+    await page.route('**/api/accommodations?**', route => route.fulfill({ json: { configured: false, accommodations: [], nearbyAccommodations: [], message: 'Prices unavailable.' } }));
+    await page.route('**/api/weather?**', route => route.fulfill({ status: 503, json: { error: 'Forecast unavailable.' } }));
+    const requests: Record<string, unknown>[] = [];
+    await page.route('**/api/itinerary', route => { requests.push(route.request().postDataJSON()); return route.fulfill({ json: fixture.itinerary }); });
+    await page.goto('/dashboard');
+    await page.getByRole('button', { name: 'Plan a trip', exact: true }).click();
+    await page.getByRole('combobox', { name: 'Destination', exact: true }).fill(fixture.anchor.city);
+    await page.locator('#destination-suggestions').getByRole('button').first().click();
+    await page.getByLabel('Start date', { exact: true }).fill('2040-01-25');
+    await page.getByLabel(/^End date/).fill('2040-01-27');
+    await page.getByLabel('Traveling as').selectOption(fixture.partyType);
+    if (fixture.partyType === 'friends') await page.getByLabel('Travelers', { exact: true }).fill(String(fixture.travelers));
+    await page.getByLabel(/trip budget/i).fill('100000');
+    await expect(page.getByRole('combobox', { name: 'Starting location (optional)', exact: true })).toBeVisible();
+    await page.getByRole('combobox', { name: 'Starting location (optional)', exact: true }).fill('Toronto, Canada');
+    await page.getByLabel('Travel pace', { exact: true }).selectOption('relaxed');
+    await expect(page.getByRole('button', { name: 'Use my current location', exact: true })).toHaveCount(0);
+    await page.getByText('Budget details (optional)', { exact: true }).click();
+    await page.getByText('Expense assumptions (optional)', { exact: true }).click();
+    await page.getByLabel('Daily food per person').fill('100');
+    await page.getByLabel('Daily transport fare').fill('100');
+    await page.getByLabel('Transport fare basis').selectOption('shared-fare');
+    await page.getByLabel('Additional group fees').fill('100');
+    await page.getByRole('button', { name: 'Generate my trip', exact: true }).click();
+    const summary = page.getByRole('region', { name: 'Expense sources and confidence' });
+    await expect(summary).toBeVisible();
+    await expect(summary).toContainText('Affordability needs confirmation');
+    await expect(summary).toContainText(`${fixture.anchor.city}, ${fixture.anchor.country}`);
+    await expect(summary).toContainText('Whole-group total including contingency');
+    await expect(page.getByText('No verified place photo available for this day.', { exact: true })).toHaveCount(3);
+    await expect(page.getByText('Budget allowance — market price not available', { exact: true })).toHaveCount(0);
+    await expect(page.getByText('User-entered estimate — not a confirmed price', { exact: true })).toHaveCount(6);
+    expect(requests[0].destinationDetails).toEqual(fixture.anchor);
+    expect(requests[0].startingLocation).toBe('Toronto, Canada');
+    expect(requests[0].pace).toBe('relaxed');
+    expect(requests[0]).toMatchObject({ travelers: fixture.travelers, currency: fixture.currency, foodDailyPerPerson: 100, transportFare: 100, transportFareType: 'shared-fare', fees: 100 });
+    await page.setViewportSize({ width: 390, height: 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+}
+
+test('reopening a grounded trip restores entered assumptions without requiring pre-trip expenses', async ({ page, context }) => {
+  const fixture = fixtures[2];
+  await context.addCookies([{ name: 'travelmate_session', value: 'grounded-reopen-fixture', domain: 'localhost', path: '/' }]);
+  const user = { id: 'grounded-reopen', name: 'Test', email: 'fixture@example.test', role: 'traveler', accountStatus: 'active', emailVerified: true };
+  const trip = { id: 'grounded-trip', userId: user.id, destination: fixture.location.label, destinationCity: fixture.anchor.city, destinationCountry: fixture.anchor.country, destinationCountryCode: fixture.anchor.countryCode, latitude: fixture.anchor.latitude, longitude: fixture.anchor.longitude, startDate: '2040-01-25', endDate: '2040-01-27', budget: 100000, currency: fixture.currency, travelers: fixture.travelers, partyType: fixture.partyType, interests: ['culture'], status: 'active', itinerary: fixture.itinerary, createdAt: '2026-10-06' };
+  await page.route('**/api/platform**', route => route.fulfill({ json: { user, trip, trips: [trip], listings: [], bookings: [], notifications: [], directory: [], moderation: [], audit: [], itineraryGenerations: [], itineraryVersions: [] } }));
+  await page.route('**/api/itinerary/images', route => route.fulfill({ json: { day: fixture.itinerary.days[0] } }));
+  await page.goto('/dashboard');
+  await page.getByRole('button', { name: 'Saved trips', exact: true }).click();
+  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await expect(page.getByRole('combobox', { name: 'Starting location', exact: true })).toHaveCount(0);
+  await page.getByText('Budget details (optional)', { exact: true }).click();
+  await page.getByText('Expense assumptions (optional)', { exact: true }).click();
+  await expect(page.getByLabel('Rooms', { exact: true })).toHaveValue('3');
+  await expect(page.getByLabel('Daily food per person')).toHaveValue('100');
+  await expect(page.getByLabel('Transport fare basis')).toHaveValue('shared-fare');
+  await expect(page.getByLabel('Additional group fees')).toHaveValue('100');
+  await expect(page.getByLabel('Nightly estimate per room')).toHaveValue('');
+});

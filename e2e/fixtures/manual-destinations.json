@@ -1,0 +1,2755 @@
+{
+  "checkedAt": "2026-10-06T14:15:56.239Z",
+  "results": [
+    {
+      "query": "Cordova, Cebu Philippines",
+      "resolution": {
+        "location": {
+          "id": -261875229,
+          "name": "Cordova",
+          "region": "Cebu, Central Visayas",
+          "country": "Philippines",
+          "countryCode": "PH",
+          "latitude": 10.2521909,
+          "longitude": 123.9494748,
+          "label": "Cordova, Cebu, Central Visayas, Philippines",
+          "placeType": "City or locality",
+          "contextLabel": "City or locality • Cordova, Cebu, Central Visayas, Philippines",
+          "provider": "openstreetmap",
+          "providerId": "relation:10337872",
+          "bounds": {
+            "south": 10.1491519,
+            "north": 10.2799577,
+            "west": 123.8896035,
+            "east": 124.0199951
+          }
+        },
+        "candidates": [
+          {
+            "id": -261875229,
+            "name": "Cordova",
+            "region": "Cebu, Central Visayas",
+            "country": "Philippines",
+            "countryCode": "PH",
+            "latitude": 10.2521909,
+            "longitude": 123.9494748,
+            "label": "Cordova, Cebu, Central Visayas, Philippines",
+            "placeType": "City or locality",
+            "contextLabel": "City or locality • Cordova, Cebu, Central Visayas, Philippines",
+            "provider": "openstreetmap",
+            "providerId": "relation:10337872",
+            "bounds": {
+              "south": 10.1491519,
+              "north": 10.2799577,
+              "west": 123.8896035,
+              "east": 124.0199951
+            }
+          }
+        ],
+        "areas": [],
+        "message": ""
+      },
+      "context": {
+        "currency": "PHP",
+        "currencySource": "country-code",
+        "transportation": [
+          {
+            "id": "bus",
+            "label": "Bus",
+            "category": "public"
+          },
+          {
+            "id": "jeepney",
+            "label": "Jeepney",
+            "category": "public"
+          },
+          {
+            "id": "taxi",
+            "label": "Taxi",
+            "category": "private"
+          },
+          {
+            "id": "ride-hailing",
+            "label": "Ride-hailing",
+            "category": "private"
+          },
+          {
+            "id": "tricycle",
+            "label": "Tricycle",
+            "category": "private"
+          },
+          {
+            "id": "ferry",
+            "label": "Ferry",
+            "category": "water"
+          },
+          {
+            "id": "walking",
+            "label": "Walking",
+            "category": "active"
+          }
+        ],
+        "transportationSource": "curated-country-city-guidance",
+        "transportationMessage": "Common destination-specific modes from TravelMate guidance; availability and schedules are not live."
+      },
+      "stays": {
+        "configured": false,
+        "accommodations": [],
+        "nearbyAccommodations": [
+          {
+            "id": "osm:node:4952321814",
+            "name": "Cordova Island Citi Tourist Inn",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 10.24911, 123.94951",
+            "latitude": 10.2491088,
+            "longitude": 123.9495062,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4952321814"
+          },
+          {
+            "id": "osm:node:4534559490",
+            "name": "Puso Green Haus",
+            "type": "Guesthouse",
+            "address": "081 Manuel L. Quezon National Highway, 6017",
+            "latitude": 10.2545418,
+            "longitude": 123.9492231,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4534559490"
+          },
+          {
+            "id": "osm:way:436340171",
+            "name": "Cordova Home Village",
+            "type": "Hotel",
+            "address": "Cordova",
+            "latitude": 10.2501932,
+            "longitude": 123.9464493,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/436340171",
+            "city": "Cordova"
+          },
+          {
+            "id": "osm:relation:13902828",
+            "name": "Cordova Reef Resort",
+            "type": "Resort",
+            "address": "Address not supplied; location 10.24769, 123.95140",
+            "latitude": 10.2476856,
+            "longitude": 123.9514021,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/relation/13902828"
+          },
+          {
+            "id": "osm:way:1422178198",
+            "name": "Villa Asela",
+            "type": "Resort",
+            "address": "Valeriano Inoc Street",
+            "latitude": 10.2593956,
+            "longitude": 123.9462679,
+            "distanceKm": 0.9,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/1422178198"
+          }
+        ],
+        "status": "ready",
+        "mapStatus": "ready",
+        "quoteStatus": "not-configured",
+        "message": "Found 5 mapped stays within 1 km; check their actual locations. Map listings do not provide room prices or availability. Room prices and availability are unavailable because the room-quote provider is not configured. You can enter accommodation manually or choose it later.",
+        "freshness": {
+          "source": "hotels",
+          "status": "live",
+          "isStale": false,
+          "fetchedAt": "2026-10-06T14:11:37.216Z",
+          "expiresAt": "2026-10-07T14:11:37.216Z",
+          "staleUntil": "2026-10-08T14:11:37.216Z",
+          "policy": "1440m fresh; stale fallback up to 2880m when the provider fails."
+        }
+      }
+    },
+    {
+      "query": "Cebu City, Philippines",
+      "resolution": {
+        "location": {
+          "id": 1717512,
+          "name": "Cebu City",
+          "region": "Central Visayas",
+          "country": "Philippines",
+          "countryCode": "PH",
+          "latitude": 10.31672,
+          "longitude": 123.89071,
+          "label": "Cebu City, Central Visayas, Philippines",
+          "placeType": "Administrative capital",
+          "contextLabel": "Administrative capital • Cebu City, Central Visayas, Philippines",
+          "provider": "geonames",
+          "providerId": "1717512"
+        },
+        "candidates": [
+          {
+            "id": 1717512,
+            "name": "Cebu City",
+            "region": "Central Visayas",
+            "country": "Philippines",
+            "countryCode": "PH",
+            "latitude": 10.31672,
+            "longitude": 123.89071,
+            "label": "Cebu City, Central Visayas, Philippines",
+            "placeType": "Administrative capital",
+            "contextLabel": "Administrative capital • Cebu City, Central Visayas, Philippines",
+            "provider": "geonames",
+            "providerId": "1717512"
+          }
+        ],
+        "areas": [],
+        "message": ""
+      },
+      "context": {
+        "currency": "PHP",
+        "currencySource": "country-code",
+        "transportation": [
+          {
+            "id": "bus",
+            "label": "Bus",
+            "category": "public"
+          },
+          {
+            "id": "jeepney",
+            "label": "Jeepney",
+            "category": "public"
+          },
+          {
+            "id": "taxi",
+            "label": "Taxi",
+            "category": "private"
+          },
+          {
+            "id": "ride-hailing",
+            "label": "Ride-hailing",
+            "category": "private"
+          },
+          {
+            "id": "tricycle",
+            "label": "Tricycle",
+            "category": "private"
+          },
+          {
+            "id": "ferry",
+            "label": "Ferry",
+            "category": "water"
+          },
+          {
+            "id": "walking",
+            "label": "Walking",
+            "category": "active"
+          }
+        ],
+        "transportationSource": "curated-country-city-guidance",
+        "transportationMessage": "Common destination-specific modes from TravelMate guidance; availability and schedules are not live."
+      },
+      "stays": {
+        "configured": false,
+        "accommodations": [],
+        "nearbyAccommodations": [
+          {
+            "id": "osm:node:7052712849",
+            "name": "Amethyst Boutique Hotel Cebu",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31726, 123.88951",
+            "latitude": 10.3172618,
+            "longitude": 123.8895146,
+            "distanceKm": 0.1,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/7052712849"
+          },
+          {
+            "id": "osm:node:10101067017",
+            "name": "Asia Light Hotel",
+            "type": "Hotel",
+            "address": "Don Gil Garcia Street, 6000",
+            "latitude": 10.3155985,
+            "longitude": 123.8902369,
+            "distanceKm": 0.1,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/10101067017"
+          },
+          {
+            "id": "osm:way:854782191",
+            "name": "Capitol Central Hotel and Suites",
+            "type": "Hotel",
+            "address": "N. Escario Street",
+            "latitude": 10.3163297,
+            "longitude": 123.8919273,
+            "distanceKm": 0.1,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/854782191"
+          },
+          {
+            "id": "osm:node:4072104186",
+            "name": "Jacinth Pension House",
+            "type": "Hotel",
+            "address": "Osmeña Boulevard, Cebu, 6000",
+            "latitude": 10.315661,
+            "longitude": 123.8908895,
+            "distanceKm": 0.1,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4072104186",
+            "city": "Cebu"
+          },
+          {
+            "id": "osm:node:3180204637",
+            "name": "Normar Lodge",
+            "type": "Hostel",
+            "address": "Address not supplied; location 10.31626, 123.89171",
+            "latitude": 10.3162618,
+            "longitude": 123.8917065,
+            "distanceKm": 0.1,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3180204637"
+          },
+          {
+            "id": "osm:node:3180205755",
+            "name": "Residencia Santa Clara",
+            "type": "Hostel",
+            "address": "Address not supplied; location 10.31614, 123.89135",
+            "latitude": 10.3161389,
+            "longitude": 123.8913545,
+            "distanceKm": 0.1,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3180205755"
+          },
+          {
+            "id": "osm:way:442057997",
+            "name": "Capitol Centrum",
+            "type": "Apartment",
+            "address": "N. Escario Street, 6000",
+            "latitude": 10.3163613,
+            "longitude": 123.8928779,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/442057997"
+          },
+          {
+            "id": "osm:node:8700671550",
+            "name": "Cebu R Hotel",
+            "type": "Hotel",
+            "address": "Don Mariano Cui Street",
+            "latitude": 10.3154111,
+            "longitude": 123.8900678,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/8700671550"
+          },
+          {
+            "id": "osm:node:4378240092",
+            "name": "East Capitol Pension",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31802, 123.89228",
+            "latitude": 10.3180191,
+            "longitude": 123.8922849,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4378240092"
+          },
+          {
+            "id": "osm:way:1276312608",
+            "name": "Griffin Hotel and Suites",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31564, 123.89200",
+            "latitude": 10.3156448,
+            "longitude": 123.8920003,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/1276312608"
+          },
+          {
+            "id": "osm:node:317003679",
+            "name": "Mayflower Inn",
+            "type": "Hotel",
+            "address": "Villalon Drive",
+            "latitude": 10.3171084,
+            "longitude": 123.8920982,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/317003679"
+          },
+          {
+            "id": "osm:way:1276312609",
+            "name": "Rublin Hotel Cebu",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31587, 123.89188",
+            "latitude": 10.3158725,
+            "longitude": 123.8918795,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/1276312609"
+          },
+          {
+            "id": "osm:node:3180207316",
+            "name": "Sanson Lodging House",
+            "type": "Hostel",
+            "address": "Address not supplied; location 10.31522, 123.89211",
+            "latitude": 10.3152194,
+            "longitude": 123.8921108,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3180207316"
+          },
+          {
+            "id": "osm:node:4196345989",
+            "name": "Villa de Mercedes Pension House",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 10.31513, 123.88968",
+            "latitude": 10.3151346,
+            "longitude": 123.8896824,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4196345989"
+          },
+          {
+            "id": "osm:way:231977151",
+            "name": "Best Western Plus Lex Cebu",
+            "type": "Hotel",
+            "address": "Juana Osmeña Street Extension, Cebu City, 6000",
+            "latitude": 10.3173564,
+            "longitude": 123.8933158,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/231977151",
+            "city": "Cebu City"
+          },
+          {
+            "id": "osm:way:348455959",
+            "name": "Escario Central Hotel",
+            "type": "Hotel",
+            "address": "N. Escario Street, Cebu, 6000",
+            "latitude": 10.317899,
+            "longitude": 123.8935446,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/348455959",
+            "city": "Cebu"
+          },
+          {
+            "id": "osm:node:5211877421",
+            "name": "Gran Tierra Suites",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31433, 123.89045",
+            "latitude": 10.3143316,
+            "longitude": 123.8904546,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5211877421"
+          },
+          {
+            "id": "osm:way:442713977",
+            "name": "Hotel Asia",
+            "type": "Hotel",
+            "address": "Don Jose Avila Street, Cebu, 6000",
+            "latitude": 10.3144463,
+            "longitude": 123.889917,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/442713977",
+            "city": "Cebu"
+          },
+          {
+            "id": "osm:node:4315810202",
+            "name": "Jubilee House",
+            "type": "Hotel",
+            "address": "Don Gil Garcia Street, 6000",
+            "latitude": 10.3142354,
+            "longitude": 123.8910099,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4315810202"
+          },
+          {
+            "id": "osm:node:3180204389",
+            "name": "Kimton's Lodging Inn",
+            "type": "Hostel",
+            "address": "Address not supplied; location 10.31501, 123.89232",
+            "latitude": 10.3150136,
+            "longitude": 123.8923207,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3180204389"
+          },
+          {
+            "id": "osm:way:542686812",
+            "name": "Uncle Tom's Cabin Hotel",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31487, 123.89295",
+            "latitude": 10.3148675,
+            "longitude": 123.8929462,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/542686812"
+          },
+          {
+            "id": "osm:node:5419526023",
+            "name": "Atelier Residences Condominium",
+            "type": "Apartment",
+            "address": "Juana Osmeña Extension, 6000",
+            "latitude": 10.319304,
+            "longitude": 123.8928224,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5419526023"
+          },
+          {
+            "id": "osm:way:1340260533",
+            "name": "Bayfront Hotel Cebu - Capitol Site",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31358, 123.89289",
+            "latitude": 10.313576,
+            "longitude": 123.8928886,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/1340260533"
+          },
+          {
+            "id": "osm:node:3779252197",
+            "name": "Capitol Tourist Inn",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 10.31312, 123.89138",
+            "latitude": 10.3131177,
+            "longitude": 123.8913849,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3779252197"
+          },
+          {
+            "id": "osm:way:434694640",
+            "name": "Hamersons Hotel",
+            "type": "Hotel",
+            "address": "M. Cui Street",
+            "latitude": 10.3134766,
+            "longitude": 123.8908019,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/434694640"
+          },
+          {
+            "id": "osm:way:611943073",
+            "name": "Hotel Plus",
+            "type": "Hotel",
+            "address": "M. Cui Street",
+            "latitude": 10.3130811,
+            "longitude": 123.8905992,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/611943073"
+          },
+          {
+            "id": "osm:node:3779640868",
+            "name": "Hotel Stella",
+            "type": "Hotel",
+            "address": "N. M. Rafols Street",
+            "latitude": 10.3128008,
+            "longitude": 123.8912032,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3779640868"
+          },
+          {
+            "id": "osm:way:995418154",
+            "name": "Maria Cristina Arcade",
+            "type": "Apartment",
+            "address": "229A Maria Christina Street, 6000",
+            "latitude": 10.3155601,
+            "longitude": 123.8945735,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/995418154"
+          },
+          {
+            "id": "osm:node:4900568521",
+            "name": "MCA Suites",
+            "type": "Hostel",
+            "address": "Address not supplied; location 10.31560, 123.89466",
+            "latitude": 10.3155998,
+            "longitude": 123.8946561,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4900568521"
+          },
+          {
+            "id": "osm:way:280290245",
+            "name": "Paragon Suites",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31492, 123.89421",
+            "latitude": 10.3149192,
+            "longitude": 123.8942095,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/280290245"
+          },
+          {
+            "id": "osm:node:2841375450",
+            "name": "Vacation Hotel Cebu",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31542, 123.89406",
+            "latitude": 10.3154193,
+            "longitude": 123.8940587,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2841375450"
+          },
+          {
+            "id": "osm:node:3899426982",
+            "name": "Villa Inez Pension House",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31933, 123.88766",
+            "latitude": 10.319333,
+            "longitude": 123.8876614,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3899426982"
+          },
+          {
+            "id": "osm:node:13288275342",
+            "name": "Base Line Prestige (Tower 3)",
+            "type": "Apartment",
+            "address": "Juana Osmeña Street, Cebu, Cebu",
+            "latitude": 10.3128673,
+            "longitude": 123.8935588,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/13288275342",
+            "city": "Cebu"
+          },
+          {
+            "id": "osm:node:679207356",
+            "name": "Cebu Grand Hotel",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31834, 123.89535",
+            "latitude": 10.3183423,
+            "longitude": 123.8953467,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/679207356"
+          },
+          {
+            "id": "osm:way:230290599",
+            "name": "Cebu Pensione Plaza",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31778, 123.89470",
+            "latitude": 10.3177799,
+            "longitude": 123.8946979,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/230290599"
+          },
+          {
+            "id": "osm:way:426086143",
+            "name": "Dynasty Tourist Inn",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31224, 123.88977",
+            "latitude": 10.3122406,
+            "longitude": 123.8897728,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/426086143"
+          },
+          {
+            "id": "osm:node:2146238382",
+            "name": "Fuente Oro Business Suites",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31280, 123.89265",
+            "latitude": 10.3127987,
+            "longitude": 123.8926538,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2146238382"
+          },
+          {
+            "id": "osm:way:426086146",
+            "name": "Jasmine Pension House",
+            "type": "Guesthouse",
+            "address": "N. M. Rafols Street",
+            "latitude": 10.3125722,
+            "longitude": 123.891315,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/426086146"
+          },
+          {
+            "id": "osm:node:13288275343",
+            "name": "Lyf Hotel",
+            "type": "Hotel",
+            "address": "Juana Osmeña Street, Cebu City, Cebu",
+            "latitude": 10.3129127,
+            "longitude": 123.8936363,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/13288275343",
+            "city": "Cebu City"
+          },
+          {
+            "id": "osm:way:276916761",
+            "name": "Mandaue Hotel",
+            "type": "Hotel",
+            "address": "Address not supplied; location 10.31360, 123.89437",
+            "latitude": 10.3136027,
+            "longitude": 123.8943656,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/276916761"
+          }
+        ],
+        "status": "ready",
+        "mapStatus": "ready",
+        "quoteStatus": "not-configured",
+        "message": "Found 40 mapped stays within 1 km; check their actual locations. Map listings do not provide room prices or availability. Room prices and availability are unavailable because the room-quote provider is not configured. You can enter accommodation manually or choose it later.",
+        "freshness": {
+          "source": "hotels",
+          "status": "live",
+          "isStale": false,
+          "fetchedAt": "2026-10-06T14:11:38.585Z",
+          "expiresAt": "2026-10-07T14:11:38.585Z",
+          "staleUntil": "2026-10-08T14:11:38.585Z",
+          "policy": "1440m fresh; stale fallback up to 2880m when the provider fails."
+        }
+      }
+    },
+    {
+      "query": "Baguio, Philippines",
+      "resolution": {
+        "location": {
+          "id": 1728930,
+          "name": "Baguio",
+          "region": "Cordillera",
+          "country": "Philippines",
+          "countryCode": "PH",
+          "latitude": 16.41639,
+          "longitude": 120.59306,
+          "label": "Baguio, Cordillera, Philippines",
+          "placeType": "Administrative capital",
+          "contextLabel": "Administrative capital • Baguio, Cordillera, Philippines",
+          "provider": "geonames",
+          "providerId": "1728930"
+        },
+        "candidates": [
+          {
+            "id": 1728930,
+            "name": "Baguio",
+            "region": "Cordillera",
+            "country": "Philippines",
+            "countryCode": "PH",
+            "latitude": 16.41639,
+            "longitude": 120.59306,
+            "label": "Baguio, Cordillera, Philippines",
+            "placeType": "Administrative capital",
+            "contextLabel": "Administrative capital • Baguio, Cordillera, Philippines",
+            "provider": "geonames",
+            "providerId": "1728930"
+          }
+        ],
+        "areas": [],
+        "message": ""
+      },
+      "context": {
+        "currency": "PHP",
+        "currencySource": "country-code",
+        "transportation": [
+          {
+            "id": "bus",
+            "label": "Bus",
+            "category": "public"
+          },
+          {
+            "id": "jeepney",
+            "label": "Jeepney",
+            "category": "public"
+          },
+          {
+            "id": "taxi",
+            "label": "Taxi",
+            "category": "private"
+          },
+          {
+            "id": "ride-hailing",
+            "label": "Ride-hailing",
+            "category": "private"
+          },
+          {
+            "id": "tricycle",
+            "label": "Tricycle",
+            "category": "private"
+          },
+          {
+            "id": "walking",
+            "label": "Walking",
+            "category": "active"
+          }
+        ],
+        "transportationSource": "curated-country-city-guidance",
+        "transportationMessage": "Common destination-specific modes from TravelMate guidance; availability and schedules are not live."
+      },
+      "stays": {
+        "configured": false,
+        "accommodations": [],
+        "nearbyAccommodations": [
+          {
+            "id": "osm:node:5656464821",
+            "name": "Highland Lodge",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 16.41669, 120.59287",
+            "latitude": 16.4166949,
+            "longitude": 120.5928734,
+            "distanceKm": 0,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5656464821"
+          },
+          {
+            "id": "osm:node:9294742774",
+            "name": "Napo Lodge",
+            "type": "Hostel",
+            "address": "57 Hilltop Street",
+            "latitude": 16.4153768,
+            "longitude": 120.5940422,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/9294742774"
+          },
+          {
+            "id": "osm:way:299600077",
+            "name": "A Hotel",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41361, 120.59360",
+            "latitude": 16.4136114,
+            "longitude": 120.5935981,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/299600077"
+          },
+          {
+            "id": "osm:way:168082883",
+            "name": "Hotel Caterina",
+            "type": "Hotel",
+            "address": "Elpidio Quirino Highway, Baguio, 2600",
+            "latitude": 16.4146144,
+            "longitude": 120.5906487,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/168082883",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:way:299600072",
+            "name": "Hotel Ola",
+            "type": "Hotel",
+            "address": "25 Abanao Street, 2600, PH",
+            "latitude": 16.4136046,
+            "longitude": 120.5940272,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/299600072",
+            "countryCode": "PH"
+          },
+          {
+            "id": "osm:way:299599319",
+            "name": "Travelite Express Hotel",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41343, 120.59242",
+            "latitude": 16.4134264,
+            "longitude": 120.5924222,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/299599319"
+          },
+          {
+            "id": "osm:node:11801170096",
+            "name": "Aplosen Apartments",
+            "type": "Apartment",
+            "address": "Address not supplied; location 16.41974, 120.59432",
+            "latitude": 16.4197376,
+            "longitude": 120.5943227,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/11801170096"
+          },
+          {
+            "id": "osm:node:599549579",
+            "name": "Belfranlt Hotel",
+            "type": "Hotel",
+            "address": "Lower General Luna Road, Baguio, 2600",
+            "latitude": 16.4151359,
+            "longitude": 120.5963155,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/599549579",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:node:12387848012",
+            "name": "Cosmopolitan Hotel",
+            "type": "Hotel",
+            "address": "1 Elpidio Quirino Highway, Baguio, 2600",
+            "latitude": 16.415472,
+            "longitude": 120.5890673,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/12387848012",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:node:2963370419",
+            "name": "Diamond Inn",
+            "type": "Motel",
+            "address": "16 Emilio Jacinto Street",
+            "latitude": 16.4147689,
+            "longitude": 120.5961055,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2963370419"
+          },
+          {
+            "id": "osm:way:156175826",
+            "name": "Hotel Veniz",
+            "type": "Hotel",
+            "address": "1 Abanao Street, Baguio, 2600",
+            "latitude": 16.4133192,
+            "longitude": 120.5944834,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/156175826",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:way:191099393",
+            "name": "Hotel Villa Rosal",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41523, 120.59614",
+            "latitude": 16.4152319,
+            "longitude": 120.5961392,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/191099393"
+          },
+          {
+            "id": "osm:way:522107888",
+            "name": "Old Orangewood Bed and Breakfast",
+            "type": "Hotel",
+            "address": "Baguio, BEN, 2600",
+            "latitude": 16.4200375,
+            "longitude": 120.5912797,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/522107888",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:node:8783747029",
+            "name": "Silvertone Inn",
+            "type": "Hostel",
+            "address": "Address not supplied; location 16.41420, 120.59600",
+            "latitude": 16.4142007,
+            "longitude": 120.5959991,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/8783747029"
+          },
+          {
+            "id": "osm:way:190787158",
+            "name": "Tuscany Basic Urban Stay",
+            "type": "Hotel",
+            "address": "123 Abanao Extension, Baguio, 2600",
+            "latitude": 16.4126809,
+            "longitude": 120.5917681,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/190787158",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:way:160446091",
+            "name": "Cedar Peak",
+            "type": "Apartment",
+            "address": "Mabini Street, Baguio, 2600",
+            "latitude": 16.4143931,
+            "longitude": 120.597045,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/160446091",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:node:4742977514",
+            "name": "City Center Hotel",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41352, 120.59653",
+            "latitude": 16.4135151,
+            "longitude": 120.5965302,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4742977514"
+          },
+          {
+            "id": "osm:node:11843181721",
+            "name": "Elmar Cabin",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.42045, 120.59230",
+            "latitude": 16.4204457,
+            "longitude": 120.5923025,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/11843181721"
+          },
+          {
+            "id": "osm:node:5296657323",
+            "name": "Enchong's Transient House",
+            "type": "Hostel",
+            "address": "Address not supplied; location 16.42048, 120.59042",
+            "latitude": 16.4204786,
+            "longitude": 120.590423,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5296657323"
+          },
+          {
+            "id": "osm:way:522107868",
+            "name": "Gestdan Centrum",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41906, 120.58966",
+            "latitude": 16.4190557,
+            "longitude": 120.5896604,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/522107868"
+          },
+          {
+            "id": "osm:node:11843277042",
+            "name": "Golden Pine Hotel",
+            "type": "Hotel",
+            "address": "Cariño Street, Baguio, 2600, PH",
+            "latitude": 16.4120898,
+            "longitude": 120.5908486,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/11843277042",
+            "city": "Baguio",
+            "countryCode": "PH"
+          },
+          {
+            "id": "osm:way:190787150",
+            "name": "Holiday Park Hotel",
+            "type": "Hotel",
+            "address": "129 Abanao Extension, Baguio, 2600",
+            "latitude": 16.4123112,
+            "longitude": 120.5917487,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/190787150",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:node:4454629492",
+            "name": "Hotel 45",
+            "type": "Hotel",
+            "address": "Session Road, 2600",
+            "latitude": 16.4129336,
+            "longitude": 120.5967188,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4454629492"
+          },
+          {
+            "id": "osm:node:5146572306",
+            "name": "Hotel Urban & Supeclub",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41493, 120.58885",
+            "latitude": 16.4149321,
+            "longitude": 120.5888504,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5146572306"
+          },
+          {
+            "id": "osm:node:5121148418",
+            "name": "Hotel Veniz Session",
+            "type": "Hotel",
+            "address": "54 Session Road, Baguio, 2600, PH",
+            "latitude": 16.4130386,
+            "longitude": 120.596641,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5121148418",
+            "city": "Baguio",
+            "countryCode": "PH"
+          },
+          {
+            "id": "osm:node:3698979080",
+            "name": "La Brea Inn",
+            "type": "Hotel",
+            "address": "21 Session Road",
+            "latitude": 16.4135903,
+            "longitude": 120.596203,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3698979080"
+          },
+          {
+            "id": "osm:way:412980582",
+            "name": "Metro Pines Inn",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41219, 120.59199",
+            "latitude": 16.4121912,
+            "longitude": 120.5919909,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/412980582"
+          },
+          {
+            "id": "osm:node:2195219319",
+            "name": "Paladin Hotel",
+            "type": "Hotel",
+            "address": "Cariño Street, Baguio, 2600, PH",
+            "latitude": 16.4118296,
+            "longitude": 120.5911083,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2195219319",
+            "city": "Baguio",
+            "countryCode": "PH"
+          },
+          {
+            "id": "osm:node:3919984091",
+            "name": "Paragon Hotel& Suites",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41237, 120.59207",
+            "latitude": 16.4123741,
+            "longitude": 120.5920743,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3919984091"
+          },
+          {
+            "id": "osm:way:190919223",
+            "name": "Pine Breeze Cottages",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41961, 120.58989",
+            "latitude": 16.4196127,
+            "longitude": 120.5898867,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/190919223"
+          },
+          {
+            "id": "osm:node:11607131379",
+            "name": "Baguio Harrison Inn",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41230, 120.59616",
+            "latitude": 16.4123011,
+            "longitude": 120.5961589,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/11607131379"
+          },
+          {
+            "id": "osm:node:11865535483",
+            "name": "Baguio Holiday Villas",
+            "type": "Hotel",
+            "address": "Address not supplied; location 16.41165, 120.59080",
+            "latitude": 16.4116481,
+            "longitude": 120.5907965,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/11865535483"
+          },
+          {
+            "id": "osm:way:190775299",
+            "name": "Benguet Pines Tourist Inn",
+            "type": "Motel",
+            "address": "Shanum Street, Baguio, 2600",
+            "latitude": 16.4111813,
+            "longitude": 120.5921537,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/190775299",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:node:2187184060",
+            "name": "Dely's Inn",
+            "type": "Hotel",
+            "address": "141 Abanao Extension, Baguio, 2600, PH",
+            "latitude": 16.4113991,
+            "longitude": 120.591653,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2187184060",
+            "city": "Baguio",
+            "countryCode": "PH"
+          },
+          {
+            "id": "osm:node:1357288678",
+            "name": "Heritage Mansion",
+            "type": "Hotel",
+            "address": "Abanao Extension, Baguio, 2600",
+            "latitude": 16.4113208,
+            "longitude": 120.5913101,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1357288678",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:node:13475496920",
+            "name": "Joann Sophia Transient House",
+            "type": "Guesthouse",
+            "address": "3 José Felipe Street, Baguio, 2600, PH",
+            "latitude": 16.4113392,
+            "longitude": 120.590073,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/13475496920",
+            "city": "Baguio",
+            "countryCode": "PH"
+          },
+          {
+            "id": "osm:way:168083447",
+            "name": "Mount Crest Hotel",
+            "type": "Hotel",
+            "address": "Legarda Road, Baguio, 2600",
+            "latitude": 16.4116873,
+            "longitude": 120.5904369,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/168083447",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:node:11607114661",
+            "name": "Prime Hotel",
+            "type": "Hotel",
+            "address": "Felipe Calderon Street, Baguio, 2600",
+            "latitude": 16.412655,
+            "longitude": 120.5969899,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/11607114661",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:way:190919226",
+            "name": "Rajan Soliman Hotel",
+            "type": "Hotel",
+            "address": "Buhagan Road, Baguio, 2600",
+            "latitude": 16.4203738,
+            "longitude": 120.5899965,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/190919226",
+            "city": "Baguio"
+          },
+          {
+            "id": "osm:way:190775344",
+            "name": "West Burnham Place",
+            "type": "Hotel",
+            "address": "16 Kisad Road, Baguio, 2600",
+            "latitude": 16.4110362,
+            "longitude": 120.5918994,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/190775344",
+            "city": "Baguio"
+          }
+        ],
+        "status": "ready",
+        "mapStatus": "ready",
+        "quoteStatus": "not-configured",
+        "message": "Found 40 mapped stays within 1 km; check their actual locations. Map listings do not provide room prices or availability. Room prices and availability are unavailable because the room-quote provider is not configured. You can enter accommodation manually or choose it later.",
+        "freshness": {
+          "source": "hotels",
+          "status": "live",
+          "isStale": false,
+          "fetchedAt": "2026-10-06T14:11:39.954Z",
+          "expiresAt": "2026-10-07T14:11:39.954Z",
+          "staleUntil": "2026-10-08T14:11:39.954Z",
+          "policy": "1440m fresh; stale fallback up to 2880m when the provider fails."
+        }
+      }
+    },
+    {
+      "query": "Kyoto, Japan",
+      "resolution": {
+        "location": {
+          "id": 1857910,
+          "name": "Kyoto",
+          "region": "Kyoto",
+          "country": "Japan",
+          "countryCode": "JP",
+          "latitude": 35.02107,
+          "longitude": 135.75385,
+          "label": "Kyoto, Japan",
+          "placeType": "Administrative capital",
+          "contextLabel": "Administrative capital • Kyoto, Japan",
+          "provider": "geonames",
+          "providerId": "1857910"
+        },
+        "candidates": [
+          {
+            "id": 1857910,
+            "name": "Kyoto",
+            "region": "Kyoto",
+            "country": "Japan",
+            "countryCode": "JP",
+            "latitude": 35.02107,
+            "longitude": 135.75385,
+            "label": "Kyoto, Japan",
+            "placeType": "Administrative capital",
+            "contextLabel": "Administrative capital • Kyoto, Japan",
+            "provider": "geonames",
+            "providerId": "1857910"
+          }
+        ],
+        "areas": [],
+        "message": ""
+      },
+      "context": {
+        "currency": "JPY",
+        "currencySource": "country-code",
+        "transportation": [
+          {
+            "id": "train",
+            "label": "Train",
+            "category": "public"
+          },
+          {
+            "id": "metro-subway",
+            "label": "Metro / Subway",
+            "category": "public"
+          },
+          {
+            "id": "bus",
+            "label": "Bus",
+            "category": "public"
+          },
+          {
+            "id": "taxi",
+            "label": "Taxi",
+            "category": "private"
+          },
+          {
+            "id": "walking",
+            "label": "Walking",
+            "category": "active"
+          }
+        ],
+        "transportationSource": "curated-country-city-guidance",
+        "transportationMessage": "Common destination-specific modes from TravelMate guidance; availability and schedules are not live."
+      },
+      "stays": {
+        "configured": false,
+        "accommodations": [],
+        "nearbyAccommodations": [
+          {
+            "id": "osm:way:548135899",
+            "name": "Rinn Shiki Juraku",
+            "type": "Hotel",
+            "address": "上京区, 京都市, 京都府, 602-8046",
+            "latitude": 35.0203804,
+            "longitude": 135.7532083,
+            "distanceKm": 0.1,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/548135899",
+            "city": "京都市"
+          },
+          {
+            "id": "osm:node:2691296677",
+            "name": "Brighton Hotel Kyoto",
+            "type": "Hotel",
+            "address": "京都市",
+            "latitude": 35.024587,
+            "longitude": 135.755745,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2691296677",
+            "city": "京都市"
+          },
+          {
+            "id": "osm:node:6003055788",
+            "name": "アゴーラプレイス 京都二条",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01727, 135.75252",
+            "latitude": 35.0172743,
+            "longitude": 135.7525236,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6003055788"
+          },
+          {
+            "id": "osm:way:538858927",
+            "name": "AKARI二条城",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01633, 135.75249",
+            "latitude": 35.0163259,
+            "longitude": 135.7524878,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/538858927"
+          },
+          {
+            "id": "osm:node:11429264535",
+            "name": "FIRST CABIN",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01689, 135.75230",
+            "latitude": 35.0168948,
+            "longitude": 135.752295,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/11429264535"
+          },
+          {
+            "id": "osm:node:1541942881",
+            "name": "Guesthouse Venten",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 35.02448, 135.75043",
+            "latitude": 35.0244788,
+            "longitude": 135.7504323,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1541942881"
+          },
+          {
+            "id": "osm:node:13664351001",
+            "name": "Kyoto garden Palace",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.02303, 135.75894",
+            "latitude": 35.0230332,
+            "longitude": 135.7589384,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/13664351001"
+          },
+          {
+            "id": "osm:way:140812810",
+            "name": "Guesthouse Mundo",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 35.02043, 135.74786",
+            "latitude": 35.0204264,
+            "longitude": 135.7478589,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/140812810"
+          },
+          {
+            "id": "osm:node:13388213772",
+            "name": "hotel livemax",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01756, 135.74830",
+            "latitude": 35.0175579,
+            "longitude": 135.7482998,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/13388213772"
+          },
+          {
+            "id": "osm:relation:20184025",
+            "name": "Nazuna Kyoto Gosho Ryokan",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01591, 135.75709",
+            "latitude": 35.0159053,
+            "longitude": 135.7570919,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/relation/20184025"
+          },
+          {
+            "id": "osm:node:12543177078",
+            "name": "RAKURO Kyoto by THE SHARE HOTELS",
+            "type": "Hotel",
+            "address": "中京区, 京都市, 京都府, 604-0867",
+            "latitude": 35.0172038,
+            "longitude": 135.7584591,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/12543177078",
+            "city": "京都市"
+          },
+          {
+            "id": "osm:node:4225072197",
+            "name": "京都汉娜宾馆",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01959, 135.74767",
+            "latitude": 35.0195855,
+            "longitude": 135.7476749,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4225072197"
+          },
+          {
+            "id": "osm:way:205878149",
+            "name": "御所西京都平安ホテル",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.02437, 135.75879",
+            "latitude": 35.0243727,
+            "longitude": 135.7587936,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/205878149"
+          },
+          {
+            "id": "osm:node:6336314685",
+            "name": "Azure Nijo Kyoto House",
+            "type": "Apartment",
+            "address": "632-1 夷川通",
+            "latitude": 35.0148305,
+            "longitude": 135.7541725,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6336314685"
+          },
+          {
+            "id": "osm:node:1541941592",
+            "name": "Hostel Kyotokko",
+            "type": "Guesthouse",
+            "address": "783, 602-8145",
+            "latitude": 35.0172411,
+            "longitude": 135.7482342,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1541941592"
+          },
+          {
+            "id": "osm:node:13681527602",
+            "name": "Kokonoe machiya",
+            "type": "Hotel",
+            "address": "602-8177",
+            "latitude": 35.0214132,
+            "longitude": 135.7460225,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/13681527602"
+          },
+          {
+            "id": "osm:node:12875007901",
+            "name": "Kyoto Uraraka Guest House",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 35.01800, 135.74757",
+            "latitude": 35.017996,
+            "longitude": 135.7475651,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/12875007901"
+          },
+          {
+            "id": "osm:node:5005273424",
+            "name": "一条Premium",
+            "type": "Hotel",
+            "address": "猪熊通",
+            "latitude": 35.0264794,
+            "longitude": 135.750552,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5005273424"
+          },
+          {
+            "id": "osm:way:548247489",
+            "name": "鈴 プレミアム 二条城北（Rinn Premium Nijo Castle North）",
+            "type": "Hotel",
+            "address": "4, 上京区, 京都市, 京都府, 602-8153",
+            "latitude": 35.0174668,
+            "longitude": 135.7474993,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/548247489",
+            "city": "京都市"
+          },
+          {
+            "id": "osm:node:13850866601",
+            "name": "&haku",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01497, 135.75900",
+            "latitude": 35.0149662,
+            "longitude": 135.7589984,
+            "distanceKm": 0.8,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/13850866601"
+          },
+          {
+            "id": "osm:node:11036878408",
+            "name": "Hotel Monday Kyoto Marutamachi",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01603, 135.75933",
+            "latitude": 35.0160296,
+            "longitude": 135.7593287,
+            "distanceKm": 0.8,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/11036878408"
+          },
+          {
+            "id": "osm:node:11036836699",
+            "name": "Hyatt Place Kyoto",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01551, 135.75930",
+            "latitude": 35.0155093,
+            "longitude": 135.7593045,
+            "distanceKm": 0.8,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/11036836699"
+          },
+          {
+            "id": "osm:way:268192643",
+            "name": "ANA Crowne Plaza Kyoto",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01268, 135.75276",
+            "latitude": 35.0126841,
+            "longitude": 135.7527569,
+            "distanceKm": 0.9,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/268192643"
+          },
+          {
+            "id": "osm:node:13947194954",
+            "name": "Enso Machiya",
+            "type": "Hotel",
+            "address": "573, 602-8214",
+            "latitude": 35.0282361,
+            "longitude": 135.7489824,
+            "distanceKm": 0.9,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/13947194954"
+          },
+          {
+            "id": "osm:node:12422063267",
+            "name": "HIZ",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01366, 135.75713",
+            "latitude": 35.0136614,
+            "longitude": 135.7571346,
+            "distanceKm": 0.9,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/12422063267"
+          },
+          {
+            "id": "osm:way:550678124",
+            "name": "Hotel Canata Kyoto",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.01272, 135.75225",
+            "latitude": 35.0127204,
+            "longitude": 135.7522502,
+            "distanceKm": 0.9,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/550678124"
+          },
+          {
+            "id": "osm:way:268192645",
+            "name": "Hotel The Mitsui Kyoto",
+            "type": "Hotel",
+            "address": "中京区, 京都市, 京都府",
+            "latitude": 35.0132657,
+            "longitude": 135.7527558,
+            "distanceKm": 0.9,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/268192645",
+            "city": "京都市"
+          },
+          {
+            "id": "osm:way:562754836",
+            "name": "Ryokan",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 35.02512, 135.74574",
+            "latitude": 35.0251218,
+            "longitude": 135.74574,
+            "distanceKm": 0.9,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/way/562754836"
+          },
+          {
+            "id": "osm:node:12422063256",
+            "name": "Sakura",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 35.01280, 135.75520",
+            "latitude": 35.0127958,
+            "longitude": 135.7551997,
+            "distanceKm": 0.9,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/12422063256"
+          },
+          {
+            "id": "osm:node:1224217739",
+            "name": "Petit Hôtel Pension Kyoto",
+            "type": "Hotel",
+            "address": "Address not supplied; location 35.02962, 135.75044",
+            "latitude": 35.0296243,
+            "longitude": 135.7504392,
+            "distanceKm": 1,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1224217739"
+          }
+        ],
+        "status": "ready",
+        "mapStatus": "ready",
+        "quoteStatus": "not-configured",
+        "message": "Found 30 mapped stays within 1 km; check their actual locations. Map listings do not provide room prices or availability. Room prices and availability are unavailable because the room-quote provider is not configured. You can enter accommodation manually or choose it later.",
+        "freshness": {
+          "source": "hotels",
+          "status": "live",
+          "isStale": false,
+          "fetchedAt": "2026-10-06T14:11:41.171Z",
+          "expiresAt": "2026-10-07T14:11:41.171Z",
+          "staleUntil": "2026-10-08T14:11:41.171Z",
+          "policy": "1440m fresh; stale fallback up to 2880m when the provider fails."
+        }
+      }
+    },
+    {
+      "query": "Barcelona, Spain",
+      "resolution": {
+        "location": {
+          "id": 3128760,
+          "name": "Barcelona",
+          "region": "Catalonia",
+          "country": "Spain",
+          "countryCode": "ES",
+          "latitude": 41.38879,
+          "longitude": 2.15899,
+          "label": "Barcelona, Catalonia, Spain",
+          "placeType": "Administrative capital",
+          "contextLabel": "Administrative capital • Barcelona, Catalonia, Spain",
+          "provider": "geonames",
+          "providerId": "3128760"
+        },
+        "candidates": [
+          {
+            "id": 3128760,
+            "name": "Barcelona",
+            "region": "Catalonia",
+            "country": "Spain",
+            "countryCode": "ES",
+            "latitude": 41.38879,
+            "longitude": 2.15899,
+            "label": "Barcelona, Catalonia, Spain",
+            "placeType": "Administrative capital",
+            "contextLabel": "Administrative capital • Barcelona, Catalonia, Spain",
+            "provider": "geonames",
+            "providerId": "3128760"
+          }
+        ],
+        "areas": [],
+        "message": ""
+      },
+      "context": {
+        "currency": "EUR",
+        "currencySource": "country-code",
+        "transportation": [],
+        "transportationSource": "unavailable",
+        "transportationMessage": "TravelMate has no verified transportation guidance for this destination yet. You can continue without choosing a mode; the generated plan will request locally appropriate transportation."
+      },
+      "stays": {
+        "configured": false,
+        "accommodations": [],
+        "nearbyAccommodations": [
+          {
+            "id": "osm:node:5653829722",
+            "name": "Cozy Rambla Cataluna",
+            "type": "Apartment",
+            "address": "08011",
+            "latitude": 41.3885076,
+            "longitude": 2.1579657,
+            "distanceKm": 0.1,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5653829722"
+          },
+          {
+            "id": "osm:node:4165333589",
+            "name": "Cram",
+            "type": "Hotel",
+            "address": "54 Carrer d'Aribau",
+            "latitude": 41.3881318,
+            "longitude": 2.1601834,
+            "distanceKm": 0.1,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4165333589"
+          },
+          {
+            "id": "osm:node:4573365589",
+            "name": "Aribau",
+            "type": "Hostel",
+            "address": "Address not supplied; location 41.38765, 2.16021",
+            "latitude": 41.3876521,
+            "longitude": 2.1602093,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4573365589"
+          },
+          {
+            "id": "osm:node:1231242161",
+            "name": "AXEL Hotel",
+            "type": "Hotel",
+            "address": "Barcelona",
+            "latitude": 41.3873794,
+            "longitude": 2.1604124,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1231242161",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:6206164328",
+            "name": "Best Western Premier Hotel Dante",
+            "type": "Hotel",
+            "address": "181 Carrer de Mallorca, Barcelona, 08036",
+            "latitude": 41.3894095,
+            "longitude": 2.1564945,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6206164328",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:6204095919",
+            "name": "The Corner",
+            "type": "Hotel",
+            "address": "178 Carrer de Mallorca, Barcelona, 08036",
+            "latitude": 41.3890429,
+            "longitude": 2.156621,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6204095919",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:4269262394",
+            "name": "Casa de Ana",
+            "type": "Hostel",
+            "address": "15-17 Carrer d'Enric Granados",
+            "latitude": 41.3878529,
+            "longitude": 2.1620362,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4269262394"
+          },
+          {
+            "id": "osm:node:6358058985",
+            "name": "Casa marisa barcelona",
+            "type": "Apartment",
+            "address": "Address not supplied; location 41.39104, 2.16028",
+            "latitude": 41.391043,
+            "longitude": 2.1602822,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6358058985"
+          },
+          {
+            "id": "osm:node:1474078091",
+            "name": "Hotel Balmes",
+            "type": "Hotel",
+            "address": "216 Carrer de Mallorca, Barcelona, 08008",
+            "latitude": 41.3910913,
+            "longitude": 2.1593029,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1474078091",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:6204114086",
+            "name": "Hotel Barcelona Center",
+            "type": "Hotel",
+            "address": "103-105 Carrer de Balmes, Barcelona, 08008",
+            "latitude": 41.3916188,
+            "longitude": 2.1592877,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6204114086",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:5459170221",
+            "name": "Hotel Praktik Vinoteca",
+            "type": "Hotel",
+            "address": "51 Carrer de Balmes",
+            "latitude": 41.3893171,
+            "longitude": 2.1624013,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5459170221"
+          },
+          {
+            "id": "osm:node:3816959757",
+            "name": "AKO Aparthotel",
+            "type": "Hotel",
+            "address": "Address not supplied; location 41.38601, 2.16103",
+            "latitude": 41.38601,
+            "longitude": 2.161031,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3816959757"
+          },
+          {
+            "id": "osm:node:2779221813",
+            "name": "Buba House Hostel Barcelona",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 41.39059, 2.16250",
+            "latitude": 41.3905877,
+            "longitude": 2.1625,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2779221813"
+          },
+          {
+            "id": "osm:node:6211257610",
+            "name": "H10 art gallery hotel",
+            "type": "Hotel",
+            "address": "Carrer d'Enric Granados, Barcelona",
+            "latitude": 41.3920504,
+            "longitude": 2.1570335,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6211257610",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:4219381692",
+            "name": "HCC Taber",
+            "type": "Hotel",
+            "address": "256 Carrer d'Aragó, Barcelona, 08007",
+            "latitude": 41.3905627,
+            "longitude": 2.1633115,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4219381692",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:1654457782",
+            "name": "Hotel América Barcelona",
+            "type": "Hotel",
+            "address": "83 Carrer de Provença, Barcelona, 08008",
+            "latitude": 41.3918486,
+            "longitude": 2.1573697,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1654457782",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:1474078097",
+            "name": "Hotel Granados 83",
+            "type": "Hotel",
+            "address": "83 Carrer d'Enric Granados, Barcelona, 08008",
+            "latitude": 41.3918188,
+            "longitude": 2.156787,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1474078097",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:2766678312",
+            "name": "Olivia Balmes Hotel",
+            "type": "Hotel",
+            "address": "117 Carrer de Balmes, Barcelona, 08008",
+            "latitude": 41.3922038,
+            "longitude": 2.1585614,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2766678312",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:6357985809",
+            "name": "Alexandra Barcelona Hotel, Curio Collection by Hilton",
+            "type": "Hotel",
+            "address": "251 Carrer de Mallorca, Barcelona, 08008",
+            "latitude": 41.3931876,
+            "longitude": 2.1615252,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6357985809",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:2200457797",
+            "name": "Angla Boutique Apartments",
+            "type": "Hotel",
+            "address": "Address not supplied; location 41.38467, 2.15676",
+            "latitude": 41.3846716,
+            "longitude": 2.156759,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2200457797"
+          },
+          {
+            "id": "osm:node:6175939485",
+            "name": "Apartamentai",
+            "type": "Apartment",
+            "address": "Address not supplied; location 41.38437, 2.16106",
+            "latitude": 41.3843686,
+            "longitude": 2.1610566,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6175939485"
+          },
+          {
+            "id": "osm:node:6360721753",
+            "name": "Art City Hostel",
+            "type": "Hostel",
+            "address": "64 Rambla de Catalunya",
+            "latitude": 41.391543,
+            "longitude": 2.1631914,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6360721753"
+          },
+          {
+            "id": "osm:node:3803868740",
+            "name": "Barcelona Century Hotel",
+            "type": "Hotel",
+            "address": "154 Carrer de València",
+            "latitude": 41.3861529,
+            "longitude": 2.154852,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3803868740"
+          },
+          {
+            "id": "osm:node:6360711803",
+            "name": "EcoZentric",
+            "type": "Hotel",
+            "address": "23 Carrer de Balmes",
+            "latitude": 41.387835,
+            "longitude": 2.1643576,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6360711803"
+          },
+          {
+            "id": "osm:node:4270241094",
+            "name": "Home Around Barcelona",
+            "type": "Guesthouse",
+            "address": "97 Carrer d'Enric Granados",
+            "latitude": 41.392613,
+            "longitude": 2.1557271,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4270241094"
+          },
+          {
+            "id": "osm:node:6360714003",
+            "name": "Hostel Plaza Catalunya",
+            "type": "Hostel",
+            "address": "251 Carrer de la Diputació",
+            "latitude": 41.3890983,
+            "longitude": 2.1650789,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6360714003"
+          },
+          {
+            "id": "osm:node:3369311544",
+            "name": "Hotel Sansi Diputació",
+            "type": "Hotel",
+            "address": "234 Carrer de la Diputació, Barcelona, 08007",
+            "latitude": 41.3883372,
+            "longitude": 2.1645363,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3369311544",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:6302102606",
+            "name": "La casa de Antonio Boutique Rooms",
+            "type": "Hotel",
+            "address": "Address not supplied; location 41.38492, 2.16280",
+            "latitude": 41.3849213,
+            "longitude": 2.1627957,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6302102606"
+          },
+          {
+            "id": "osm:node:1474078098",
+            "name": "Room Mate Emma Hotel",
+            "type": "Hotel",
+            "address": "205 Carrer del Rosselló, Barcelona, 08008",
+            "latitude": 41.3926948,
+            "longitude": 2.156347,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1474078098",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:4291542792",
+            "name": "TOC Hostel Barcelona",
+            "type": "Hostel",
+            "address": "Address not supplied; location 41.38479, 2.16253",
+            "latitude": 41.3847897,
+            "longitude": 2.1625305,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4291542792"
+          },
+          {
+            "id": "osm:node:6223019744",
+            "name": "Caledonian",
+            "type": "Hotel",
+            "address": "574 Gran Vía de les Corts Catalanes, 08011",
+            "latitude": 41.3842163,
+            "longitude": 2.1619248,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6223019744"
+          },
+          {
+            "id": "osm:node:364735661",
+            "name": "Catalonia Diagonal Centro",
+            "type": "Hotel",
+            "address": "Address not supplied; location 41.39391, 2.15686",
+            "latitude": 41.3939068,
+            "longitude": 2.1568633,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/364735661"
+          },
+          {
+            "id": "osm:node:704063685",
+            "name": "Club 29",
+            "type": "Hotel",
+            "address": "29-31 Passeig de Gràcia, Barcelona",
+            "latitude": 41.3908058,
+            "longitude": 2.1660695,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/704063685",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:704064994",
+            "name": "Hotel Continental Palacete",
+            "type": "Hotel",
+            "address": "30-32 Rambla de Catalunya, 08007",
+            "latitude": 41.38971,
+            "longitude": 2.1655726,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/704064994"
+          },
+          {
+            "id": "osm:node:4360142541",
+            "name": "Hotel Eurostars Cristal Palace",
+            "type": "Hotel",
+            "address": "257 Carrer de la Diputació, Barcelona, 08007",
+            "latitude": 41.3898262,
+            "longitude": 2.1661232,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4360142541",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:1870096318",
+            "name": "Hotel Jazz",
+            "type": "Hotel",
+            "address": "Address not supplied; location 41.38606, 2.16578",
+            "latitude": 41.3860573,
+            "longitude": 2.1657768,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1870096318"
+          },
+          {
+            "id": "osm:node:5339680002",
+            "name": "Hotel Praktik Rambla",
+            "type": "Hotel",
+            "address": "27 Rambla de Catalunya, Barcelona, 08007",
+            "latitude": 41.3890624,
+            "longitude": 2.1658933,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5339680002",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:1958652536",
+            "name": "Majestic Residence",
+            "type": "Hotel",
+            "address": "65 Passeig de Gràcia, 08007",
+            "latitude": 41.3931756,
+            "longitude": 2.1631439,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1958652536"
+          },
+          {
+            "id": "osm:node:6357990252",
+            "name": "Monument Hotel",
+            "type": "Hotel",
+            "address": "75 Passeig de Gràcia, Barcelona, 08008",
+            "latitude": 41.3937566,
+            "longitude": 2.162242,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/6357990252",
+            "city": "Barcelona"
+          },
+          {
+            "id": "osm:node:1958654612",
+            "name": "Murmuri Residence",
+            "type": "Hotel",
+            "address": "Address not supplied; location 41.39431, 2.15988",
+            "latitude": 41.3943122,
+            "longitude": 2.1598783,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1958654612"
+          }
+        ],
+        "status": "ready",
+        "mapStatus": "ready",
+        "quoteStatus": "not-configured",
+        "message": "Found 40 mapped stays within 1 km; check their actual locations. Map listings do not provide room prices or availability. Room prices and availability are unavailable because the room-quote provider is not configured. You can enter accommodation manually or choose it later.",
+        "freshness": {
+          "source": "hotels",
+          "status": "live",
+          "isStale": false,
+          "fetchedAt": "2026-10-06T14:12:05.284Z",
+          "expiresAt": "2026-10-07T14:12:05.284Z",
+          "staleUntil": "2026-10-08T14:12:05.284Z",
+          "policy": "1440m fresh; stale fallback up to 2880m when the provider fails."
+        }
+      }
+    },
+    {
+      "query": "Paris, France",
+      "resolution": {
+        "location": {
+          "id": 2988507,
+          "name": "Paris",
+          "region": "Île-de-France",
+          "country": "France",
+          "countryCode": "FR",
+          "latitude": 48.85341,
+          "longitude": 2.3488,
+          "label": "Paris, Île-de-France, France",
+          "placeType": "Capital city",
+          "contextLabel": "Capital city • Paris, Île-de-France, France",
+          "provider": "geonames",
+          "providerId": "2988507"
+        },
+        "candidates": [
+          {
+            "id": 2988507,
+            "name": "Paris",
+            "region": "Île-de-France",
+            "country": "France",
+            "countryCode": "FR",
+            "latitude": 48.85341,
+            "longitude": 2.3488,
+            "label": "Paris, Île-de-France, France",
+            "placeType": "Capital city",
+            "contextLabel": "Capital city • Paris, Île-de-France, France",
+            "provider": "geonames",
+            "providerId": "2988507"
+          }
+        ],
+        "areas": [],
+        "message": ""
+      },
+      "context": {
+        "currency": "EUR",
+        "currencySource": "country-code",
+        "transportation": [
+          {
+            "id": "train",
+            "label": "Train",
+            "category": "public"
+          },
+          {
+            "id": "metro-subway",
+            "label": "Metro / Subway",
+            "category": "public"
+          },
+          {
+            "id": "bus",
+            "label": "Bus",
+            "category": "public"
+          },
+          {
+            "id": "taxi",
+            "label": "Taxi",
+            "category": "private"
+          },
+          {
+            "id": "walking",
+            "label": "Walking",
+            "category": "active"
+          }
+        ],
+        "transportationSource": "curated-country-city-guidance",
+        "transportationMessage": "Common destination-specific modes from TravelMate guidance; availability and schedules are not live."
+      },
+      "stays": {
+        "configured": false,
+        "accommodations": [],
+        "nearbyAccommodations": [
+          {
+            "id": "osm:node:9146864045",
+            "name": "Les Degrés de Notre Dame",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85144, 2.34955",
+            "latitude": 48.8514416,
+            "longitude": 2.3495501,
+            "distanceKm": 0.2,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/9146864045"
+          },
+          {
+            "id": "osm:node:2490914649",
+            "name": "Hôtel de Notre-Dame",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85037, 2.34941",
+            "latitude": 48.8503654,
+            "longitude": 2.3494131,
+            "distanceKm": 0.3,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2490914649"
+          },
+          {
+            "id": "osm:node:2536521868",
+            "name": "Hôtel abbatial Saint-Germain",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.84975, 2.35052",
+            "latitude": 48.8497498,
+            "longitude": 2.3505242,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2536521868"
+          },
+          {
+            "id": "osm:node:1930542200",
+            "name": "Hôtel Studia",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85013, 2.34763",
+            "latitude": 48.8501323,
+            "longitude": 2.3476328,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1930542200"
+          },
+          {
+            "id": "osm:node:8260319127",
+            "name": "Le Clos Notre-Dame",
+            "type": "Hotel",
+            "address": "22 Rue de l'Hirondelle, Paris, 75006",
+            "latitude": 48.8536618,
+            "longitude": 2.3429661,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/8260319127",
+            "city": "Paris"
+          },
+          {
+            "id": "osm:node:4326240264",
+            "name": "Le Saint-Germain",
+            "type": "Guesthouse",
+            "address": "Address not supplied; location 48.85131, 2.34448",
+            "latitude": 48.8513129,
+            "longitude": 2.3444774,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4326240264"
+          },
+          {
+            "id": "osm:node:11793868755",
+            "name": "Relais Hôtel du Vieux Paris",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85389, 2.34289",
+            "latitude": 48.8538947,
+            "longitude": 2.3428878,
+            "distanceKm": 0.4,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/11793868755"
+          },
+          {
+            "id": "osm:node:2685607012",
+            "name": "Andréa Rivoli",
+            "type": "Hotel",
+            "address": "3 Rue Saint-Bon, Paris, 75004",
+            "latitude": 48.8581962,
+            "longitude": 2.3502811,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2685607012",
+            "city": "Paris"
+          },
+          {
+            "id": "osm:node:9905753638",
+            "name": "Eugénie",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85329, 2.34202",
+            "latitude": 48.8532889,
+            "longitude": 2.3420227,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/9905753638"
+          },
+          {
+            "id": "osm:node:676860093",
+            "name": "Hôtel Victoria Châtelet",
+            "type": "Hotel",
+            "address": "17 Avenue Victoria",
+            "latitude": 48.8578354,
+            "longitude": 2.3467115,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/676860093"
+          },
+          {
+            "id": "osm:node:9949650654",
+            "name": "Résidence des Arts",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85346, 2.34234",
+            "latitude": 48.8534602,
+            "longitude": 2.3423355,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/9949650654"
+          },
+          {
+            "id": "osm:node:9949650655",
+            "name": "Villa d'Estrées",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85349, 2.34250",
+            "latitude": 48.8534942,
+            "longitude": 2.3425027,
+            "distanceKm": 0.5,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/9949650655"
+          },
+          {
+            "id": "osm:node:7948700804",
+            "name": "Citadines",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85553, 2.34093",
+            "latitude": 48.8555342,
+            "longitude": 2.3409339,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/7948700804"
+          },
+          {
+            "id": "osm:node:2433812999",
+            "name": "Grand Hôtel Dechampaigne",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85878, 2.34530",
+            "latitude": 48.8587815,
+            "longitude": 2.3453015,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2433812999"
+          },
+          {
+            "id": "osm:node:2368786106",
+            "name": "Hôtel Belloy Saint-Germain",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85037, 2.34224",
+            "latitude": 48.8503717,
+            "longitude": 2.3422419,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2368786106"
+          },
+          {
+            "id": "osm:node:676872530",
+            "name": "Hôtel Britannique",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85829, 2.34641",
+            "latitude": 48.8582914,
+            "longitude": 2.3464129,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/676872530"
+          },
+          {
+            "id": "osm:node:3457499093",
+            "name": "Hôtel central Saint-Germain",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.84983, 2.34307",
+            "latitude": 48.8498319,
+            "longitude": 2.3430667,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3457499093"
+          },
+          {
+            "id": "osm:node:320952626",
+            "name": "Hôtel de Suez",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.84980, 2.34265",
+            "latitude": 48.8497957,
+            "longitude": 2.3426515,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/320952626"
+          },
+          {
+            "id": "osm:node:251127867",
+            "name": "Hôtel du Loiret",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85692, 2.35529",
+            "latitude": 48.8569202,
+            "longitude": 2.3552931,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/251127867"
+          },
+          {
+            "id": "osm:node:676748293",
+            "name": "La Place Dauphine",
+            "type": "Apartment",
+            "address": "Address not supplied; location 48.85671, 2.34182",
+            "latitude": 48.8567102,
+            "longitude": 2.3418162,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/676748293"
+          },
+          {
+            "id": "osm:node:2368786103",
+            "name": "Le Petit Belloy",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85021, 2.34217",
+            "latitude": 48.8502129,
+            "longitude": 2.3421749,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2368786103"
+          },
+          {
+            "id": "osm:node:5107830337",
+            "name": "Pilgrim",
+            "type": "Hotel",
+            "address": "11 Rue de Poissy, Paris, 75005",
+            "latitude": 48.8491149,
+            "longitude": 2.3526774,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5107830337",
+            "city": "Paris"
+          },
+          {
+            "id": "osm:node:10746322395",
+            "name": "Relais Christine",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85438, 2.34007",
+            "latitude": 48.8543752,
+            "longitude": 2.3400731,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/10746322395"
+          },
+          {
+            "id": "osm:node:10212698996",
+            "name": "Rivoli",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85676, 2.35519",
+            "latitude": 48.8567593,
+            "longitude": 2.3551903,
+            "distanceKm": 0.6,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/10212698996"
+          },
+          {
+            "id": "osm:node:9887690188",
+            "name": "Dauphine St. Germain",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85446, 2.33901",
+            "latitude": 48.8544575,
+            "longitude": 2.3390109,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/9887690188"
+          },
+          {
+            "id": "osm:node:4195729290",
+            "name": "Ducs d'Anjou",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85986, 2.34709",
+            "latitude": 48.8598552,
+            "longitude": 2.3470928,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4195729290"
+          },
+          {
+            "id": "osm:node:1119291848",
+            "name": "Familia Hôtel",
+            "type": "Hotel",
+            "address": "11 Rue des Écoles, Paris, 75005",
+            "latitude": 48.8476583,
+            "longitude": 2.3515918,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1119291848",
+            "city": "Paris"
+          },
+          {
+            "id": "osm:node:3823569677",
+            "name": "Hôtel 1er Etage",
+            "type": "Hotel",
+            "address": "38 Rue Sainte-Croix de la Bretonnerie, Paris, 75004",
+            "latitude": 48.8587181,
+            "longitude": 2.3549404,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/3823569677",
+            "city": "Paris"
+          },
+          {
+            "id": "osm:node:686159843",
+            "name": "Hôtel d'Aubusson",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85476, 2.33950",
+            "latitude": 48.8547614,
+            "longitude": 2.3395044,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/686159843"
+          },
+          {
+            "id": "osm:node:2789010152",
+            "name": "Hôtel de la Sorbonne",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.84813, 2.34248",
+            "latitude": 48.8481281,
+            "longitude": 2.3424839,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2789010152"
+          },
+          {
+            "id": "osm:node:4194066289",
+            "name": "Hôtel de Nesle",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85518, 2.33898",
+            "latitude": 48.8551761,
+            "longitude": 2.3389821,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4194066289"
+          },
+          {
+            "id": "osm:node:2433812997",
+            "name": "Hôtel Flor Rivoli",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85914, 2.34519",
+            "latitude": 48.8591442,
+            "longitude": 2.3451909,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/2433812997"
+          },
+          {
+            "id": "osm:node:1067589714",
+            "name": "Hôtel Le Régent",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85381, 2.33869",
+            "latitude": 48.8538117,
+            "longitude": 2.3386948,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1067589714"
+          },
+          {
+            "id": "osm:node:5220780046",
+            "name": "Hôtel Left Bank Saint-Germain",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85319, 2.33869",
+            "latitude": 48.8531911,
+            "longitude": 2.3386874,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5220780046"
+          },
+          {
+            "id": "osm:node:1119291923",
+            "name": "Hôtel Minerve",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.84770, 2.35144",
+            "latitude": 48.8477032,
+            "longitude": 2.3514397,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/1119291923"
+          },
+          {
+            "id": "osm:node:4684728472",
+            "name": "Hôtel Quartier Latin",
+            "type": "Hotel",
+            "address": "9 Rue des Écoles, Paris, 75005",
+            "latitude": 48.8476107,
+            "longitude": 2.3517393,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4684728472",
+            "city": "Paris"
+          },
+          {
+            "id": "osm:node:4019279815",
+            "name": "Hôtel Saint-André des Arts",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85363, 2.33900",
+            "latitude": 48.8536284,
+            "longitude": 2.3390015,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/4019279815"
+          },
+          {
+            "id": "osm:node:5812592553",
+            "name": "Le Cardinal",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85952, 2.34832",
+            "latitude": 48.8595161,
+            "longitude": 2.3483186,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/5812592553"
+          },
+          {
+            "id": "osm:node:9780227592",
+            "name": "Le Relais Saint-Germain",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.85192, 2.33887",
+            "latitude": 48.8519189,
+            "longitude": 2.3388739,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/9780227592"
+          },
+          {
+            "id": "osm:node:9558673809",
+            "name": "Paris Art Hôtel",
+            "type": "Hotel",
+            "address": "Address not supplied; location 48.84745, 2.35239",
+            "latitude": 48.8474526,
+            "longitude": 2.3523919,
+            "distanceKm": 0.7,
+            "source": "openstreetmap",
+            "sourceUrl": "https://www.openstreetmap.org/node/9558673809"
+          }
+        ],
+        "status": "ready",
+        "mapStatus": "ready",
+        "quoteStatus": "not-configured",
+        "message": "Found 40 mapped stays within 1 km; check their actual locations. Map listings do not provide room prices or availability. Room prices and availability are unavailable because the room-quote provider is not configured. You can enter accommodation manually or choose it later.",
+        "freshness": {
+          "source": "hotels",
+          "status": "live",
+          "isStale": false,
+          "fetchedAt": "2026-10-06T14:15:53.917Z",
+          "expiresAt": "2026-10-07T14:15:53.917Z",
+          "staleUntil": "2026-10-08T14:15:53.917Z",
+          "policy": "1440m fresh; stale fallback up to 2880m when the provider fails."
+        }
+      }
+    }
+  ]
+}

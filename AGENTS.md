@@ -1,19 +1,25 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
 <!-- END:nextjs-agent-rules -->
 
 # TravelMate repository guidance
 
-Read `../MASTERPROMPT.md` before analysis or changes. It is the authoritative
-product specification; this file does not define a second UI or feature contract.
+Read `../PRODUCT_BASELINE.md` and the project README before changes. The original
+`MASTERPROMPT.md` was not supplied with this workspace; do not invent its contents
+or claim conformance to it. The baseline documents current behavior and owner
+instructions, rather than adding requirements from a missing document.
 
 Current implementation constraints:
 
 - TravelMate is an AI-assisted travel planning system, not a generic chatbot.
 - The traveler lifecycle is **Define → Generate → Understand → Refine → Save →
-  Reopen** and supports validated trips from 1–14 days.
+  Reopen** and supports validated trips from 1–31 days.
 - Budget calculations are deterministic. OpenAI or Gemini may generate a structured
   itinerary, while OpenWeatherMap or Open-Meteo may supply date-matched weather.
 - Crowd information is a clearly labeled calendar estimate, not live foot traffic.

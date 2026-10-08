@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { mockPlanningLookups } from './helpers/mock-planning-lookups';
+
+test.beforeEach(async ({ page }) => { await mockPlanningLookups(page); });
 
 test('compact user rows send a warning that the traveler can read', async ({ page, context }) => {
   const admin = { id: 'admin', name: 'Test Admin', email: 'admin@example.test', role: 'admin', emailVerified: true, accountStatus: 'active' };

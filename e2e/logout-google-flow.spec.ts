@@ -13,7 +13,7 @@ test('failed logout stays on the dashboard, then successful logout allows a fres
       expect(route.request().postDataJSON()).toEqual({ action: 'logout' });
       logoutRequests++;
       if (failLogout) await route.fulfill({ status: 503, json: { error: 'Sign-out temporarily unavailable.' } });
-      else await route.fulfill({ json: { ok: true }, headers: { 'set-cookie': 'travelmate_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0' } });
+      else await route.fulfill({ json: { ok: true, sessionRevoked: true }, headers: { 'set-cookie': 'travelmate_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0' } });
     } else await route.fulfill({ status: 401, json: { error: 'Unauthenticated.' } });
   });
   await page.goto('/dashboard');

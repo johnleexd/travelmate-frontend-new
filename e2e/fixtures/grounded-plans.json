@@ -1,0 +1,889 @@
+[
+  {
+    "location": {
+      "id": 1850147,
+      "name": "Tokyo",
+      "region": "Tokyo",
+      "country": "Japan",
+      "countryCode": "JP",
+      "latitude": 35.6895,
+      "longitude": 139.69171,
+      "label": "Tokyo, Japan",
+      "placeType": "Capital city",
+      "contextLabel": "Capital city • Tokyo, Japan"
+    },
+    "anchor": {
+      "city": "Tokyo",
+      "country": "Japan",
+      "countryCode": "JP",
+      "latitude": 35.6895,
+      "longitude": 139.69171
+    },
+    "travelers": 1,
+    "partyType": "solo",
+    "currency": "JPY",
+    "itinerary": {
+      "destination": "Tokyo, Japan",
+      "totalBudget": 100000,
+      "currency": "JPY",
+      "travelers": 1,
+      "partyType": "solo",
+      "source": "openai",
+      "days": [
+        {
+          "day": 1,
+          "date": "2040-01-25",
+          "theme": "Tokyo: details need confirmation",
+          "imageUrl": "",
+          "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+          "rideFare": 100,
+          "totalCost": 17200,
+          "activities": [
+            {
+              "time": "Daily allowance",
+              "title": "Daily meals in Tokyo",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "category": "food",
+              "icon": "food",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily food estimate per person × travelers × days.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.277Z",
+                "currency": "JPY",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "daily-per-person",
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "time": "Daily allowance",
+              "title": "Daily transport in Tokyo",
+              "description": "Taxi. One shared daily fare for the party; not multiplied by travelers. Route, timetable and capacity require confirmation.",
+              "category": "transport",
+              "icon": "bus",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily fare estimate. Confirm fare coverage, route, vehicle capacity, tolls, and fees.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.277Z",
+                "currency": "JPY",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "shared-fare",
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "date": "2040-01-26",
+          "theme": "Tokyo: details need confirmation",
+          "imageUrl": "",
+          "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+          "rideFare": 100,
+          "totalCost": 17200,
+          "activities": [
+            {
+              "time": "Daily allowance",
+              "title": "Daily meals in Tokyo",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "category": "food",
+              "icon": "food",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily food estimate per person × travelers × days.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.277Z",
+                "currency": "JPY",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "daily-per-person",
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "time": "Daily allowance",
+              "title": "Daily transport in Tokyo",
+              "description": "Taxi. One shared daily fare for the party; not multiplied by travelers. Route, timetable and capacity require confirmation.",
+              "category": "transport",
+              "icon": "bus",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily fare estimate. Confirm fare coverage, route, vehicle capacity, tolls, and fees.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.277Z",
+                "currency": "JPY",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "shared-fare",
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "date": "2040-01-27",
+          "theme": "Tokyo: details need confirmation",
+          "imageUrl": "",
+          "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+          "rideFare": 100,
+          "totalCost": 200,
+          "activities": [
+            {
+              "time": "Daily allowance",
+              "title": "Daily meals in Tokyo",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "category": "food",
+              "icon": "food",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily food estimate per person × travelers × days.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.277Z",
+                "currency": "JPY",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "daily-per-person",
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "time": "Daily allowance",
+              "title": "Daily transport in Tokyo",
+              "description": "Taxi. One shared daily fare for the party; not multiplied by travelers. Route, timetable and capacity require confirmation.",
+              "category": "transport",
+              "icon": "bus",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily fare estimate. Confirm fare coverage, route, vehicle capacity, tolls, and fees.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.277Z",
+                "currency": "JPY",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "shared-fare",
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            }
+          ]
+        }
+      ],
+      "budgetSummary": {
+        "accommodation": 34000,
+        "food": 300,
+        "activities": 0,
+        "transport": 300,
+        "reserve": 3470,
+        "dailyAverage": 12723,
+        "total": 100000,
+        "accommodationActual": 34000,
+        "plannedSpend": 38170,
+        "remainingBudget": 61830,
+        "shortfall": 0
+      },
+      "costSharing": {
+        "partyType": "solo",
+        "travelers": 1,
+        "groupBudget": 100000,
+        "plannedGroupSpend": 38170,
+        "budgetShares": [
+          100000
+        ],
+        "plannedSpendShares": [
+          38170
+        ],
+        "accommodationShares": [
+          34000
+        ],
+        "reserveShares": [
+          61830
+        ]
+      },
+      "grounding": {
+        "version": 1,
+        "destination": {
+          "city": "Tokyo",
+          "country": "Japan",
+          "countryCode": "JP",
+          "latitude": 35.6895,
+          "longitude": 139.69171
+        },
+        "startingLocation": "Toronto, Canada",
+        "startDate": "2040-01-25",
+        "endDate": "2040-01-27",
+        "fetchedAt": "2026-10-06T12:52:53.277Z",
+        "placeDataStatus": "unavailable",
+        "currency": "JPY",
+        "rooms": 1,
+        "nights": 2,
+        "foodDailyPerPerson": 100,
+        "accommodation": {
+          "status": "estimate",
+          "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+          "source": "budget-allowance",
+          "fetchedAt": "2026-10-06T12:52:53.277Z",
+          "currency": "JPY",
+          "unitAmount": 17000,
+          "quantity": 2,
+          "unit": "per-room-night",
+          "participants": 1,
+          "needsConfirmation": true
+        },
+        "additionalFees": 100,
+        "contingencyPercent": 10,
+        "contingencyAmount": 3470,
+        "categories": {
+          "accommodation": 34000,
+          "food": 300,
+          "activities": 0,
+          "transportation": 300,
+          "fees": 100,
+          "contingency": 3470
+        },
+        "subtotal": 34700,
+        "total": 38170,
+        "verifiedAmount": 0,
+        "estimatedAmount": 38170,
+        "unknownPriceCount": 8,
+        "budgetStatus": "needs-confirmation",
+        "limitations": [
+          "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+          "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+          "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates.",
+          "Place provider returned no city/country-validated attractions; no venues were invented."
+        ]
+      },
+      "budgetOptimization": {
+        "status": "within_budget",
+        "targetSpend": 96530,
+        "amountToTarget": 0,
+        "combinedEstimatedSavings": 0,
+        "projectedSpendIfAllApplied": 38170,
+        "remainingGapAfterSuggestions": 0,
+        "suggestions": [],
+        "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary."
+      },
+      "groundingProof": "DIDq8ykSAi2hTmC1D-ZDQeYe1R31mNQyVFVLp6mZEdI"
+    }
+  },
+  {
+    "location": {
+      "id": 2988507,
+      "name": "Paris",
+      "region": "Île-de-France",
+      "country": "France",
+      "countryCode": "FR",
+      "latitude": 48.85341,
+      "longitude": 2.3488,
+      "label": "Paris, Île-de-France, France",
+      "placeType": "Capital city",
+      "contextLabel": "Capital city • Paris, Île-de-France, France"
+    },
+    "anchor": {
+      "city": "Paris",
+      "country": "France",
+      "countryCode": "FR",
+      "latitude": 48.85341,
+      "longitude": 2.3488
+    },
+    "travelers": 2,
+    "partyType": "couple",
+    "currency": "EUR",
+    "itinerary": {
+      "destination": "Paris, Île-de-France, France",
+      "totalBudget": 100000,
+      "currency": "EUR",
+      "travelers": 2,
+      "partyType": "couple",
+      "source": "openai",
+      "days": [
+        {
+          "day": 1,
+          "date": "2040-01-25",
+          "theme": "Paris: details need confirmation",
+          "imageUrl": "",
+          "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+          "rideFare": 100,
+          "totalCost": 17300,
+          "activities": [
+            {
+              "time": "Daily allowance",
+              "title": "Daily meals in Paris",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "category": "food",
+              "icon": "food",
+              "estimatedCost": 200,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily food estimate per person × travelers × days.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.338Z",
+                "currency": "EUR",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "daily-per-person",
+                "participants": 2,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "time": "Daily allowance",
+              "title": "Daily transport in Paris",
+              "description": "Taxi. One shared daily fare for the party; not multiplied by travelers. Route, timetable and capacity require confirmation.",
+              "category": "transport",
+              "icon": "bus",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily fare estimate. Confirm fare coverage, route, vehicle capacity, tolls, and fees.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.338Z",
+                "currency": "EUR",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "shared-fare",
+                "participants": 2,
+                "needsConfirmation": true
+              }
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "date": "2040-01-26",
+          "theme": "Paris: details need confirmation",
+          "imageUrl": "",
+          "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+          "rideFare": 100,
+          "totalCost": 17300,
+          "activities": [
+            {
+              "time": "Daily allowance",
+              "title": "Daily meals in Paris",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "category": "food",
+              "icon": "food",
+              "estimatedCost": 200,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily food estimate per person × travelers × days.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.338Z",
+                "currency": "EUR",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "daily-per-person",
+                "participants": 2,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "time": "Daily allowance",
+              "title": "Daily transport in Paris",
+              "description": "Taxi. One shared daily fare for the party; not multiplied by travelers. Route, timetable and capacity require confirmation.",
+              "category": "transport",
+              "icon": "bus",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily fare estimate. Confirm fare coverage, route, vehicle capacity, tolls, and fees.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.338Z",
+                "currency": "EUR",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "shared-fare",
+                "participants": 2,
+                "needsConfirmation": true
+              }
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "date": "2040-01-27",
+          "theme": "Paris: details need confirmation",
+          "imageUrl": "",
+          "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+          "rideFare": 100,
+          "totalCost": 300,
+          "activities": [
+            {
+              "time": "Daily allowance",
+              "title": "Daily meals in Paris",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "category": "food",
+              "icon": "food",
+              "estimatedCost": 200,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily food estimate per person × travelers × days.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.338Z",
+                "currency": "EUR",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "daily-per-person",
+                "participants": 2,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "time": "Daily allowance",
+              "title": "Daily transport in Paris",
+              "description": "Taxi. One shared daily fare for the party; not multiplied by travelers. Route, timetable and capacity require confirmation.",
+              "category": "transport",
+              "icon": "bus",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily fare estimate. Confirm fare coverage, route, vehicle capacity, tolls, and fees.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.338Z",
+                "currency": "EUR",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "shared-fare",
+                "participants": 2,
+                "needsConfirmation": true
+              }
+            }
+          ]
+        }
+      ],
+      "budgetSummary": {
+        "accommodation": 34000,
+        "food": 600,
+        "activities": 0,
+        "transport": 300,
+        "reserve": 3500,
+        "dailyAverage": 12833.33,
+        "total": 100000,
+        "accommodationActual": 34000,
+        "plannedSpend": 38500,
+        "remainingBudget": 61500,
+        "shortfall": 0
+      },
+      "costSharing": {
+        "partyType": "couple",
+        "travelers": 2,
+        "groupBudget": 100000,
+        "plannedGroupSpend": 38500,
+        "budgetShares": [
+          50000,
+          50000
+        ],
+        "plannedSpendShares": [
+          19250,
+          19250
+        ],
+        "accommodationShares": [
+          17000,
+          17000
+        ],
+        "reserveShares": [
+          30750,
+          30750
+        ]
+      },
+      "grounding": {
+        "version": 1,
+        "destination": {
+          "city": "Paris",
+          "country": "France",
+          "countryCode": "FR",
+          "latitude": 48.85341,
+          "longitude": 2.3488
+        },
+        "startingLocation": "Toronto, Canada",
+        "startDate": "2040-01-25",
+        "endDate": "2040-01-27",
+        "fetchedAt": "2026-10-06T12:52:53.338Z",
+        "placeDataStatus": "unavailable",
+        "currency": "EUR",
+        "rooms": 1,
+        "nights": 2,
+        "foodDailyPerPerson": 100,
+        "accommodation": {
+          "status": "estimate",
+          "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+          "source": "budget-allowance",
+          "fetchedAt": "2026-10-06T12:52:53.338Z",
+          "currency": "EUR",
+          "unitAmount": 17000,
+          "quantity": 2,
+          "unit": "per-room-night",
+          "participants": 2,
+          "needsConfirmation": true
+        },
+        "additionalFees": 100,
+        "contingencyPercent": 10,
+        "contingencyAmount": 3500,
+        "categories": {
+          "accommodation": 34000,
+          "food": 600,
+          "activities": 0,
+          "transportation": 300,
+          "fees": 100,
+          "contingency": 3500
+        },
+        "subtotal": 35000,
+        "total": 38500,
+        "verifiedAmount": 0,
+        "estimatedAmount": 38500,
+        "unknownPriceCount": 8,
+        "budgetStatus": "needs-confirmation",
+        "limitations": [
+          "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+          "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+          "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates.",
+          "Place provider returned no city/country-validated attractions; no venues were invented."
+        ]
+      },
+      "budgetOptimization": {
+        "status": "within_budget",
+        "targetSpend": 96500,
+        "amountToTarget": 0,
+        "combinedEstimatedSavings": 0,
+        "projectedSpendIfAllApplied": 38500,
+        "remainingGapAfterSuggestions": 0,
+        "suggestions": [],
+        "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary."
+      },
+      "groundingProof": "PFNZDiGEKMWVLHacLuXTw2d3wQGIivVsPbVMJ7kb2es"
+    }
+  },
+  {
+    "location": {
+      "id": 1609350,
+      "name": "Bangkok",
+      "region": "Bangkok",
+      "country": "Thailand",
+      "countryCode": "TH",
+      "latitude": 13.75398,
+      "longitude": 100.50144,
+      "label": "Bangkok, Thailand",
+      "placeType": "Capital city",
+      "contextLabel": "Capital city • Bangkok, Thailand"
+    },
+    "anchor": {
+      "city": "Bangkok",
+      "country": "Thailand",
+      "countryCode": "TH",
+      "latitude": 13.75398,
+      "longitude": 100.50144
+    },
+    "travelers": 5,
+    "partyType": "friends",
+    "currency": "THB",
+    "itinerary": {
+      "destination": "Bangkok, Thailand",
+      "totalBudget": 100000,
+      "currency": "THB",
+      "travelers": 5,
+      "partyType": "friends",
+      "source": "openai",
+      "days": [
+        {
+          "day": 1,
+          "date": "2040-01-25",
+          "theme": "Bangkok: details need confirmation",
+          "imageUrl": "",
+          "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+          "rideFare": 100,
+          "totalCost": 17600.01,
+          "activities": [
+            {
+              "time": "Daily allowance",
+              "title": "Daily meals in Bangkok",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "category": "food",
+              "icon": "food",
+              "estimatedCost": 500,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily food estimate per person × travelers × days.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.340Z",
+                "currency": "THB",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "daily-per-person",
+                "participants": 5,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "time": "Daily allowance",
+              "title": "Daily transport in Bangkok",
+              "description": "Taxi. One shared daily fare for the party; not multiplied by travelers. Route, timetable and capacity require confirmation.",
+              "category": "transport",
+              "icon": "bus",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily fare estimate. Confirm fare coverage, route, vehicle capacity, tolls, and fees.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.340Z",
+                "currency": "THB",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "shared-fare",
+                "participants": 5,
+                "needsConfirmation": true
+              }
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "date": "2040-01-26",
+          "theme": "Bangkok: details need confirmation",
+          "imageUrl": "",
+          "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+          "rideFare": 100,
+          "totalCost": 17600.01,
+          "activities": [
+            {
+              "time": "Daily allowance",
+              "title": "Daily meals in Bangkok",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "category": "food",
+              "icon": "food",
+              "estimatedCost": 500,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily food estimate per person × travelers × days.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.340Z",
+                "currency": "THB",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "daily-per-person",
+                "participants": 5,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "time": "Daily allowance",
+              "title": "Daily transport in Bangkok",
+              "description": "Taxi. One shared daily fare for the party; not multiplied by travelers. Route, timetable and capacity require confirmation.",
+              "category": "transport",
+              "icon": "bus",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily fare estimate. Confirm fare coverage, route, vehicle capacity, tolls, and fees.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.340Z",
+                "currency": "THB",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "shared-fare",
+                "participants": 5,
+                "needsConfirmation": true
+              }
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "date": "2040-01-27",
+          "theme": "Bangkok: details need confirmation",
+          "imageUrl": "",
+          "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+          "rideFare": 100,
+          "totalCost": 600,
+          "activities": [
+            {
+              "time": "Daily allowance",
+              "title": "Daily meals in Bangkok",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "category": "food",
+              "icon": "food",
+              "estimatedCost": 500,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily food estimate per person × travelers × days.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.340Z",
+                "currency": "THB",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "daily-per-person",
+                "participants": 5,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "time": "Daily allowance",
+              "title": "Daily transport in Bangkok",
+              "description": "Taxi. One shared daily fare for the party; not multiplied by travelers. Route, timetable and capacity require confirmation.",
+              "category": "transport",
+              "icon": "bus",
+              "estimatedCost": 100,
+              "unitCost": 100,
+              "priceEvidence": {
+                "status": "estimate",
+                "basis": "User-entered daily fare estimate. Confirm fare coverage, route, vehicle capacity, tolls, and fees.",
+                "source": "user-entered",
+                "fetchedAt": "2026-10-06T12:52:53.340Z",
+                "currency": "THB",
+                "unitAmount": 100,
+                "quantity": 1,
+                "unit": "shared-fare",
+                "participants": 5,
+                "needsConfirmation": true
+              }
+            }
+          ]
+        }
+      ],
+      "budgetSummary": {
+        "accommodation": 34000.02,
+        "food": 1500,
+        "activities": 0,
+        "transport": 300,
+        "reserve": 3590,
+        "dailyAverage": 13163.34,
+        "total": 100000,
+        "accommodationActual": 34000.02,
+        "plannedSpend": 39490.02,
+        "remainingBudget": 60509.98,
+        "shortfall": 0
+      },
+      "costSharing": {
+        "partyType": "friends",
+        "travelers": 5,
+        "groupBudget": 100000,
+        "plannedGroupSpend": 39490.02,
+        "budgetShares": [
+          20000,
+          20000,
+          20000,
+          20000,
+          20000
+        ],
+        "plannedSpendShares": [
+          7898.01,
+          7898.01,
+          7898,
+          7898,
+          7898
+        ],
+        "accommodationShares": [
+          6800.01,
+          6800.01,
+          6800,
+          6800,
+          6800
+        ],
+        "reserveShares": [
+          12102,
+          12102,
+          12102,
+          12101.99,
+          12101.99
+        ]
+      },
+      "grounding": {
+        "version": 1,
+        "destination": {
+          "city": "Bangkok",
+          "country": "Thailand",
+          "countryCode": "TH",
+          "latitude": 13.75398,
+          "longitude": 100.50144
+        },
+        "startingLocation": "Toronto, Canada",
+        "startDate": "2040-01-25",
+        "endDate": "2040-01-27",
+        "fetchedAt": "2026-10-06T12:52:53.340Z",
+        "placeDataStatus": "unavailable",
+        "currency": "THB",
+        "rooms": 3,
+        "nights": 2,
+        "foodDailyPerPerson": 100,
+        "accommodation": {
+          "status": "estimate",
+          "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+          "source": "budget-allowance",
+          "fetchedAt": "2026-10-06T12:52:53.340Z",
+          "currency": "THB",
+          "unitAmount": 5666.67,
+          "quantity": 6,
+          "unit": "per-room-night",
+          "participants": 5,
+          "needsConfirmation": true
+        },
+        "additionalFees": 100,
+        "contingencyPercent": 10,
+        "contingencyAmount": 3590,
+        "categories": {
+          "accommodation": 34000.02,
+          "food": 1500,
+          "activities": 0,
+          "transportation": 300,
+          "fees": 100,
+          "contingency": 3590
+        },
+        "subtotal": 35900.02,
+        "total": 39490.02,
+        "verifiedAmount": 0,
+        "estimatedAmount": 39490.02,
+        "unknownPriceCount": 8,
+        "budgetStatus": "needs-confirmation",
+        "limitations": [
+          "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+          "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+          "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates.",
+          "Place provider returned no city/country-validated attractions; no venues were invented."
+        ]
+      },
+      "budgetOptimization": {
+        "status": "within_budget",
+        "targetSpend": 96410,
+        "amountToTarget": 0,
+        "combinedEstimatedSavings": 0,
+        "projectedSpendIfAllApplied": 39490.02,
+        "remainingGapAfterSuggestions": 0,
+        "suggestions": [],
+        "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary."
+      },
+      "groundingProof": "YM1Z2jqXQmf70Zd49LF8GHrAajT_KEGv59r7C656eEo"
+    }
+  }
+]

@@ -28,7 +28,7 @@ test('an unavailable session can be retried and does not replace a known session
   await page.getByRole('button', { name: 'Retry connection', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Dashboard', exact: true })).toBeEnabled();
   unavailable = true;
-  await page.evaluate(() => window.dispatchEvent(new Event('pageshow')));
+  await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true })));
   await expect.poll(() => requests).toBe(5);
   await expect(page.getByRole('button', { name: 'Dashboard', exact: true })).toHaveAttribute('title', 'Your session could not be checked. Try again.');
   await expect(page.getByRole('banner').getByRole('button', { name: 'Sign in', exact: true })).toHaveCount(0);

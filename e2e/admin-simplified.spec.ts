@@ -1,4 +1,7 @@
 import { expect, test } from '@playwright/test';
+import { mockPlanningLookups } from './helpers/mock-planning-lookups';
+
+test.beforeEach(async ({ page }) => { await mockPlanningLookups(page); });
 
 test('travelers can report problems without profile approval', async ({ page, context }) => {
   await context.addCookies([{ name: 'travelmate_session', value: 'browser-test', domain: 'localhost', path: '/' }]);
@@ -25,7 +28,40 @@ test('travelers can report problems without profile approval', async ({ page, co
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test('admin has four responsive sections and can resolve traveler reports', async ({ page, context }) => {
+test('report errors stay beside the form and successful retries do not reload the workspace', async ({ page, context }) => {
+  await context.addCookies([{ name: 'travelmate_session', value: 'browser-test', domain: 'localhost', path: '/' }]);
+  const user = { id: 'traveler', name: 'Test Traveler', email: 'traveler@example.test', role: 'traveler', accountStatus: 'active', emailVerified: true, profileStatus: 'unverified', trustScore: 50 };
+  let attempts = 0;
+  let workspaceReads = 0;
+  let readsBeforeSubmission = 0;
+  await page.route('**/api/platform**', async route => {
+    if (route.request().method() === 'POST') {
+      if (attempts === 0) readsBeforeSubmission = workspaceReads;
+      attempts++;
+      if (attempts === 1) return route.fulfill({ status: 503, json: { error: 'Report service temporarily unavailable.' } });
+      return route.fulfill({ json: { result: { id: 'report-retry', status: 'pending' } } });
+    }
+    workspaceReads++;
+    if (attempts > 0) return route.fulfill({ status: 503, json: { error: 'Workspace unavailable.' } });
+    return route.fulfill({ json: { user, trips: [], listings: [], bookings: [], directory: [], moderation: [], audit: [], itineraryGenerations: [], itineraryVersions: [], notifications: [], reviews: [], promotions: [], blockedDates: [], transactions: [], ownerDocuments: [], metrics: {} } });
+  });
+  await page.goto('/dashboard');
+  await page.getByRole('button', { name: 'Open profile menu for Test Traveler' }).click();
+  await page.getByRole('button', { name: 'Account settings' }).click();
+  const form = page.locator('form').filter({ has: page.getByRole('heading', { name: 'Report a problem' }) });
+  await form.getByLabel('Subject', { exact: true }).fill('Cannot open my trip');
+  await form.getByLabel('Details', { exact: true }).fill('Opening the saved trip shows a blank page.');
+  await form.getByRole('button', { name: 'Send report' }).click();
+  await expect(form.getByRole('alert')).toHaveText('Report service temporarily unavailable.');
+  await expect(form.getByLabel('Subject', { exact: true })).toHaveValue('Cannot open my trip');
+  await form.getByRole('button', { name: 'Send report' }).click();
+  await expect(form.getByRole('status')).toHaveText('Your report was sent to the admin.');
+  await expect(form.getByLabel('Details', { exact: true })).toHaveValue('');
+  expect(attempts).toBe(2);
+  expect(workspaceReads).toBe(readsBeforeSubmission);
+});
+
+test('admin has responsive sections and can resolve traveler reports', async ({ page, context }) => {
   await context.addCookies([{ name: 'travelmate_session', value: 'browser-test', domain: 'localhost', path: '/' }]);
   const user = { id: 'admin', name: 'Test Admin', email: 'admin@example.test', role: 'admin', accountStatus: 'active', emailVerified: true };
   const report = { id: 'report-1', kind: 'report', subjectId: 'traveler', title: 'Saved trip does not open', details: `${'Opening my saved trip displays a blank page.\n'.repeat(30)}Final report detail.`, status: 'pending', createdAt: new Date().toISOString() };
@@ -40,12 +76,12 @@ test('admin has four responsive sections and can resolve traveler reports', asyn
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/admin/dashboard');
   const navigation = page.getByRole('navigation', { name: 'Admin workspace' });
-  await expect(navigation.getByRole('button')).toHaveText(['Overview', 'Users', 'Reports1', 'System Health']);
+  await expect(navigation.getByRole('button')).toHaveText(['Overview', 'Users', 'Reports1', 'System Health', 'Account Settings', 'User Feedback', 'Notifications']);
   for (const width of [390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    for (const title of ['Overview', 'Users', 'Reports', 'System Health']) {
+    for (const title of ['Overview', 'Users', 'Reports', 'System Health', 'Account Settings']) {
       await navigation.getByRole('button', { name: new RegExp(`^${title}`) }).click();
-      await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: title === 'Users' ? 'User Management' : title, exact: true })).toBeVisible();
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
   }

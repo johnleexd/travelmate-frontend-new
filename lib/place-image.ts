@@ -1,4 +1,3 @@
-const VERIFIED_LOCAL_PLACE_IMAGE = /^\/cordova-[a-z0-9-]+\.png$/i;
 const COUNTRY_CODE = /^[A-Z]{2}$/;
 
 export interface SavedTripCoverImage {
@@ -13,9 +12,21 @@ export interface SavedTripCoverImage {
 
 export function verifiedPlaceImage(source: string | undefined): string | null {
   if (!source) return null;
-  if (VERIFIED_LOCAL_PLACE_IMAGE.test(source)) return source;
   if (source.startsWith('https://upload.wikimedia.org/') || source.startsWith('https://thumb.wikimedia.org/')) return source;
   return null;
+}
+
+/** A Commons thumbnail can fail while the original public photo is available. */
+export function placePhotoCandidates(source: string | undefined): string[] {
+  const verified = verifiedPlaceImage(source);
+  if (!verified) return [];
+  if (verified.startsWith('/')) return [verified];
+  try {
+    const url = new URL(verified);
+    const match = url.pathname.match(/^\/wikipedia\/commons\/thumb\/([^/]+)\/([^/]+)\/([^/]+)\/[^/]+$/);
+    if (!match || !/\.(?:jpe?g|png|webp|gif|avif)$/i.test(match[3])) return [verified];
+    return [verified, `https://upload.wikimedia.org/wikipedia/commons/${match[1]}/${match[2]}/${match[3]}`];
+  } catch { return []; }
 }
 
 function verifiedAttribution(value: unknown): SavedTripCoverImage['attribution'] | undefined {

@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      backend_revision:
+        description: Full commit SHA of the compatible backend release
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -38,6 +43,8 @@ jobs:
         run: npm test
       - name: Build production application
         run: npm run build
+      - name: Check production HTTPS, images, and OAuth forwarding
+        run: npm run test:production
 
   e2e:
     name: Isolated browser suite
@@ -63,9 +70,12 @@ jobs:
       DIRECT_URL: postgresql://postgres:postgres@localhost:5432/travelmate_ci?schema=public
       FRONTEND_URL: http://localhost:3000
       BACKEND_URL: http://localhost:5000
+      BACKEND_REPOSITORY: ${{ vars.BACKEND_REPOSITORY || 'Unpayedme/travelmate-backend-api' }}
+      BACKEND_REVISION: ${{ inputs.backend_revision || vars.BACKEND_REVISION || '234e08d2317526f772854296bfaf6a33ca5dd0fa' }}
       SESSION_SECRET: travelmate-ci-session-secret-at-least-32-characters
       ACCOUNT_TOKEN_SECRET: travelmate-ci-account-token-secret-at-least-32-characters
       AI_MOCK_FALLBACK: "true"
+      TRAVELMATE_ALLOW_DEMO_SEED: "true"
     defaults:
       run:
         working-directory: travelmate-frontend-new
@@ -74,12 +84,30 @@ jobs:
         uses: actions/checkout@v7
         with:
           path: travelmate-frontend-new
-      - name: Check out backend
+      - name: Resolve an immutable paired backend revision
+        env:
+          GH_TOKEN: ${{ secrets.BACKEND_REPO_TOKEN || github.token }}
+        run: |
+          if [[ -z "$BACKEND_REVISION" ]]; then
+            BACKEND_REVISION=$(gh api "repos/$BACKEND_REPOSITORY/actions/workflows/ci.yml/runs?branch=main&status=success&event=push&per_page=1" --jq '.workflow_runs[0].head_sha // empty')
+          fi
+          if [[ ! "$BACKEND_REVISION" =~ ^[[:xdigit:]]{40}$ ]]; then
+            echo "No successful immutable backend revision found. Set BACKEND_REVISION to the compatible release's full commit SHA."
+            exit 1
+          fi
+          echo "BACKEND_REVISION=${BACKEND_REVISION,,}" >> "$GITHUB_ENV"
+      - name: Check out paired backend
         uses: actions/checkout@v7
         with:
-          repository: johnleexd/travelmate-backend-api
+          repository: ${{ env.BACKEND_REPOSITORY }}
+          ref: ${{ env.BACKEND_REVISION }}
           token: ${{ secrets.BACKEND_REPO_TOKEN || github.token }}
           path: travelmate-backend-api
+      - name: Record paired backend revision
+        run: |
+          actual=$(git -C ../travelmate-backend-api rev-parse HEAD)
+          test "$actual" = "${BACKEND_REVISION,,}"
+          echo "Testing $BACKEND_REPOSITORY at $actual"
       - name: Use Node.js 22
         uses: actions/setup-node@v7
         with:
@@ -96,7 +124,18 @@ jobs:
         run: npm run contracts:check
       - name: Apply all migrations
         run: npm run db:migrate --prefix ../travelmate-backend-api
-      - name: Seed deterministic test data
+      - name: Generate unique test passwords
+        # These credentials exist only in this job's ephemeral database.
+        run: |
+          node --input-type=module <<'NODE'
+          import { appendFileSync } from 'node:fs';
+          import { randomBytes } from 'node:crypto';
+          appendFileSync(process.env.GITHUB_ENV, [
+            `DEMO_ADMIN_PASSWORD=CiAdmin1!${randomBytes(18).toString('hex')}`,
+            `DEMO_TRAVELER_PASSWORD=CiTraveler2!${randomBytes(18).toString('hex')}`,
+          ].join('\n') + '\n');
+          NODE
+      - name: Seed isolated test accounts
         run: npm run db:seed --prefix ../travelmate-backend-api
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium

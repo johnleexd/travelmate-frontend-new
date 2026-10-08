@@ -25,14 +25,14 @@ export type {
   ForecastDay,
 } from '@/lib/contracts';
 
-import type { DayPlan, ItineraryDayResponse, ItineraryResponse, WeatherData } from '@/lib/contracts';
+import type { DayPlan, ItineraryDayResponse, ItineraryResponse, PlannedAccommodation, WeatherData } from '@/lib/contracts';
 import type { CurrencyCode, PartyType } from '@/lib/domain';
 import { parseWeatherData } from '@/services/provider-response';
 import { handleResponse } from '@/services/api-response';
 import { fetchTripWithOptionalWeather } from '@/lib/trip-data';
 export { ApiError, handleResponse, isAuthenticationError } from '@/services/api-response';
 
-type TripOptions = { idempotencyKey?: string; currency?: CurrencyCode; travelers?: number; partyType?: PartyType; startDate?: string; endDate?: string; latitude?: number; longitude?: number; interests?: string[]; preferredActivities?: string[]; travelStyle?: string; accommodationPreference?: string; transportationPreference?: string; accommodationListingId?: string; externalAccommodation?: { hotelId: string; offerId: string; name: string; address: string; nightlyRate: number; currency: string; isLive: boolean; selectionToken: string }; selectedFlight?: { id: string; name: string; price: number; currency: string; fetchedAt: string; selectionToken: string }; selectedActivities?: Array<{ id: string; name: string; price: number; currency: string; fetchedAt: string; selectionToken: string }>; preTripCosts?: { startingLocation?: string; departureAirport?: string; passportCountry?: string; passportStatus?: 'valid' | 'needs_application' | 'needs_renewal' | 'not_sure'; airportTransferOutbound: number; airportTransferReturn: number; passport: number; visaOrAuthorization: number; departureTaxes: number; insurance: number; other: number } };
+type TripOptions = { pace?: 'relaxed' | 'balanced' | 'active'; startingLocation?: string; destinationDetails?: { city: string; country: string; countryCode: string; latitude: number; longitude: number }; rooms?: number; foodDailyPerPerson?: number; nightlyRoomEstimate?: number; transportFare?: number; transportFareType?: 'shared-fare' | 'per-person'; fees?: number; contingencyPercent?: number; idempotencyKey?: string; currency?: CurrencyCode; travelers?: number; partyType?: PartyType; startDate?: string; endDate?: string; latitude?: number; longitude?: number; interests?: string[]; preferredActivities?: string[]; travelStyle?: string; accommodationPreference?: string; transportationPreference?: string; accommodationListingId?: string; plannedAccommodation?: PlannedAccommodation; selectedAccommodationQuote?: string; externalAccommodation?: { fetchedAt: string; total: number; hotelId: string; offerId: string; name: string; address: string; nightlyRate: number; currency: string; isLive: boolean; selectionToken: string }; selectedFlight?: { id: string; name: string; price: number; currency: string; fetchedAt: string; isLive?: boolean; selectionToken: string }; selectedActivities?: Array<{ id: string; name: string; price: number; currency: string; fetchedAt: string; isLive?: boolean; selectionToken: string }>; preTripCosts?: { startingLocation?: string; departureAirport?: string; passportCountry?: string; passportStatus?: 'valid' | 'needs_application' | 'needs_renewal' | 'not_sure'; airportTransferOutbound: number; airportTransferReturn: number; passport: number; visaOrAuthorization: number; departureTaxes: number; insurance: number; other: number } };
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -62,7 +62,7 @@ export async function fetchItineraryFromAI(
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(options?.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : {}) },
       body: JSON.stringify({ destination: destination.trim(), budget, ...options }),
-      signal: AbortSignal.timeout(90_000),
+      signal: AbortSignal.timeout(570_000),
     });
   } catch (error) {
     throw new Error(error instanceof DOMException && error.name === 'TimeoutError' ? 'Itinerary generation timed out. Please try again.' : 'Cannot connect to TravelMate services. Check that the backend is running.');
@@ -71,20 +71,19 @@ export async function fetchItineraryFromAI(
   return handleResponse<ItineraryResponse>(res);
 }
 
-export async function refreshItineraryDayImages(destination: string, day: DayPlan): Promise<DayPlan> {
+export async function refreshItineraryDayImages(destination: string, day: DayPlan, itinerary?: ItineraryResponse): Promise<ItineraryDayResponse & { groundingProof?: string }> {
   let res: Response;
   try {
     res = await fetch('/api/itinerary/images', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ destination, day }),
+      body: JSON.stringify({ destination, day, itinerary }),
       signal: AbortSignal.timeout(30_000),
     });
   } catch (error) {
     throw new Error(error instanceof DOMException && error.name === 'TimeoutError' ? 'Activity photo refresh timed out.' : 'Activity photos are temporarily unavailable.');
   }
-  const payload = await handleResponse<ItineraryDayResponse>(res);
-  return payload.day;
+  return handleResponse<ItineraryDayResponse & { groundingProof?: string }>(res);
 }
 
 // ─── Weather ───────────────────────────────────────────────────────────────────

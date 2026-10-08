@@ -1,0 +1,63 @@
+.canvas {
+  z-index: 0;
+  color: #172c24;
+  font-family: inherit;
+}
+
+.canvas :global(.leaflet-control-attribution) {
+  max-width: 100%;
+  font-size: 10px;
+  color: #172c24;
+  background: rgb(255 255 255 / 95%);
+}
+
+.canvas :global(.leaflet-control-attribution a) {
+  color: #174b8c;
+}
+
+.canvas :global(.leaflet-control-zoom a) {
+  color: #172c24;
+}
+
+.destinationMarker,
+.locationMarker {
+  display: grid;
+  place-items: center;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 1px 8px rgb(0 0 0 / 35%);
+  font-size: 18px;
+}
+
+.gpsMarker {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 3px solid white;
+  background: #2563eb;
+  box-shadow: 0 0 0 8px rgb(37 99 235 / 15%), 0 2px 8px rgb(0 0 0 / 35%);
+}
+
+.gpsMarker span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+}
+
+.gpsDestination {
+  background: transparent;
+  border: 0;
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 25%));
+}
+
+.destinationMarker {
+  background: #fcd34d;
+  color: #443000;
+}
+
+.locationMarker {
+  background: #2563eb;
+  color: white;
+  font-size: 14px;
+}

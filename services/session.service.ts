@@ -1,7 +1,7 @@
 import type { CurrentUserResponse } from '../lib/contracts.ts';
 import { handleResponse } from './api-response.ts';
 
-export async function signOut(): Promise<void> {
+export async function signOut(): Promise<{ sessionRevoked: boolean }> {
   let response: Response;
   try {
     response = await fetch('/api/auth', {
@@ -13,8 +13,13 @@ export async function signOut(): Promise<void> {
   } catch {
     throw new Error('Could not sign out. Please try again.');
   }
-  const result = await handleResponse<{ ok: boolean }>(response);
-  if (result?.ok !== true) throw new Error('Could not confirm sign-out. Please try again.');
+  const result = await handleResponse<{ ok: boolean; sessionRevoked: boolean }>(response);
+  if (result?.ok !== true || typeof result.sessionRevoked !== 'boolean') throw new Error('Could not confirm sign-out. Please try again.');
+  return { sessionRevoked: result.sessionRevoked };
+}
+
+export function signedOutLocation(result: { sessionRevoked: boolean }): string {
+  return result.sessionRevoked ? '/' : '/?auth_error=logout_unconfirmed';
 }
 
 /** A failed service request is not evidence that the session has expired. */

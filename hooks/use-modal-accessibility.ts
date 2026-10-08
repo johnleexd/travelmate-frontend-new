@@ -11,6 +11,9 @@ const FOCUSABLE_ELEMENTS = [
   '[tabindex]:not([tabindex="-1"])',
 ].join(',');
 
+const modalStack: symbol[] = [];
+let originalOverflow = '';
+
 type ModalAccessibilityOptions = {
   active: boolean;
   containerRef: RefObject<HTMLElement | null>;
@@ -29,7 +32,9 @@ export function useModalAccessibility({ active, containerRef, onClose, initialFo
     if (!active) return;
 
     const previouslyFocused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const previousOverflow = document.body.style.overflow;
+    const token = Symbol('modal');
+    if (!modalStack.length) originalOverflow = document.body.style.overflow;
+    modalStack.push(token);
     document.body.style.overflow = 'hidden';
 
     const focusInitialElement = window.requestAnimationFrame(() => {
@@ -39,6 +44,7 @@ export function useModalAccessibility({ active, containerRef, onClose, initialFo
     });
 
     const onKeyDown = (event: KeyboardEvent) => {
+      if (modalStack.at(-1) !== token) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         onCloseRef.current();
@@ -71,7 +77,9 @@ export function useModalAccessibility({ active, containerRef, onClose, initialFo
     return () => {
       window.cancelAnimationFrame(focusInitialElement);
       document.removeEventListener('keydown', onKeyDown);
-      document.body.style.overflow = previousOverflow;
+      const index = modalStack.indexOf(token);
+      if (index >= 0) modalStack.splice(index, 1);
+      if (!modalStack.length) document.body.style.overflow = originalOverflow;
       if (previouslyFocused?.isConnected) previouslyFocused.focus();
     };
   }, [active, containerRef, initialFocusRef]);

@@ -30,6 +30,7 @@ import { fetchCurrentUser } from '@/services/session.service';
 import { useModalAccessibility } from '@/hooks/use-modal-accessibility';
 import {
   getPasswordStrength,
+  getPasswordValidationError,
   isStrongPassword,
   STRONG_PASSWORD_PATTERN,
   STRONG_PASSWORD_REQUIREMENTS,
@@ -84,11 +85,17 @@ const planningPrinciples = [
 const capabilityRail = ['Itinerary planning', 'Budget clarity', 'Flight comparison', 'Stay options', 'Weather context', 'Crowd estimates', 'Saved trips'];
 
 async function auth(body: Record<string, unknown>) {
-  const response = await fetch('/api/auth', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch {
+    throw new ApiError('The authentication service could not be reached. Your request was not confirmed. Please try again.', 503, 'PROVIDER_UNAVAILABLE', true);
+  }
   return handleResponse<AuthActionResponse>(response);
 }
 
@@ -103,6 +110,7 @@ export default function TravelMateLanding() {
   const [activeStep, setActiveStep] = useState(0);
   const [principle, setPrinciple] = useState(0);
   const [email, setEmail] = useState('');
+  const [verificationEmailSent, setVerificationEmailSent] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
@@ -134,13 +142,16 @@ export default function TravelMateLanding() {
         if (mounted) setSessionChecked(true);
       }
     };
-    const handlePageShow = () => { void refreshSession(); };
-    refreshSessionRef.current = handlePageShow;
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted) void refreshSession();
+    };
+    refreshSessionRef.current = () => { void refreshSession(); };
 
-    void refreshSession();
+    const timeout = window.setTimeout(() => { void refreshSession(); }, 0);
     window.addEventListener('pageshow', handlePageShow);
     return () => {
       mounted = false;
+      window.clearTimeout(timeout);
       controller.abort();
       refreshSessionRef.current = () => {};
       window.removeEventListener('pageshow', handlePageShow);
@@ -150,7 +161,7 @@ export default function TravelMateLanding() {
   useEffect(() => {
     const url = new URL(window.location.href);
     const error = url.searchParams.get('auth_error');
-    if (!error?.startsWith('oauth_') && error !== 'account_link_required' && error !== 'account_suspended') return;
+    if (!error?.startsWith('oauth_') && error !== 'account_link_required' && error !== 'account_suspended' && error !== 'logout_unconfirmed') return;
     const messages: Record<string, string> = {
       oauth_cancelled: 'Google sign-in was cancelled. You can try again or use email and password.',
       oauth_state_invalid: 'Google sign-in expired or could not be verified. Please try again.',
@@ -161,13 +172,14 @@ export default function TravelMateLanding() {
       oauth_not_configured: 'Google sign-in has not been set up yet. Use email and password for now.',
       account_link_required: 'An account already uses this email. Sign in with your password first; Google cannot be linked automatically.',
       account_suspended: 'This account is suspended. Contact TravelMate support.',
+      logout_unconfirmed: 'You are signed out on this browser. The server could not confirm that your previous session was disabled. If you suspect someone copied your session, reset your password when the connection is restored.',
     };
-    url.searchParams.delete('auth_error');
-    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
     const timeout = window.setTimeout(() => {
       setMode('login');
       setMessage(messages[error] || 'Google sign-in failed. Please try again.');
       setOpen(true);
+      url.searchParams.delete('auth_error');
+      window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
     }, 0);
     return () => window.clearTimeout(timeout);
   }, []);
@@ -219,14 +231,33 @@ export default function TravelMateLanding() {
 
   const show = (nextMode: AuthMode) => {
     setMode(nextMode);
+    setVerificationEmailSent(false);
+    clearAuthSecrets();
     if (nextMode === 'login') {
       setEmail('');
-      setPassword('');
     }
     setMessage('');
     setMenu(false);
     setOpen(true);
   };
+
+  function clearAuthSecrets() {
+    setPassword('');
+    setConfirmPassword('');
+    setCode('');
+  }
+
+  function changeAuthMode(nextMode: AuthMode) {
+    setVerificationEmailSent(false);
+    clearAuthSecrets();
+    setMessage('');
+    setMode(nextMode);
+  }
+
+  function closeAuthDialog() {
+    clearAuthSecrets();
+    setOpen(false);
+  }
 
   const openAccount = () => {
     setMenu(false);
@@ -259,11 +290,11 @@ export default function TravelMateLanding() {
     event.preventDefault();
     setMessage('');
     if ((mode === 'register' || mode === 'reset') && !isStrongPassword(password)) {
-      setMessage(STRONG_PASSWORD_REQUIREMENTS);
+      setMessage(getPasswordValidationError(password) || STRONG_PASSWORD_REQUIREMENTS);
       return;
     }
     if ((mode === 'register' || mode === 'reset') && password !== confirmPassword) {
-      setMessage('Passwords do not match. Re-enter the same password in both fields.');
+      setMessage('Confirm password does not match Password. Enter the same value in both fields.');
       return;
     }
     setBusy(true);
@@ -275,22 +306,23 @@ export default function TravelMateLanding() {
         setSessionChecked(true);
         router.push(data.redirect);
       } else if (mode === 'register') {
-        const data = await auth({ action: 'register', name, email, password });
-        setCode(data.verificationCode || '');
+        const data = await auth({ action: 'register', name, email, password, confirmPassword });
+        setVerificationEmailSent(data.emailAccepted === true);
+        clearAuthSecrets();
         setMode('verify');
-        setMessage(data.message || 'Account created. Enter the development activation code to verify your email.');
+        setMessage(data.message || 'Account created. Check your email for the verification code.');
       } else if (mode === 'verify') {
-        const data = await auth({ action: 'verify-email', email, code });
+        await auth({ action: 'verify-email', email, code });
+        clearAuthSecrets();
         setMode('login');
-        setCode('');
-        setMessage(data.message || 'Email verified. You can now sign in.');
+        setMessage('Registration is complete and your email is verified. You are now signing in. Enter your password to continue.');
       } else if (mode === 'forgot') {
         const data = await auth({ action: 'forgot-password', email });
-        setCode(data.resetCode || '');
+        setCode('');
         setMode('reset');
         setMessage(data.message || 'Check your email for a password reset code.');
       } else {
-        const data = await auth({ action: 'reset-password', email, code, password });
+        const data = await auth({ action: 'reset-password', email, code, password, confirmPassword });
         setMode('login');
         setCode('');
         setPassword('');
@@ -298,7 +330,17 @@ export default function TravelMateLanding() {
         setMessage(data.message || 'Password reset complete. Sign in with your new password.');
       }
     } catch (error) {
-      if (mode === 'login' && error instanceof ApiError && error.status === 403 && /verify your email/i.test(error.message)) setMode('verify');
+      if (error instanceof ApiError && error.status >= 500) clearAuthSecrets();
+      if (mode === 'register' && error instanceof ApiError && error.status === 502 && /account created/i.test(error.message)) {
+        setVerificationEmailSent(false);
+        clearAuthSecrets();
+        setMode('verify');
+      }
+      if (mode === 'login' && error instanceof ApiError && error.status === 403 && /verify your email/i.test(error.message)) {
+        setVerificationEmailSent(false);
+        clearAuthSecrets();
+        setMode('verify');
+      }
       setMessage(error instanceof Error ? error.message : 'Request failed.');
     } finally {
       setBusy(false);
@@ -310,9 +352,11 @@ export default function TravelMateLanding() {
     setMessage('');
     try {
       const result = await auth({ action: 'resend-verification', email });
-      setCode(result.verificationCode || '');
-      setMessage(result.message || 'A new verification code has been issued.');
+      setVerificationEmailSent(result.emailAccepted === true);
+      setCode('');
+      setMessage(result.message || 'Check your email for a new verification code.');
     } catch (error) {
+      if (error instanceof ApiError && error.status >= 500) setVerificationEmailSent(false);
       setMessage(error instanceof Error ? error.message : 'Verification email could not be resent.');
     } finally {
       setBusy(false);
@@ -380,7 +424,7 @@ export default function TravelMateLanding() {
                 <Compass size={23} className="shrink-0 text-[#ffcf70]" aria-hidden="true" />
               </div>
               <div className="relative mt-4 aspect-[1.7] overflow-hidden">
-                <Image src="/cordova-nalusuan.png" alt="Clear water around Nalusuan Island in Cebu" fill loading="eager" sizes="(min-width: 1024px) 38vw, 90vw" className="object-cover" />
+                <Image src="/cordova-nalusuan.png" alt="Clear water around Nalusuan Island in Cebu" fill loading="eager" fetchPriority="high" sizes="(min-width: 1024px) 38vw, 90vw" className="object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#081b18]/85 via-transparent to-transparent" />
                 <div className="absolute inset-x-4 bottom-4 flex items-end justify-between gap-4"><div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-white/72">Sample destination</p><p className="mt-1 text-2xl font-semibold">Nalusuan Island</p></div><MapPin size={20} className="mb-1 shrink-0 text-[#ffcf70]" aria-hidden="true" /></div>
               </div>
@@ -448,7 +492,7 @@ export default function TravelMateLanding() {
                 const active = index === activeStep;
                 return (
                   <button key={title} type="button" aria-expanded={active} onClick={() => setActiveStep(index)} onFocus={() => setActiveStep(index)} onMouseEnter={() => setActiveStep(index)} className={`group relative min-h-24 overflow-hidden text-left transition-[flex] duration-700 ease-out md:min-h-0 ${active ? 'flex-[4]' : 'flex-1'}`}>
-                    <Image src={image} alt="" fill sizes={active ? '(min-width: 768px) 55vw, 100vw' : '(min-width: 768px) 15vw, 100vw'} className="object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
+                    <Image src={image} alt="" fill loading={image === "/cordova-nalusuan.png" ? "eager" : "lazy"} sizes={active ? '(min-width: 768px) 55vw, 100vw' : '(min-width: 768px) 15vw, 100vw'} className="object-cover transition-transform duration-700 ease-out group-hover:scale-105" />
                     <div className={`absolute inset-0 transition-colors duration-500 ${active ? 'bg-[linear-gradient(180deg,rgba(6,25,22,.05),rgba(6,25,22,.9))]' : 'bg-[#102824]/72'}`} />
                     <div className="absolute inset-0 flex flex-col justify-end p-5 text-white sm:p-7">
                       <span className={`mb-4 h-px bg-[#ffcf70] transition-all duration-500 ${active ? 'w-14 opacity-100' : 'w-0 opacity-0'}`} />
@@ -564,7 +608,7 @@ export default function TravelMateLanding() {
         </div>
       </footer>
 
-      {open && <AuthDialog mode={mode} setMode={setMode} email={email} setEmail={setEmail} password={password} setPassword={setPassword} confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword} name={name} setName={setName} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onResendVerification={() => void resendVerification()} onClose={() => setOpen(false)} containerRef={authDialogRef} closeButtonRef={closeButtonRef} />}
+      {open && <AuthDialog mode={mode} setMode={changeAuthMode} email={email} verificationEmailSent={verificationEmailSent} setEmail={setEmail} password={password} setPassword={setPassword} confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword} name={name} setName={setName} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onResendVerification={() => void resendVerification()} onClose={closeAuthDialog} containerRef={authDialogRef} closeButtonRef={closeButtonRef} />}
     </div>
   );
 }
@@ -574,13 +618,14 @@ function PreviewCard({ image, alt, dark, warm = false, title, children }: { imag
     <article className={`group overflow-hidden shadow-[0_35px_90px_rgba(20,36,33,.16)] ${dark ? 'bg-[#102824] text-white' : warm ? 'bg-[#ffcf70]' : 'bg-[#f5f2e9]'}`}>
       <div className="grid min-h-[540px] lg:grid-cols-[1fr_1fr]">
         <div className={`p-7 sm:p-10 ${dark ? 'lg:order-2' : ''}`}><h3 className="mt-6 text-4xl font-semibold tracking-[-.045em]">{title}</h3>{children}</div>
-        <div className={`relative min-h-[340px] overflow-hidden ${dark ? 'lg:order-1' : ''}`}><Image src={image} alt={alt} fill sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover transition-transform duration-700 ease-out group-hover:scale-105" /></div>
+        <div className={`relative min-h-[340px] overflow-hidden ${dark ? 'lg:order-1' : ''}`}><Image src={image} alt={alt} fill loading={image === "/cordova-nalusuan.png" ? "eager" : "lazy"} sizes="(min-width: 1024px) 40vw, 100vw" className="object-cover transition-transform duration-700 ease-out group-hover:scale-105" /></div>
       </div>
     </article>
   );
 }
 
 type AuthDialogProps = {
+  verificationEmailSent: boolean;
   mode: AuthMode;
   setMode: (mode: AuthMode) => void;
   email: string;
@@ -602,14 +647,14 @@ type AuthDialogProps = {
   closeButtonRef: RefObject<HTMLButtonElement | null>;
 };
 
-function AuthDialog({ mode, setMode, email, setEmail, password, setPassword, confirmPassword, setConfirmPassword, name, setName, code, setCode, message, busy, onSubmit, onResendVerification, onClose, containerRef, closeButtonRef }: AuthDialogProps) {
+function AuthDialog({ mode, setMode, email, verificationEmailSent, setEmail, password, setPassword, confirmPassword, setConfirmPassword, name, setName, code, setCode, message, busy, onSubmit, onResendVerification, onClose, containerRef, closeButtonRef }: AuthDialogProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (contentRef.current) contentRef.current.scrollTop = 0;
   }, [mode]);
 
   const title = mode === 'login' ? 'Welcome.' : mode === 'register' ? 'Make room for the trip.' : mode === 'verify' ? 'Verify your email.' : mode === 'forgot' ? 'Recover your account.' : 'Choose a new password.';
-  const description = mode === 'login' ? 'Sign in to TravelMate and make your next journey a little easier.' : mode === 'register' ? 'Create an account to generate, edit, and save a trip plan.' : mode === 'verify' ? 'Enter the single-use code sent to your email address.' : mode === 'forgot' ? 'Enter your verified account email to request a short-lived reset code.' : `Enter the reset code issued for ${email} and choose a strong new password.`;
+  const description = mode === 'login' ? 'Sign in to TravelMate and make your next journey a little easier.' : mode === 'register' ? 'Create an account to generate, edit, and save a trip plan.' : mode === 'verify' ? 'Enter the single-use code from your email. It expires after 5 minutes.' : mode === 'forgot' ? 'Enter your verified account email to request a short-lived reset code.' : `Enter the reset code issued for ${email} and choose a strong new password.`;
   const submitLabel = busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : mode === 'register' ? 'Create account' : mode === 'verify' ? 'Verify email' : mode === 'forgot' ? 'Send reset code' : 'Reset password';
   const strength = getPasswordStrength(password);
   const strengthIndicator = {
@@ -635,6 +680,7 @@ function AuthDialog({ mode, setMode, email, setEmail, password, setPassword, con
           </header>
           <div ref={contentRef} className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-3 [overflow-wrap:anywhere] sm:px-8 sm:pb-8 sm:pt-5 lg:px-10">
           <h2 id="auth-dialog-title" className="max-w-md text-4xl font-semibold leading-[1.05] tracking-[-.055em] sm:text-5xl">{title}</h2>
+          {mode === 'verify' && email && <p className="mt-4 max-w-md text-sm leading-6 text-[#596b66] sm:text-base sm:leading-7">{verificationEmailSent ? 'We sent a verification code to ' : 'Verification email address: '}{email}</p>}
           <p id="auth-dialog-description" className="mt-4 max-w-md text-sm leading-6 text-[#596b66] sm:text-base sm:leading-7">{description}</p>
           {message && <p role="status" aria-live="polite" className="mt-5 border-l-2 border-[#b6780d] bg-[#ffcf70]/35 p-4 text-sm leading-6">{message}</p>}
           <form onSubmit={onSubmit} autoComplete="on" className="mt-6 space-y-5 sm:mt-8">
@@ -643,14 +689,14 @@ function AuthDialog({ mode, setMode, email, setEmail, password, setPassword, con
               <label className="block text-sm font-semibold" htmlFor="auth-name">Full name<input id="auth-name" required minLength={2} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} className={inputClass} placeholder="Your name" /></label>
             </>}
             {(mode === 'login' || mode === 'register' || mode === 'forgot') && <label className="block text-sm font-semibold" htmlFor="auth-email">Email address<input id="auth-email" name="email" required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className={inputClass} placeholder="you@example.com" /></label>}
-            {(mode === 'verify' || mode === 'reset') && <label className="block text-sm font-semibold" htmlFor="auth-code">{mode === 'verify' ? 'Verification code' : 'Password reset code'}<input id="auth-code" required minLength={mode === 'verify' ? 6 : 8} maxLength={8} autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} className={`${inputClass} font-mono text-lg uppercase tracking-[.2em]`} placeholder="A1B2C3D4" /></label>}
+            {(mode === 'verify' || mode === 'reset') && <label className="block text-sm font-semibold" htmlFor="auth-code">{mode === 'verify' ? 'Verification code' : 'Password reset code'}<input id="auth-code" required minLength={8} maxLength={8} autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} className={`${inputClass} font-mono text-lg uppercase tracking-[.2em]`} placeholder="Enter your code" /></label>}
             {mode === 'login' && <label className="block text-sm font-semibold" htmlFor="auth-password">Password<input id="auth-password" name="password" required type="password" minLength={8} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} placeholder="At least 8 characters" /></label>}
             {(mode === 'register' || mode === 'reset') && <>
-              <label className="block text-sm font-semibold" htmlFor="auth-password">Password<input id="auth-password" required type="password" minLength={8} maxLength={64} pattern={STRONG_PASSWORD_PATTERN.source} autoComplete="new-password" aria-describedby="auth-password-strength auth-password-requirements" aria-invalid={password.length > 0 && !isStrongPassword(password)} value={password} onChange={(event) => setPassword(event.target.value)} className={`${inputClass} ${password.length > 0 && !isStrongPassword(password) ? 'border-[#b54537]' : ''}`} placeholder="Create a strong password" title={STRONG_PASSWORD_REQUIREMENTS} /></label>
+              <label className="block text-sm font-semibold" htmlFor="auth-password">Password<input id="auth-password" required type="password" minLength={8} maxLength={64} pattern={STRONG_PASSWORD_PATTERN.source} autoComplete="new-password" aria-describedby="auth-password-strength auth-password-requirements" aria-invalid={password.length > 0 && !isStrongPassword(password)} value={password} onChange={(event) => setPassword(event.target.value)} className={`${inputClass} ${password.length > 0 && !isStrongPassword(password) ? 'border-[#b54537]' : ''}`} placeholder="Create a strong password" title={getPasswordValidationError(password) || STRONG_PASSWORD_REQUIREMENTS} /></label>
               <div id="auth-password-strength" role="status" aria-live="polite" aria-label={`Password strength: ${strengthIndicator.label}`} className="-mt-2 space-y-2"><div className="flex items-center justify-between text-xs"><span className="font-medium text-[#71807c]">Password strength</span><span className={`font-semibold ${strengthIndicator.text}`}>{strengthIndicator.label}</span></div><div className="grid grid-cols-3 gap-1.5" aria-hidden="true">{[1, 2, 3].map((segment) => <span key={segment} className={`h-1.5 ${segment <= strengthIndicator.segments ? strengthIndicator.bar : 'bg-[#d8d8d0]'}`} />)}</div></div>
               <p id="auth-password-requirements" className="-mt-2 text-xs leading-5 text-[#71807c]">{STRONG_PASSWORD_REQUIREMENTS}</p>
               <label className="block text-sm font-semibold" htmlFor="auth-confirm-password">Confirm password<input id="auth-confirm-password" required type="password" minLength={8} maxLength={64} autoComplete="new-password" aria-describedby="auth-confirm-password-message" aria-invalid={confirmPassword.length > 0 && password !== confirmPassword} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className={inputClass} placeholder="Re-enter your password" /></label>
-              <p id="auth-confirm-password-message" aria-live="polite" className={`-mt-2 text-xs ${confirmPassword.length > 0 && password !== confirmPassword ? 'text-[#9f3025]' : 'text-[#71807c]'}`}>{confirmPassword.length > 0 && password !== confirmPassword ? 'Passwords do not match.' : 'Enter the same password again.'}</p>
+              <p id="auth-confirm-password-message" aria-live="polite" className={`-mt-2 text-xs ${confirmPassword.length > 0 && password !== confirmPassword ? 'text-[#9f3025]' : 'text-[#71807c]'}`}>{confirmPassword.length > 0 ? password !== confirmPassword ? 'Confirm password does not match Password.' : 'Passwords match.' : 'Confirm your password.'}</p>
             </>}
             <button disabled={busy} className="mt-2 inline-flex w-full items-center justify-center gap-2 bg-[#142421] px-5 py-4 font-semibold text-white hover:bg-[#23423c] disabled:cursor-wait disabled:opacity-55">{submitLabel}<ArrowRight size={18} /></button>
             {mode === 'verify' && <button disabled={busy || !email} type="button" onClick={onResendVerification} className="w-full border border-[#142421]/25 px-5 py-3 text-sm font-semibold text-[#405a53] hover:border-[#142421] hover:text-[#142421] disabled:opacity-50">Resend verification code</button>}

@@ -7,7 +7,7 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https://images.unsplash.com https://upload.wikimedia.org https://thumb.wikimedia.org https://flagcdn.com",
+  "img-src 'self' data: https://images.unsplash.com https://upload.wikimedia.org https://thumb.wikimedia.org https://flagcdn.com https://images.trvl-media.com https://a.travel-assets.com https://static.cupid.travel https://liteapi-travel-static-data.s3.amazonaws.com https://tile.openstreetmap.org",
   "font-src 'self' data:",
   "connect-src 'self' ws: wss:",
   "object-src 'none'",
@@ -18,6 +18,8 @@ const contentSecurityPolicy = [
 ].join('; ');
 
 const nextConfig: NextConfig = {
+  distDir: process.env.TRAVELMATE_ISOLATED_BUILD === 'true' ? '.next-production' : '.next',
+  experimental: { proxyTimeout: 580_000 },
   turbopack: {
     root: frontendRoot,
   },
@@ -25,6 +27,9 @@ const nextConfig: NextConfig = {
     styledComponents: true,
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
+    qualities: [75],
+    minimumCacheTTL: 14400,
     remotePatterns: [
       {
         protocol: 'https',

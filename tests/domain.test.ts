@@ -23,7 +23,8 @@ test('budget split reconciles exactly to total', () => {
 
 test('daily average follows the selected trip length', () => {
   assert.equal(splitBudget(14000, 2, 14).dailyAverage, 1000);
-  assert.throws(() => splitBudget(14000, 2, 15), /between 1 and 14 days/);
+  assert.equal(splitBudget(31000, 2, 31).dailyAverage, 1000);
+  assert.throws(() => splitBudget(32000, 2, 32), /between 1 and 31 days/);
 });
 
 test('budget split keeps a ten percent reserve before rounding reconciliation', () => {
