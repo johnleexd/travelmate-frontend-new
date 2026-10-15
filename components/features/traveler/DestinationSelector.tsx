@@ -92,7 +92,7 @@ export function DestinationSelector({ selected, onSelect, onClear, ...planning }
         if (controller.signal.aborted || token !== revision.current) return;
         if (mode === 'search' && page.countryScope) scopeCountry(page.countryScope);
         setResults(prior => { const existing = offset ? prior : []; const ids = new Set(existing.map(p => p.id)); return [...existing,...page.locations.filter(p => !ids.has(p.id))]; });
-        setNext(page.nextOffset ?? null); setMessage(page.locations.length ? '' : page.message || 'No catalogue matches. Try verified geocoding.');
+        setNext(page.nextOffset ?? null); setMessage(page.message || (page.locations.length ? '' : 'No catalogue matches. Try verified geocoding.'));
       }).catch(error => { if (!controller.signal.aborted && token === revision.current) setMessage(error instanceof Error ? error.message : 'Search unavailable. Retry.'); })
         .finally(() => { if (!controller.signal.aborted && token === revision.current) setBusy(false); });
     }, query ? 300 : 0);
