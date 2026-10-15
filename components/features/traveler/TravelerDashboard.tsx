@@ -6,7 +6,7 @@ import { ReportProblem } from './ReportProblem';
 import { ExpenseAssumptionsFields } from './ExpenseAssumptions';
 import { DestinationSpotCarousel } from './DestinationSpotCarousel';
 import { restoredExpenseAssumptions, type ExpenseAssumptions } from '@/lib/expense-assumptions';
-import { GroundingSummary } from './GroundingSummary';
+import { BudgetReview } from './BudgetReview';
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -18,7 +18,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ArrowLeft, ArrowRight, BedDouble, Bell, CalendarDays, ChevronRight, CloudSun, Compass, Home, LoaderCircle, LogOut, MapPin, MessageSquare, UserRound, WalletCards } from 'lucide-react';
 import { fetchTripData, fetchWeather, handleResponse, isAuthenticationError, refreshItineraryDayImages, type DayActivity, type ItineraryResponse, type WeatherData } from '@/services/api.service';
-import { CURRENCY_NAMES, formatMoney, hasValidCurrencyPrecision, partyBudgetExplanation, partyBudgetLabel, partySpendLabel, PARTY_TYPE_LABELS, SUPPORTED_CURRENCIES, ZERO_DECIMAL_CURRENCIES, type CurrencyCode, type PartyType } from '@/lib/domain';
+import { CURRENCY_NAMES, formatMoney, hasValidCurrencyPrecision, partyBudgetExplanation, partyBudgetLabel, PARTY_TYPE_LABELS, SUPPORTED_CURRENCIES, ZERO_DECIMAL_CURRENCIES, type CurrencyCode, type PartyType } from '@/lib/domain';
 import type { NotificationsResponse, PageInfo, PlatformActionResponse, PlatformResponse, ProfileResponse, SavedTrip, TripDetailResponse, TripVersionsResponse } from '@/lib/contracts';
 import { moveActivity, removeActivity, upsertActivity } from '@/lib/itinerary-editor';
 import { applyConditionSnapshot } from '@/lib/conditions';
@@ -139,6 +139,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const [preferredActivities, setPreferredActivities] = useState('local food, sightseeing');
   const [accommodationPreference, setAccommodationPreference] = useState('budget-friendly');
   const [staySelectionState, setStaySelectionState] = useState<{ key: string; selection: StaySelection } | null>(null);
+  const [budgetedStaySelection, setBudgetedStaySelection] = useState<typeof staySelectionState>(null);
   const staySelection = staySelectionState?.key === accommodationQueryKey ? staySelectionState.selection : null;
   const selectedStayId = !staySelection?.planned && staySelection?.value.startsWith('local:') ? staySelection.value.slice(6) : '';
   const selectedLiveStayId = !staySelection?.planned && staySelection?.value.startsWith('live:') ? staySelection.value.slice(5) : '';
@@ -185,6 +186,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const dayCloseRef = useRef<HTMLButtonElement | null>(null);
   const pageRef = useRef<HTMLDivElement | null>(null);
   const workspaceHeadingRef = useRef<HTMLHeadingElement | null>(null);
+  const planningFocusRef = useRef<string | null>(null);
   const planningSettingsRef = useRef<HTMLDetailsElement | null>(null);
   const dashboardMountedRef = useRef(false);
   const generationRequestRef = useRef<{ fingerprint: string; key: string } | null>(null);
@@ -199,8 +201,21 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   });
   const itineraryFingerprint = editableItineraryFingerprint(itinerary);
   const hasUnsavedTripChanges = () => (itineraryBaselineRef.current !== null ? itineraryBaselineRef.current !== itineraryFingerprint : manualDirty) || (planningBaselineRef.current !== null && planningBaselineRef.current !== planningFingerprint);
-  const navigation = useItineraryNavigation(initialTab || 'overview', (target, current) => current.tab === 'planner' && !!savedTripOrigin && hasUnsavedTripChanges() && (target.tab !== 'planner' || target.tripId !== visitTripId), () => setLeaveDialogOpen(true));
+  const navigation = useItineraryNavigation(initialTab || 'overview', (target, current) => (current.tab === 'planner' || current.tab === 'budget') && !!savedTripOrigin && hasUnsavedTripChanges() && (!['planner', 'budget'].includes(target.tab) || target.tripId !== visitTripId), () => setLeaveDialogOpen(true));
   const tab = navigation.view.tab;
+  useEffect(() => {
+    if (tab !== 'planner' || !planningFocusRef.current) return;
+    const id = planningFocusRef.current;
+    planningFocusRef.current = null;
+    const timer = window.setTimeout(() => {
+      const field = document.getElementById(id);
+      const details = field?.closest('details');
+      if (details) details.open = true;
+      field?.scrollIntoView({ block: 'center', behavior: 'instant' });
+      field?.focus({ preventScroll: true });
+    }, 100);
+    return () => window.clearTimeout(timer);
+  }, [tab]);
   const requestedMap = useRef('');
   useEffect(() => {
     const owner = data?.user.id, tripId = navigation.view.mapTripId;
@@ -217,7 +232,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const setTab = (nextTab: Tab, view?: ItineraryView) => {
     sectionVersionRef.current += 1;
     setMessage('');
-    navigation.navigate(view || (nextTab === 'planner' ? { tab: nextTab, tripId: visitTripId || editingTripId || undefined, fromSavedTrips: !!savedTripOrigin } : { tab: nextTab }));
+    navigation.navigate(view || (nextTab === 'planner' || nextTab === 'budget' ? { tab: nextTab, tripId: visitTripId || editingTripId || undefined, fromSavedTrips: !!savedTripOrigin } : { tab: nextTab }));
     if (nextTab === 'bookings') setSavedTripsVisited(true);
   };
   const latestDraftRef = useRef({ planning: planningFingerprint, itinerary: itineraryFingerprint });
@@ -498,6 +513,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       generationRequestRef.current = { fingerprint, key: idempotencyKey };
       const result = await fetchTripData(destination.trim(), budget, { ...expenseAssumptions, idempotencyKey, currency, partyType, travelers, startDate, endDate, startingLocation: flightOrigin.trim() || undefined, destinationDetails, latitude: selectedDestination.latitude, longitude: selectedDestination.longitude, interests: interests.split(',').map((x) => x.trim()).filter(Boolean), preferredActivities: preferredActivities.split(',').map((x) => x.trim()).filter(Boolean), accommodationPreference, transportationPreference: transportationPreference || 'locally appropriate transportation', accommodationListingId: selectedStay?.id, plannedAccommodation: staySelection?.planned, selectedAccommodationQuote: staySelection?.quoteToken, externalAccommodation: selectedLiveStay ? { fetchedAt: selectedLiveStay.fetchedAt, total: selectedLiveStay.total, hotelId: selectedLiveStay.hotelId, offerId: selectedLiveStay.offerId, name: selectedLiveStay.name, address: selectedLiveStay.address, nightlyRate: selectedLiveStay.nightlyRate, currency: selectedLiveStay.currency, isLive: selectedLiveStay.isLive, selectionToken: selectedLiveStay.selectionToken } : undefined, preTripCosts: includePreTripCosts ? { airportTransferOutbound: preTripCosts.airportTransfers, airportTransferReturn: 0, passport: preTripCosts.passport, visaOrAuthorization: preTripCosts.visaOrAuthorization, departureTaxes: preTripCosts.departureTaxes, insurance: preTripCosts.insurance, other: preTripCosts.other } : undefined });
       generationRequestRef.current = null;
+      setBudgetedStaySelection(staySelectionState);
       setItinerary(result.itinerary); setWeather(result.weather); setManualDirty(false); setActivityEditor(null); setGenerationFailed(false);
       try {
         const response = await api({
@@ -816,7 +832,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       restoreSavedTripsRef.current = true;
     }
     const tripId = navigation.view.tripId;
-    if (tab !== 'planner' || !tripId || visitTripId === tripId || !data || busy || routeLoadRef.current === tripId) return;
+    if ((tab !== 'planner' && tab !== 'budget') || !tripId || visitTripId === tripId || !data || busy || routeLoadRef.current === tripId) return;
     const summary = data.trips.find(trip => trip.id === tripId);
     routeLoadRef.current = tripId;
     // A refreshed URL loads once. Same-trip overview/day transitions use memory.
@@ -911,8 +927,16 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) field.focus({ preventScroll: true });
     else (field.querySelector<HTMLElement>('input:not(:disabled)') || field.querySelector<HTMLElement>('button:not(:disabled)'))?.focus({ preventScroll: true });
   };
-  const split = itinerary?.budgetSummary as (ItineraryResponse['budgetSummary'] & { reserve?: number; dailyAverage?: number }) | undefined;
-  const optimization = itinerary?.budgetOptimization;
+  const budgetItinerary = navigation.view.tripId && visitTripId !== navigation.view.tripId ? null : itinerary;
+  const budgetReviewOptions = {
+    budget: itinerary && budgetReady && currency === itinerary.currency ? budget : undefined,
+    accommodation: staySelection && staySelectionState !== budgetedStaySelection ? {
+      selected: staySelection.value !== 'later',
+      name: staySelection.planned?.name || staySelection.preview?.name,
+      amount: staySelection.confirmedQuote?.isLive ? staySelection.confirmedQuote.budgetTotal ?? staySelection.confirmedQuote.total : staySelection.liveOffer?.isLive ? staySelection.liveOffer.total : undefined,
+      currency: staySelection.confirmedQuote?.currency ?? staySelection.liveOffer?.currency ?? currency,
+    } : undefined,
+  };
   const localMunicipality = selectedDestination?.name;
   const stayOptions = currency === 'PHP' && selectedDestination?.countryCode === 'PH' ? data.listings.filter((listing) => listing.category === 'stay' && listing.status === 'approved' && listing.municipality.toLowerCase() === localMunicipality?.toLowerCase()) : [];
   const preTripTotal = preTripCosts.airportTransfers + preTripCosts.passport + preTripCosts.visaOrAuthorization + preTripCosts.departureTaxes + preTripCosts.insurance + preTripCosts.other;
@@ -980,7 +1004,17 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
         </div>
       </header>
 
-      {tab !== 'overview' && !(tab === 'planner' && itinerary) && <div className="border-b border-white/10 bg-[#102622] px-4 py-3 sm:px-6"><div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-1 text-xs text-white/52"><strong className="text-white/78">Current trip context</strong><span>{selectedDestination ? destination : 'Choose and confirm a destination'}</span><span>{startDate} to {endDate}</span><span>{currencyResolved && Number.isFinite(budget) ? formatMoney(budget, currency) : 'Currency auto-detected after destination'}{currencyResolved&&<ReferenceAmount amount={budget} currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>}</span>{itinerary && <span className="text-emerald-200">Generated plan available</span>}</div></div>}
+      {tab !== 'overview' && !(tab === 'planner' && itinerary) && <div className="border-b border-white/10 bg-[#102622] px-4 py-3 sm:px-6">
+        <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-1 text-xs text-white/52">
+          <strong className="text-white/78">Current trip context</strong>
+          {tab === 'budget' && navigation.view.tripId && !budgetItinerary ? <span>{busy ? 'Loading selected trip?' : 'Selected trip details unavailable'}</span> : <>
+            <span>{tab === 'budget' && budgetItinerary ? budgetItinerary.destination : selectedDestination ? destination : 'Choose and confirm a destination'}</span>
+            <span>{tab === 'budget' && budgetItinerary ? budgetItinerary.days[0].date + ' to ' + budgetItinerary.days.at(-1)!.date : startDate + ' to ' + endDate}</span>
+            {tab === 'budget' && budgetItinerary ? <span>{budgetItinerary.currency}</span> : <span>{currencyResolved && Number.isFinite(budget) ? formatMoney(budget, currency) : 'Currency auto-detected after destination'}{currencyResolved&&<ReferenceAmount amount={budget} currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>}</span>}
+            {itinerary && <span className="text-emerald-200">Generated plan available</span>}
+          </>}
+        </div>
+      </div>}
 
       <div className="mx-auto grid w-full max-w-[1600px] grid-cols-[minmax(0,1fr)] gap-0 px-4 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-10 lg:px-6 xl:gap-14">
         <aside className="min-w-0 max-w-[calc(100vw-2rem)] py-4 lg:sticky lg:top-24 lg:max-w-none lg:self-start lg:py-8">
@@ -995,10 +1029,10 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
         </aside>
 
         <main id="traveler-main-content" tabIndex={-1} className="min-w-0 w-full max-w-[calc(100vw-2rem)] overflow-x-hidden pb-20 pt-5 outline-none lg:max-w-none lg:pt-10">
-          <div style={tab === 'planner' && itinerary ? { display: 'none' } : undefined} className="mb-7 flex flex-col items-start gap-3 border-b border-white/10 pb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+          {tab !== 'budget' && <div style={tab === 'planner' && itinerary ? { display: 'none' } : undefined} className="mb-7 flex flex-col items-start gap-3 border-b border-white/10 pb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
             <div className="min-w-0 max-w-4xl"><h1 ref={workspaceHeadingRef} tabIndex={-1} className="break-words text-[clamp(2rem,4vw,3.75rem)] font-black leading-[0.96] tracking-[-0.05em] outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1d1a]">{currentTabCopy.title}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-white/52">{currentTabCopy.description}</p></div>
             <span className={`w-fit shrink-0 border px-3 py-2 text-[11px] font-bold tracking-wide ${data.user.emailVerified?'border-emerald-400/40 bg-emerald-400/10 text-emerald-200':'border-amber-300/40 bg-amber-300/10 text-amber-200'}`}>{data.user.emailVerified?'Email verified':'Email not verified'}</span>
-          </div>
+          </div>}
           {message && !(tab === 'planner' && itinerary) && <div role="status" aria-live="polite" className="mb-6 border-l-2 border-amber-300 bg-white/[0.055] px-4 py-3 text-sm text-white/80">{message}</div>}
 
           {tab === 'overview' && <TravelerJourneyOverview
@@ -1154,18 +1188,15 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
             </section></details>}
             {itinerary && viewedTripMap?.owner === data.user.id && viewedTripMap.tripId === visitTripId && <PlacesAwareTripMap><TripLocationMap key={`${viewedTripMap.owner}:${viewedTripMap.tripId}`} destination={viewedTripMap.destination} point={viewedTripMap.point} onNavigate={() => setTripMapSelection({ owner: data.user.id, tripId: viewedTripMap.tripId })}/></PlacesAwareTripMap>}
           </>}
-          {tab === 'budget' && <div>{split ? <>
-            {itinerary && <GroundingSummary itinerary={itinerary} draft={manualDirty}/>}
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{[[partyBudgetLabel(itinerary!.partyType || partyType, itinerary!.travelers || travelers),split.total],[itinerary?.grounding?.unpricedExpenseCount?'Known subtotal · other expenses unpriced':partySpendLabel(itinerary!.partyType || partyType),split.plannedSpend||0],[split.shortfall?'Budget shortfall':itinerary?.grounding?.unpricedExpenseCount?'Limit remaining before unpriced costs':'Unspent / reserve',split.shortfall||split.remainingBudget||0],['Safety reserve target',split.reserve||0]].map(([label,value])=><div key={String(label)} className="border-t border-slate-700 py-5"><p className="text-xs uppercase text-slate-500">{label}</p><strong className={`text-2xl ${label==='Budget shortfall'?'text-red-300':''}`}>{formatMoney(Number(value),itinerary!.currency)}</strong><ReferenceAmount amount={Number(value)} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} className="mt-1 block text-xs font-normal text-cyan-200/70"/></div>)}</div>
-            {itinerary?.selectedTravelCosts && itinerary.selectedTravelCosts.total > 0 && <section className="mt-4 border border-cyan-300/25 bg-cyan-300/5 p-4"><h2 className="font-bold">Committed and pre-trip costs included</h2><p className="mt-1 text-sm text-slate-400">Selected quote amounts and your own estimates are included once in group spending. Activity totals assume the headline fare is per person; confirm date, party and fee coverage.</p><div className="mt-3 space-y-2 text-sm">{itinerary.selectedTravelCosts.flight && <div className="flex justify-between gap-3"><span>{itinerary.selectedTravelCosts.flight.name}</span><strong>{formatMoney(itinerary.selectedTravelCosts.flight.total, itinerary.currency)}</strong></div>}{itinerary.selectedTravelCosts.activities.map((activity) => <div key={activity.id} className="flex justify-between gap-3"><span>{activity.name} · {activity.travelers} travelers · {activity.priceBasis ? "group estimate; fare basis needs confirmation" : "provider amount; recheck before booking"}</span><strong>{formatMoney(activity.total, itinerary.currency)}</strong></div>)}{itinerary.selectedTravelCosts.preTrip && <div className="mt-3 border-t border-white/10 pt-3"><div className="mb-2 flex justify-between gap-3"><span><strong>Pre-trip estimates</strong>{itinerary.selectedTravelCosts.preTrip.startingLocation ? ` · from ${itinerary.selectedTravelCosts.preTrip.startingLocation}` : ''}</span><strong>{formatMoney(itinerary.selectedTravelCosts.preTrip.total,itinerary.currency)}</strong></div>{([['Airport transfers',itinerary.selectedTravelCosts.preTrip.airportTransferOutbound + itinerary.selectedTravelCosts.preTrip.airportTransferReturn],['Passport / renewal',itinerary.selectedTravelCosts.preTrip.passport],['Visa / authorization',itinerary.selectedTravelCosts.preTrip.visaOrAuthorization],['Travel tax',itinerary.selectedTravelCosts.preTrip.departureTaxes],['Insurance',itinerary.selectedTravelCosts.preTrip.insurance],['Other costs',itinerary.selectedTravelCosts.preTrip.other]] as const).filter(([,amount])=>amount>0).map(([label,amount])=><div key={label} className="flex justify-between gap-3 text-xs text-slate-400"><span>{label}</span><span>{formatMoney(amount,itinerary.currency)}</span></div>)}<p className="mt-2 text-[11px] text-amber-200">User-entered estimates; verify document and government fees with official sources.</p></div>}<div className="flex justify-between gap-3 border-t border-white/10 pt-2"><strong>Committed-cost total</strong><strong>{formatMoney(itinerary.selectedTravelCosts.total, itinerary.currency)}</strong></div></div></section>}
-            {optimization && <section className={`mt-5 rounded-xl border p-5 ${optimization.status==='over_budget'?'border-red-500/40 bg-red-500/5':optimization.status==='near_limit'?'border-amber-400/40 bg-amber-400/5':'border-emerald-400/30 bg-emerald-400/5'}`} aria-labelledby="budget-optimization-heading">
-              <div className="flex flex-wrap items-start justify-between gap-4"><div className="flex items-start gap-3"><span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-slate-950/60"><WalletCards size={19} className={optimization.status==='over_budget'?'text-red-300':optimization.status==='near_limit'?'text-amber-300':'text-emerald-300'}/></span><div><p className="text-xs font-bold uppercase tracking-wider text-slate-400">Budget optimization</p><h2 id="budget-optimization-heading" className="mt-1 font-bold">{optimization.status==='over_budget'?`Reduce the estimate by ${formatMoney(optimization.amountToTarget,itinerary!.currency)}`:optimization.status==='near_limit'?`Save ${formatMoney(optimization.amountToTarget,itinerary!.currency)} to protect the reserve`:itinerary?.grounding?.unpricedExpenseCount?'Known costs only — affordability needs confirmation':'These estimates fit the allocation; verify missing prices'}</h2>{optimization.status!=='within_budget'&&<ReferenceAmount amount={optimization.amountToTarget} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>}<p className="mt-1 text-sm text-slate-400">Target spend: {formatMoney(optimization.targetSpend,itinerary!.currency)}.</p><ReferenceAmount amount={optimization.targetSpend} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></div></div>{optimization.suggestions.length>0&&<button onClick={()=>setTab('planner')} className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-slate-600 px-4 py-2 text-sm font-bold hover:bg-slate-800">Review itinerary<ArrowRight size={15}/></button>}</div>
-              {optimization.suggestions.length>0&&<><div className="mt-5 grid gap-3 lg:grid-cols-2">{optimization.suggestions.map(suggestion=><article key={suggestion.id} className="rounded-lg border border-slate-800 bg-slate-950/40 p-4"><div className="flex items-start justify-between gap-3"><div><span className="text-[10px] font-bold uppercase tracking-wider text-cyan-300">{suggestion.category}{suggestion.affectedDay?` · Day ${suggestion.affectedDay}`:''}</span><h3 className="mt-1 font-bold">{suggestion.title}</h3></div><span className="shrink-0 text-right"><strong className="text-emerald-300">Save ~{formatMoney(suggestion.estimatedSavings,itinerary!.currency)}</strong><ReferenceAmount amount={suggestion.estimatedSavings} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></span></div><p className="mt-3 text-sm text-slate-300">{suggestion.description}</p><p className="mt-2 text-xs leading-relaxed text-amber-200"><strong>Tradeoff:</strong> {suggestion.tradeoff}</p></article>)}</div><div className="mt-4 grid gap-3 border-t border-slate-800 pt-4 sm:grid-cols-2"><div><p className="text-xs uppercase text-slate-500">Potential combined savings</p><strong className="text-xl text-emerald-300">~{formatMoney(optimization.combinedEstimatedSavings,itinerary!.currency)}</strong><ReferenceAmount amount={optimization.combinedEstimatedSavings} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></div><div><p className="text-xs uppercase text-slate-500">Projected spend if all are applied</p><strong className="text-xl">~{formatMoney(optimization.projectedSpendIfAllApplied,itinerary!.currency)}</strong><ReferenceAmount amount={optimization.projectedSpendIfAllApplied} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>{optimization.remainingGapAfterSuggestions>0&&<p className="mt-1 text-xs text-red-300">Still {formatMoney(optimization.remainingGapAfterSuggestions,itinerary!.currency)} above the target.<ReferenceAmount amount={optimization.remainingGapAfterSuggestions} currency={itinerary!.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></p>}</div></div></>}
-              <p className="mt-4 text-xs text-slate-500">{optimization.disclaimer}</p>
-            </section>}
-            {itinerary?.costSharing&&itinerary.costSharing.travelers>1&&<div className="mt-5 rounded-md border border-slate-800 p-4"><h2 className="font-bold">Equal-share guide</h2><p className="mt-1 text-sm text-slate-400">{PARTY_TYPE_LABELS[itinerary.costSharing.partyType]} with {itinerary.costSharing.travelers} travelers. The entered budget is one combined total; these are optional equal shares per traveler.</p><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">{itinerary.costSharing.plannedSpendShares.map((amount,index)=><div key={index} className="border-t border-slate-700 py-2"><small className="text-slate-500">Traveler {index+1}</small><p className="font-mono">{formatMoney(amount,itinerary.currency)}</p><ReferenceAmount amount={amount} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></div>)}</div></div>}
-            <p className="mt-4 text-xs text-slate-500">{itinerary?.costSharing?.travelers===1?'All displayed costs belong to the solo traveler.':'Accommodation and the entered budget cover the whole party. Activity participants and shared versus per-person fares are recorded in each expense basis.'} Final venue prices may change.</p>
-          </> : <section className="border border-dashed border-white/15 bg-white/[0.025] p-8 sm:p-12"><WalletCards size={25} className="text-amber-300"/><h2 className="mt-6 max-w-xl text-3xl font-black tracking-[-0.04em]">Budget review begins after itinerary generation.</h2><p className="mt-4 max-w-2xl text-sm leading-6 text-white/50">TravelMate needs the generated activities, transportation, food estimate, and any selected accommodation before it can explain planned spending and possible savings.</p><button type="button" onClick={()=>setTab('planner')} className="group mt-7 inline-flex min-h-11 items-center gap-2 bg-amber-300 px-5 py-2 text-sm font-extrabold text-[#14231f]">Go to trip details <ArrowRight size={16} className="transition-transform group-hover:translate-x-1"/></button></section>}</div>}
+          {tab === 'budget' && <BudgetReview
+            itinerary={budgetItinerary}
+            options={budgetReviewOptions}
+            loading={busy && !!navigation.view.tripId && visitTripId !== navigation.view.tripId}
+            headingRef={workspaceHeadingRef}
+            onBack={() => setTab('planner')}
+            onEditBudget={() => { planningFocusRef.current = 'trip-budget'; setTab('planner'); }}
+            onTripDetails={() => { planningFocusRef.current = 'trip-budget'; setTab('planner'); }}
+          />}
           {(tab === 'bookings' || savedTripsVisited) && <div key={`saved-trips:${data.user.id}`} hidden={tab !== 'bookings'} className="space-y-8">
             {navigation.view.navigationMoved && <p role="status" className="rounded-lg border border-[#D8E1D7] bg-[#E5EDDF] p-4 text-sm text-[#24564B]">{savedNavigationMessage}</p>}
             <SavedTripLifecycle

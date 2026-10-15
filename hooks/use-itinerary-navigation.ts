@@ -31,8 +31,8 @@ function viewFromUrl(fallback: TravelerTab, search = window.location.search): It
   const tripId = params.get('trip') || undefined;
   const mapTripId = validMapTripId(params.get('map'));
   const day = Number(params.get('day'));
-  return { tab: tabs.includes(tab) ? tab : fallback, ...(tab === 'planner' && tripId ? {
-    tripId, ...(Number.isInteger(day) && day > 0 && day <= 31 ? { day } : {}), fromSavedTrips: params.get('from') === 'saved',
+  return { tab: tabs.includes(tab) ? tab : fallback, ...((tab === 'planner' || tab === 'budget') && tripId ? {
+    tripId, ...(tab === 'planner' && Number.isInteger(day) && day > 0 && day <= 31 ? { day } : {}), fromSavedTrips: params.get('from') === 'saved',
   } : {}), ...(tab === 'bookings' ? { mapTripId, mapDay: mapTripId ? validMapDay(params.get('day')) : undefined, navigationMoved: params.get('navigation') === 'moved' } : {}) };
 }
 
@@ -40,9 +40,9 @@ function viewUrl(view: ItineraryView) {
   const url = new URL(window.location.href);
   ['tab', 'trip', 'day', 'from', 'map', 'navigation'].forEach(name => url.searchParams.delete(name));
   if (view.tab !== 'overview') url.searchParams.set('tab', view.tab);
-  if (view.tab === 'planner' && view.tripId) {
+  if ((view.tab === 'planner' || view.tab === 'budget') && view.tripId) {
     url.searchParams.set('trip', view.tripId);
-    if (view.day !== undefined) url.searchParams.set('day', String(view.day));
+    if (view.tab === 'planner' && view.day !== undefined) url.searchParams.set('day', String(view.day));
     if (view.fromSavedTrips) url.searchParams.set('from', 'saved');
   }
   if (view.tab === 'bookings') {
