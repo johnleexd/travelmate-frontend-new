@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { oauthRequestHeaders } from '../../../../../lib/oauth-request-headers';
+import { resolveBackendUrl } from '../../../../../lib/backend-url';
 
 export async function forwardGoogleOAuth(request: Request, path: string): Promise<Response> {
-  const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
   try {
+    const backendUrl = resolveBackendUrl();
     const upstream = await fetch(`${backendUrl}${path}${new URL(request.url).search}`, {
       headers: oauthRequestHeaders(request),
       redirect: 'manual',

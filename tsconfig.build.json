@@ -1,0 +1,14 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    ".cache",
+    "e2e",
+    "tests",
+    "tests-production",
+    "scripts",
+    "playwright*.ts",
+    ".next/dev",
+    ".next-production/dev"
+  ]
+}

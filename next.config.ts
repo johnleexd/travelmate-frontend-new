@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveBackendUrl } from './lib/backend-url.ts';
 
 const frontendRoot = path.dirname(fileURLToPath(import.meta.url));
 const contentSecurityPolicy = [
@@ -18,6 +19,9 @@ const contentSecurityPolicy = [
 ].join('; ');
 
 const nextConfig: NextConfig = {
+  typescript: {
+    tsconfigPath: process.env.NODE_ENV === 'production' ? 'tsconfig.build.json' : 'tsconfig.json',
+  },
   distDir: process.env.TRAVELMATE_ISOLATED_BUILD === 'true' ? '.next-production' : '.next',
   experimental: { proxyTimeout: 580_000 },
   turbopack: {
@@ -53,7 +57,7 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000';
+    const backendUrl = resolveBackendUrl();
     return {
       afterFiles: [{ source: '/api/:path*', destination: `${backendUrl}/api/:path*` }],
     };
