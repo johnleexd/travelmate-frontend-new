@@ -1,0 +1,20 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createDayDisplayPhotoClient } from '../services/activity-photo.service.ts';
+import { googleDisplayPhotos } from '../lib/google-place-photos.ts';
+import type { DayPlan } from '../lib/contracts.ts';
+const id = 'ChIJ_verified_place';
+const day = { day: 1, date: '2040-01-01', activities: [{ title: 'Exact Temple', time: '09:00', location: 'Recorded City', category: 'activity' }] } as DayPlan;
+const returned = { ...day, activities: [{ ...day.activities[0], googlePlaceId: id }] };
+const photo = { placeId: id, imageUrl: 'https://lh3.googleusercontent.com/current-photo', googleMapsUri: 'https://www.google.com/maps/?photo=source', authors: [{ displayName: 'Actual Author', uri: 'https://www.google.com/maps/contrib/1' }] };
+test('Google display data validates identity and stays out of photo patches; reloads fetch fresh metadata', async () => {
+  let calls = 0;
+  const client = createDayDisplayPhotoClient(async () => { calls++; return Response.json({ day: returned, googlePhotos: { 0: photo } }); }, 0);
+  const [a,b] = await Promise.all([client('City, Japan', day, 'trip'), client('City, Japan', day, 'trip')]);
+  assert.equal(calls, 1); assert.deepEqual(a,b); assert.deepEqual(a.patches, []); assert.equal(a.googlePhotos[0].placeId, id);
+  await client('City, Japan', day, 'trip'); assert.equal(calls, 2);
+  assert.equal(JSON.stringify(day).includes('googleusercontent'), false);
+  assert.deepEqual(googleDisplayPhotos(day, { ...returned, activities: [{ ...returned.activities[0], title: 'Other Temple' }] }, { 0: photo }), {});
+  assert.deepEqual(googleDisplayPhotos(day, returned, { 0: { ...photo, imageUrl: 'https://evil.test/image' } }), {});
+  assert.deepEqual(googleDisplayPhotos(day, returned, { 0: { ...photo, googleMapsUri: 'https://www.google.com/maps/?key=secret' } }), {});
+});

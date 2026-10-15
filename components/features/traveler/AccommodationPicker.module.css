@@ -1,0 +1,22 @@
+/* The portal is outside the dashboard DOM, so it owns the same theme scope. */
+.backdrop.backdrop {
+  background-color: rgb(32 53 45 / 0.38);
+  overflow: hidden;
+}
+
+.dialog.dialog {
+  color: var(--tm-text);
+  box-shadow: 0 20px 70px rgb(32 53 45 / 0.2);
+}
+
+.results {
+  scrollbar-gutter: stable;
+}
+
+.dialog :is(input, select, button) {
+  max-width: 100%;
+}
+
+@media (max-width: 639px) {
+  .dialog h2 { font-size: 18px; line-height: 1.35; }
+}

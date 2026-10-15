@@ -1,16 +1,20 @@
 'use client';
 
-import Image from 'next/image';
-import { PlacePhoto } from '@/components/common/PlacePhoto';
+import { SavedTripCoverPhoto } from './SavedTripCoverPhoto';
 import { TripFeedbackForm } from './TripFeedbackForm';
 import { SavedAccommodation } from './SavedAccommodation';
 import { DeleteTripDialog } from './DeleteTripDialog';
-import { useEffect, useRef, useState } from 'react';
-import { Archive, Check, ChevronDown, Eye, History, Pencil, RotateCcw, Trash2 } from 'lucide-react';
+import { RecordTripVisitsDialog } from './RecordTripVisitsDialog';
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import styles from './SavedTripCards.module.css';
+import mapStyles from './SavedTripMap.module.css';
+import { savedAccommodation } from '@/lib/saved-accommodation';
+import { Archive, BedDouble, CalendarDays, Check, ChevronDown, Clock3, Eye, History, MoreHorizontal, MapPinned, MapPin, Pencil, RotateCcw, Star, Trash2, UserRound } from 'lucide-react';
 import { formatMoney, type ItineraryGenerationSummary, type ItineraryVersion, type SavedTrip } from '@/lib/domain';
 import type { ItineraryResponse, PageInfo } from '@/lib/contracts';
 import { localDateInputValue } from '@/lib/date';
-import { savedTripCoverImage } from '@/lib/place-image';
+import { savedTripCoverImage, type SavedTripCoverImage } from '@/lib/place-image';
+import { resolveSavedTripCovers } from '@/lib/saved-trip-photo-selection';
 
 type Props = {
   trips: SavedTrip[];
@@ -23,6 +27,7 @@ type Props = {
   onLoadVersions?: (tripId: string, cursor?: string) => Promise<void>;
   onPlanFirstTrip: () => void;
   onView: (trip: SavedTrip) => void;
+  onMap: (trip: SavedTrip) => void;
   onEdit: (trip: SavedTrip) => void;
   onAction: (body: Record<string, unknown>, message: string) => Promise<boolean>;
   onDelete: (trip: SavedTrip, onError: (message: string) => void) => Promise<boolean>;
@@ -30,17 +35,89 @@ type Props = {
 
 function sourceLabel(value: unknown): string {
   const source = value && typeof value === 'object' ? (value as Partial<ItineraryResponse>).source : undefined;
-  return source === 'openai' ? 'OpenAI generated' : source === 'gemini' ? 'Gemini generated' : source === 'mock' ? 'Demo / estimated fallback' : 'Saved plan';
+  return source === 'openai' ? 'OpenAI generated' : source === 'gemini' ? 'Gemini generated' : source === 'catalog' ? 'Verified place catalog' : source === 'mock' ? 'Demo / estimated fallback' : 'Saved plan';
 }
 
 const versionLabels: Record<ItineraryVersion['kind'], string> = {
   saved: 'Initial save', regenerated: 'Regenerated plan', manual_edit: 'Manual edit', duplicated: 'Duplicated plan', restored: 'Restored version',
 };
 
-export function SavedTripLifecycle({ trips, versions, generations, busy, tripsPage, versionPages, onLoadMoreTrips, onLoadVersions, onPlanFirstTrip, onView, onEdit, onAction, onDelete }: Props) {
+
+/** Card-only disclosure state; the items retain their existing trip handlers. */
+function SavedTripCardMenu({ destination, children }: { destination: string; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const initialFocus = useRef<'first' | 'last'>('first');
+
+  useEffect(() => {
+    if (!open) return;
+    const items = menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)');
+    items?.[initialFocus.current === 'last' ? items.length - 1 : 0]?.focus();
+    const outsideClick = (event: PointerEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const outsideFocus = (event: FocusEvent) => {
+      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
+    };
+    const escape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') { event.preventDefault(); setOpen(false); triggerRef.current?.focus(); }
+    };
+    document.addEventListener('pointerdown', outsideClick);
+    document.addEventListener('focusin', outsideFocus);
+    document.addEventListener('keydown', escape);
+    return () => {
+      document.removeEventListener('pointerdown', outsideClick);
+      document.removeEventListener('focusin', outsideFocus);
+      document.removeEventListener('keydown', escape);
+    };
+  }, [open]);
+
+  const navigateMenu = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Tab') {
+      const focusable = Array.from(document.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]'))
+        .filter(element => element.getClientRects().length && !menuRef.current?.contains(element));
+      const index = focusable.indexOf(triggerRef.current!);
+      const next = focusable[index + (event.shiftKey ? -1 : 1)];
+      if (next) { event.preventDefault(); setOpen(false); next.focus(); }
+      else setOpen(false);
+      return;
+    }
+    const items = Array.from(menuRef.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)') || []);
+    if (!items.length) return;
+    const index = items.indexOf(document.activeElement as HTMLButtonElement);
+    const next = event.key === 'ArrowDown' ? (index + 1) % items.length
+      : event.key === 'ArrowUp' ? (index - 1 + items.length) % items.length
+      : event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : null;
+    if (next !== null) { event.preventDefault(); items[next].focus(); }
+  };
+
+  return <div ref={containerRef} className={styles.menuContainer}>
+    <button ref={triggerRef} type="button" aria-label={'More options for ' + destination} aria-haspopup="menu" aria-expanded={open} aria-controls={open ? id : undefined} className={styles.menuTrigger}
+      onClick={() => { initialFocus.current = 'first'; setOpen(value => !value); }}
+      onKeyDown={event => { if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); initialFocus.current = event.key === 'ArrowUp' ? 'last' : 'first'; setOpen(true); } }}><MoreHorizontal aria-hidden="true" size={21}/></button>
+    {open && <div ref={menuRef} id={id} role="menu" aria-label={'Options for ' + destination} className={styles.menu} onKeyDown={navigateMenu}
+      onClick={event => {
+        const item = (event.target as HTMLElement).closest<HTMLButtonElement>('[role="menuitem"]');
+        if (item && !item.disabled) { setOpen(false); triggerRef.current?.focus(); }
+      }}>{children}</div>}
+  </div>;
+}
+
+export function SavedTripLifecycle({ trips, versions, generations, busy, tripsPage, versionPages, onLoadMoreTrips, onLoadVersions, onPlanFirstTrip, onView, onMap, onEdit, onAction, onDelete }: Props) {
   const [feedbackTrip, setFeedbackTrip] = useState<string | null>(null);
   const [deletingTrip, setDeletingTrip] = useState<SavedTrip | null>(null);
+  const [recordingTrip, setRecordingTrip] = useState<SavedTrip | null>(null);
+  const [visitMessage, setVisitMessage] = useState('');
   const [filter, setFilter] = useState<SavedTrip['status']>('active');
+  const [coverPhotos, setCoverPhotos] = useState<Record<string, SavedTripCoverImage | null>>({});
+  useEffect(() => {
+    let active = true;
+    void resolveSavedTripCovers(trips).then(photos => { if (active) setCoverPhotos(photos); });
+    return () => { active = false; };
+  }, [trips]);
   const lifecyclePending = useRef(false);
   const [expandedTrip, setExpandedTrip] = useState<string | null>(null);
   const [historyBusy, setHistoryBusy] = useState(false);
@@ -73,6 +150,7 @@ export function SavedTripLifecycle({ trips, versions, generations, busy, tripsPa
 
   return (
     <section aria-labelledby="saved-plans-heading">
+      {visitMessage && <p role="status" className={styles.visitMessage}>{visitMessage}</p>}
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-5">
         <div><h2 id="saved-plans-heading" className="text-xl font-black tracking-[-0.03em]">Saved plans</h2><p className="mt-1 text-sm text-white/45">Keep your plans, mark finished travels as done, and revisit every saved itinerary.</p></div>
         <div className="flex flex-wrap gap-1 rounded-lg border border-white/10 p-1 text-xs font-bold" aria-label="Saved trip filters">{([['active', 'Active', activeTrips.length], ['completed', 'Completed', completedTrips.length], ['archived', 'Archived', archivedTrips.length]] as const).map(([status, label, count]) => <button key={status} type="button" aria-pressed={filter === status} onClick={() => setFilter(status)} className={`rounded-md px-3 py-2 ${filter === status ? 'bg-[#f1ead8] text-[#14231f]' : 'text-white/55 hover:bg-white/5'}`}>{label} {count}</button>)}</div>
@@ -82,25 +160,46 @@ export function SavedTripLifecycle({ trips, versions, generations, busy, tripsPa
         const tripVersions = versions.filter((version) => version.tripId === trip.id).sort((a, b) => b.version - a.version);
         const expanded = expandedTrip === trip.id;
         const past = trip.endDate < localDateInputValue();
-        const cover = savedTripCoverImage(trip.itinerary, trip.destinationCountryCode);
-        const country = trip.destinationCountry || trip.destinationCountryCode || 'destination';
-        return <article key={trip.id} className="group min-w-0 overflow-hidden border border-white/10 bg-[#102622] transition-colors duration-300 hover:border-white/25">
-          <div className="relative min-h-[240px] overflow-hidden p-5 sm:p-6">
-            {cover && (cover.kind === 'destination-photo' ? <PlacePhoto src={cover.src} alt={`${country} visual for the saved trip to ${trip.destination}`} sizes="(max-width: 1280px) 100vw, 50vw" className="object-cover opacity-70 transition-transform duration-700 ease-out group-hover:scale-105"/> : <Image src={cover.src} alt={`${country} visual for the saved trip to ${trip.destination}`} fill sizes="(max-width: 1280px) 100vw, 50vw" className="object-cover opacity-35 saturate-[.8] transition-transform duration-700 ease-out group-hover:scale-105" />)}
-            <div aria-hidden="true" className={`absolute inset-0 ${cover ? 'bg-[linear-gradient(100deg,rgba(5,24,21,.98)_0%,rgba(5,24,21,.86)_48%,rgba(5,24,21,.42)_100%)]' : 'bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,.13),transparent_42%)]'}`} />
-            <div className="relative z-10"><div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:justify-between"><div className="min-w-0"><span className={`text-[10px] font-bold uppercase tracking-[0.14em] ${trip.status === 'archived' ? 'text-amber-200' : past ? 'text-white/50' : 'text-emerald-200'}`}>{trip.status === 'archived' ? 'Archived trip' : trip.status === 'completed' ? 'Completed trip' : past ? 'Previous trip' : 'Upcoming trip'}</span><h3 className="mt-1 max-w-xl break-words text-xl font-bold text-white drop-shadow-md">{trip.destination}</h3><p className="mt-1 text-xs text-white/70">{trip.startDate} – {trip.endDate} · {trip.travelers} traveler{trip.travelers === 1 ? '' : 's'}</p></div><strong className="shrink-0 bg-[#081b18]/70 px-2.5 py-1.5 font-mono text-sm text-amber-200 backdrop-blur-sm">{formatMoney(trip.budget, trip.currency)}</strong></div><p className="mt-3 text-xs text-cyan-100">{sourceLabel(trip.itinerary)} · updated {new Date(trip.updatedAt || trip.createdAt).toLocaleString()}</p>
-            {trip.completedAt && <p className="mt-2 text-xs font-semibold text-emerald-200">Travel completed · {new Date(trip.completedAt).toLocaleDateString()}</p>}
-            <SavedAccommodation trip={trip}/>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {trip.status !== 'archived' && <><button disabled={busy} onClick={() => onView(trip)} className="inline-flex items-center gap-1.5 border border-white/25 bg-[#081b18]/55 px-3 py-2 text-xs font-bold backdrop-blur-sm hover:bg-white/10"><Eye size={14}/>View</button>{trip.status === 'active' && <button disabled={busy} onClick={() => onEdit(trip)} className="inline-flex items-center gap-1.5 border border-white/25 bg-[#081b18]/55 px-3 py-2 text-xs font-bold backdrop-blur-sm hover:bg-white/10"><Pencil size={14}/>Edit</button>}</>}
-              {trip.status !== 'archived' && <button type="button" disabled={busy} onClick={() => void toggleCompleted(trip)} className="inline-flex items-center gap-1.5 rounded border border-emerald-300/40 bg-emerald-300/10 px-3 py-2 text-xs font-bold text-emerald-200 hover:bg-emerald-300/20">{trip.status === 'completed' ? <RotateCcw size={14}/> : <Check size={14}/>} {trip.status === 'completed' ? 'Mark as not done' : 'Mark as done'}</button>}
-              <button type="button" disabled={busy} aria-expanded={feedbackTrip === trip.id} onClick={() => setFeedbackTrip(feedbackTrip === trip.id ? null : trip.id)} className="inline-flex items-center gap-1.5 border border-white/25 bg-[#081b18]/55 px-3 py-2 text-xs font-bold hover:bg-white/10">Rate this trip</button>
-              <button disabled={busy} onClick={() => void onAction({ action: trip.status === 'archived' ? 'restore-trip' : 'archive-trip', id: trip.id }, trip.status === 'archived' ? trip.completedAt ? 'Trip restored to completed travels.' : 'Trip restored to active plans.' : 'Trip archived.')} className="inline-flex items-center gap-1.5 border border-amber-300/35 px-3 py-2 text-xs font-bold text-amber-200 hover:bg-amber-300/10">{trip.status === 'archived' ? <RotateCcw size={14}/> : <Archive size={14}/>} {trip.status === 'archived' ? 'Restore trip' : 'Archive'}</button>
-              <button disabled={busy} aria-expanded={expanded} onClick={() => setExpandedTrip(expanded ? null : trip.id)} className="inline-flex items-center gap-1.5 border border-cyan-300/30 px-3 py-2 text-xs font-bold text-cyan-200 hover:bg-cyan-300/10"><History size={14}/>Version history<ChevronDown size={13} className={`transition-transform ${expanded ? 'rotate-180' : ''}`}/></button>
-              {trip.status === 'archived' && <button disabled={busy} onClick={() => setDeletingTrip(trip)} className="inline-flex items-center gap-1.5 border border-red-800 px-3 py-2 text-xs font-bold text-red-300"><Trash2 size={14}/>Delete permanently</button>}
+        const cover = coverPhotos[trip.id] || savedTripCoverImage(trip.itinerary, trip);
+        return <article key={trip.id} className={styles.card}>
+          <div className={styles.image}>
+            <SavedTripCoverPhoto src={cover?.src} photoId={cover?.id} alt={cover?.label || 'Destination photo unavailable'}/>
+            <span className={styles.status}><span aria-hidden="true" className={trip.status === 'active' ? styles.activeDot : styles.statusDot}/>{trip.status === 'archived' ? 'Archived trip' : trip.status === 'completed' ? 'Completed trip' : past ? 'Previous trip' : 'Upcoming trip'}</span>
+          </div>
+          <div className={styles.content}>
+            <div className={styles.titleRow}>
+              <h3 className={styles.destination}>{trip.destination}</h3>
+              <SavedTripCardMenu destination={trip.destination}>
+                <button type="button" role="menuitem" tabIndex={-1} disabled={busy} aria-expanded={feedbackTrip === trip.id} onClick={() => setFeedbackTrip(feedbackTrip === trip.id ? null : trip.id)}><Star aria-hidden="true" size={17}/>Rate this trip</button>
+                <button role="menuitem" tabIndex={-1} disabled={busy} aria-expanded={expanded} onClick={() => setExpandedTrip(expanded ? null : trip.id)}><History aria-hidden="true" size={17}/>Version history<ChevronDown aria-hidden="true" size={13} className={expanded ? 'transition-transform rotate-180' : 'transition-transform'}/></button>
+                <button role="menuitem" tabIndex={-1} disabled={busy} onClick={() => void onAction({ action: trip.status === 'archived' ? 'restore-trip' : 'archive-trip', id: trip.id }, trip.status === 'archived' ? trip.completedAt ? 'Trip restored to completed travels.' : 'Trip restored to active plans.' : 'Trip archived.')}>
+                  {trip.status === 'archived' ? <RotateCcw aria-hidden="true" size={17}/> : <Archive aria-hidden="true" size={17}/>} {trip.status === 'archived' ? 'Restore trip' : 'Archive'}
+                </button>
+              </SavedTripCardMenu>
             </div>
-            {cover?.attribution && <a href={cover.attribution.sourceUrl} target="_blank" rel="noreferrer" className="mt-4 block w-fit max-w-full truncate text-[9px] text-white/45 hover:text-white/75">Photo: {cover.attribution.creator} · {cover.attribution.license}</a>}
+            <div className={styles.details}>
+              <span><CalendarDays aria-hidden="true" size={18}/><span><time dateTime={trip.startDate}>{new Date(trip.startDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</time> – <time dateTime={trip.endDate}>{new Date(trip.endDate + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</time></span></span>
+              <span><UserRound aria-hidden="true" size={18}/>{trip.travelers} traveler{trip.travelers === 1 ? '' : 's'}</span>
             </div>
+            {trip.completedAt && <p className={styles.completed}>Travel completed · {new Date(trip.completedAt).toLocaleDateString()}</p>}
+            <div className={styles.accommodation}>
+              {savedAccommodation(trip) ? <SavedAccommodation trip={trip}/> : <div className={styles.emptyAccommodation}><span><BedDouble aria-hidden="true" size={22}/></span><div><p>No accommodation selected</p><p>Add an accommodation to complete your plan.</p></div></div>}
+            </div>
+            <div className={styles.budgetRow}>
+              <div><p className={styles.budgetLabel}>Trip budget</p><strong className={styles.budget}>{formatMoney(trip.budget, trip.currency)}</strong></div>
+              <p className={styles.updated} title={new Date(trip.updatedAt || trip.createdAt).toLocaleString()}><Clock3 aria-hidden="true" size={16}/>Updated <time dateTime={trip.updatedAt || trip.createdAt}>{new Date(trip.updatedAt || trip.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</time></p>
+            </div>
+            <div className={styles.actions}>
+              {trip.status !== 'archived' && <><button disabled={busy} onClick={() => onView(trip)} className={styles.primaryButton}><Eye aria-hidden="true" size={18}/>View itinerary</button>{trip.status === 'active' && <button disabled={busy} onClick={() => onEdit(trip)} className={styles.editButton}><Pencil aria-hidden="true" size={17}/>Edit</button>}</>}
+              {trip.status !== 'archived' && <button type="button" disabled={busy} onClick={() => void toggleCompleted(trip)} className={styles.doneButton}>{trip.status === 'completed' ? <RotateCcw aria-hidden="true" size={17}/> : <Check aria-hidden="true" size={17}/>} {trip.status === 'completed' ? 'Mark as not done' : 'Mark as done'}</button>}
+              {trip.status === 'archived' && <button disabled={busy} onClick={() => setDeletingTrip(trip)} className={styles.deleteButton}><Trash2 aria-hidden="true" size={16}/>Delete permanently</button>}
+            </div>
+            <div className={styles.secondaryActions}><button type="button" disabled={busy} onClick={() => onMap(trip)} className={mapStyles.mapEntry}><MapPinned aria-hidden="true" size={16}/>View map / Navigate</button>{trip.status !== 'archived' && <button type="button" disabled={busy} onClick={() => { setVisitMessage(''); setRecordingTrip(trip); }} className={styles.visitButton}><MapPin aria-hidden="true" size={16}/>Record visited places</button>}</div>
+            <p className={styles.source}>{sourceLabel(trip.itinerary)}</p>
+            {cover?.attribution && <div className={styles.attribution}>
+              {cover.scope === 'country' && <span>{cover.label} · </span>}
+              {cover.provider === 'unsplash' ? <>Photo by <a href={cover.attribution.photographerUrl} target="_blank" rel="noreferrer">{cover.attribution.creator}</a> on <a href={cover.attribution.sourceUrl} target="_blank" rel="noreferrer">Unsplash</a></> : <><a href={cover.attribution.sourceUrl} target="_blank" rel="noreferrer">Photo: {cover.attribution.creator}</a> · <a href={cover.attribution.licenseUrl || cover.attribution.sourceUrl} target="_blank" rel="noreferrer">{cover.attribution.license}</a> · Cropped to fit</>}
+            </div>}
           </div>
           {feedbackTrip === trip.id && <TripFeedbackForm key={trip.id} itineraryId={trip.id} destination={trip.destination}/>}
           {expanded && <div className="border-t border-white/10 bg-black/15 p-5">
@@ -122,6 +221,7 @@ export function SavedTripLifecycle({ trips, versions, generations, busy, tripsPa
       {tripsPage && <div className="mt-5"><p className="text-xs text-white/50">{trips.length} of {tripsPage.total} trips loaded. Active, completed and archived filters apply to loaded trips.</p>{tripsPage.nextCursor && onLoadMoreTrips && <button disabled={busy} onClick={() => void onLoadMoreTrips()} className="mt-3 border border-white/20 px-4 py-2 text-sm font-bold">Load more trips</button>}</div>}
       <div className="mt-8 border-t border-white/10 pt-6"><div className="flex items-center gap-3"><History size={18} className="text-cyan-200"/><div><h3 className="font-bold">Recent AI generations</h3><p className="text-xs text-white/40">Persistent request history helps prevent duplicate provider calls.</p></div></div>{generations.length === 0 ? <p className="mt-4 text-sm text-white/40">No generation attempts recorded yet.</p> : <div className="mt-4 grid gap-px bg-white/10 sm:grid-cols-2 xl:grid-cols-3">{generations.slice(0, 6).map((generation) => <div key={generation.id} className="bg-[#0b1d1a] p-4"><span className={`text-[10px] font-bold uppercase tracking-wider ${generation.status === 'completed' ? 'text-emerald-200' : generation.status === 'failed' ? 'text-red-300' : 'text-amber-200'}`}>{generation.status}</span><strong className="mt-1 block truncate text-sm">{generation.destination}</strong><p className="mt-1 text-[11px] text-white/35">{new Date(generation.createdAt).toLocaleString()}{generation.errorCode ? ` · ${generation.errorCode}` : ''}</p></div>)}</div>}</div>
       {deletingTrip && <DeleteTripDialog trip={deletingTrip} busy={busy} onClose={() => setDeletingTrip(null)} onConfirm={onError => onDelete(deletingTrip, onError)}/>}
+      {recordingTrip && <RecordTripVisitsDialog key={recordingTrip.id} trip={recordingTrip} onClose={() => setRecordingTrip(null)} onSaved={result => setVisitMessage(result.recorded ? `${result.recorded} visited ${result.recorded === 1 ? 'place' : 'places'} saved. Your trip status is unchanged.${result.alreadyRecorded ? ` ${result.alreadyRecorded} already recorded.` : ''}` : 'These places are already recorded. No duplicates added.')}/>}
     </section>
   );
 }

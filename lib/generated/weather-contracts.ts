@@ -43,4 +43,5 @@ export interface WeatherData {
   refreshAfter: string;
   freshness: FreshnessMetadata;
   crowd: Array<CrowdCondition>;
+  timeZone?: string;
 }

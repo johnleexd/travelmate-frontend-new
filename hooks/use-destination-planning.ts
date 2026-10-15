@@ -1,22 +1,28 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ProviderAccommodation, RoomOccupancy, FreshnessMetadata, LiveAccommodation, NearbyAccommodation, LocationSuggestion, TransportationOption } from '@/lib/contracts';
+import type { ProviderAccommodation, FreshnessMetadata, LiveAccommodation, NearbyAccommodation, LocationSuggestion, LocationCandidate, TransportationOption } from '@/lib/contracts';
 import { SUPPORTED_CURRENCIES, type CurrencyCode, type SavedTrip } from '@/lib/domain';
-import { fetchDestinationAccommodations, fetchDestinationContext, searchLocations, resolveManualDestination } from '@/services/destination-planning.service';
+import { savedDestinationAnchor } from '@/lib/destination-identity';
+import { fetchDestinationAccommodations, fetchDestinationContext, searchLocationPage, resolveManualDestination, resolveAdministrativeDestination } from '@/services/destination-planning.service';
 
-type SelectedDestination = Omit<LocationSuggestion, 'latitude' | 'longitude'> & { latitude?: number; longitude?: number };
+type SelectedDestination = LocationCandidate;
 
-export function useDestinationPlanning(startDate: string, endDate: string, travelers: number, occupancyInput: RoomOccupancy, guestNationality = '') {
+export function useDestinationPlanning(startDate: string, endDate: string, travelers: number) {
   const [destination, setDestination] = useState('');
   const [selectedDestination, setSelectedDestination] = useState<SelectedDestination | null>(null);
+  const [browsingDestination, setBrowsingDestination] = useState<SelectedDestination | null>(null);
   const [suggestionLimit, setSuggestionLimit] = useState(10);
-  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [nextOffset, setNextOffset] = useState<number | null>(null);
+  const paginationRequest = useRef<AbortController | null>(null);
+  const [suggestions, setSuggestions] = useState<LocationCandidate[]>([]);
   const [locationsBusy, setLocationsBusy] = useState(false);
   const [manualBusy, setManualBusy] = useState(false);
   const [locationMessage, setLocationMessage] = useState('');
   const [currency, setCurrencyState] = useState<CurrencyCode>('PHP');
   const [currencyResolved, setCurrencyResolved] = useState(false);
+  const [currencyWasDetected, setCurrencyWasDetected] = useState(false);
+  const [currencyFallbackMessage, setCurrencyFallbackMessage] = useState('');
   const [contextBusy, setContextBusy] = useState(false);
   const [contextMessage, setContextMessage] = useState('');
   const [transportationOptions, setTransportationOptions] = useState<TransportationOption[]>([]);
@@ -25,7 +31,6 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
   const [providerEnvironment, setProviderEnvironment] = useState<'sandbox' | 'production' | undefined>();
   const [providerAccommodations, setProviderAccommodations] = useState<ProviderAccommodation[]>([]);
   const [providerStatus, setProviderStatus] = useState<'not-configured' | 'ready' | 'provider-error' | 'no-results'>('not-configured');
-  const occupancyIdentity = JSON.stringify(occupancyInput);
   const [liveAccommodations, setLiveAccommodations] = useState<LiveAccommodation[]>([]);
   const [nearbyAccommodations, setNearbyAccommodations] = useState<NearbyAccommodation[]>([]);
   const [stayResultKey, setStayResultKey] = useState('');
@@ -33,10 +38,11 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
   const manualRequest = useRef<AbortController | null>(null);
   const manuallyResolvedQuery = useRef('');
   const contextIdentity = JSON.stringify([selectedDestination?.id, selectedDestination?.countryCode, selectedDestination?.latitude, selectedDestination?.longitude]);
+  const manualCurrency = useRef<{ identity: string; currency: CurrencyCode } | null>(null);
   const [resolvedContextIdentity, setResolvedContextIdentity] = useState('');
-  const accommodationNeedsArea = Boolean(selectedDestination && ['Country','Region','Island'].includes(selectedDestination.placeType));
+  const accommodationNeedsArea = Boolean(selectedDestination && (['country','area'].includes(selectedDestination.scopeType || '') || ['Country','Region','Province','Island','Administrative area'].includes(selectedDestination.placeType)));
   const accommodationDatesValid = /^\d{4}-\d{2}-\d{2}$/.test(startDate) && /^\d{4}-\d{2}-\d{2}$/.test(endDate) && Number.isFinite(Date.parse(startDate)) && Number.isFinite(Date.parse(endDate)) && endDate >= startDate && (Date.parse(endDate) - Date.parse(startDate)) / 86_400_000 < 31;
-  const accommodationQueryKey = JSON.stringify([selectedDestination?.label, selectedDestination?.countryCode, selectedDestination?.placeType, selectedDestination?.providerId, selectedDestination?.latitude, selectedDestination?.longitude, startDate, endDate, travelers, occupancyIdentity, guestNationality, currency, currencyResolved]);
+  const accommodationQueryKey = JSON.stringify([selectedDestination?.label, selectedDestination?.countryCode, selectedDestination?.placeType, selectedDestination?.providerId, selectedDestination?.latitude, selectedDestination?.longitude, startDate, endDate, travelers, currency, currencyResolved]);
   const [staysBusy, setStaysBusy] = useState(false);
   const [stayMessage, setStayMessage] = useState('');
   const [stayFreshness, setStayFreshness] = useState<FreshnessMetadata | null>(null);
@@ -49,11 +55,11 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
     const timeout = window.setTimeout(() => {
       setLocationsBusy(true);
       setLocationMessage('');
-      void searchLocations(destination, controller.signal)
-        .then((items) => {
+      void searchLocationPage(destination, 0, controller.signal)
+        .then((result) => {
           if (controller.signal.aborted) return;
-          setSuggestions(items);
-          if (!items.length) setLocationMessage('No matching locations found. Try a city, province, or country.');
+          setSuggestions(result.locations); setNextOffset(result.nextOffset ?? null);
+          setLocationMessage(result.message || (!result.locations.length ? 'No catalogue match. Try verified geocoding with its parent areas and country.' : ''));
         })
         .catch((error: unknown) => {
           if (controller.signal.aborted) return;
@@ -67,7 +73,7 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
     return () => { window.clearTimeout(timeout); controller.abort(); };
   }, [destination, selectedDestination, manualBusy]);
 
-  useEffect(() => () => manualRequest.current?.abort(), []);
+  useEffect(() => () => { manualRequest.current?.abort(); paginationRequest.current?.abort(); }, []);
 
   useEffect(() => {
     if (!selectedDestination || !/^[A-Z]{2}$/.test(selectedDestination.countryCode)) return;
@@ -75,23 +81,32 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
     void (async () => {
       setContextBusy(true);
       setContextMessage('');
+      setCurrencyFallbackMessage('');
       setTransportationOptions([]);
       try {
         const result = await fetchDestinationContext(selectedDestination as LocationSuggestion, controller.signal);
         if (controller.signal.aborted) return;
         setTransportationOptions(result.transportation);
-        setTransportationPreference((current) => result.transportation.some((mode) => mode.label.toLowerCase() === current) ? current : '');
+        // Destination changes clear the preference explicitly. Context refresh must not silently erase a saved or chosen mode.
         setContextMessage(result.transportationMessage);
+        setCurrencyFallbackMessage(result.currencyMessage || 'Local currency is not supported for planning. Choose a supported planning currency.');
+        setCurrencyWasDetected(Boolean(result.currency));
         if (result.currency) {
           setCurrencyState(result.currency);
           setCurrencyResolved(true);
         } else {
-          setCurrencyResolved(false);
+          const chosen = manualCurrency.current?.identity === contextIdentity ? manualCurrency.current.currency : null;
+          if (chosen) setCurrencyState(chosen);
+          setCurrencyResolved(Boolean(chosen));
         }
       } catch (error: unknown) {
         if (controller.signal.aborted) return;
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
-          setCurrencyResolved(false);
+          const chosen = manualCurrency.current?.identity === contextIdentity ? manualCurrency.current.currency : null;
+          if (chosen) setCurrencyState(chosen);
+          setCurrencyResolved(Boolean(chosen));
+          setCurrencyWasDetected(false);
+          setCurrencyFallbackMessage('Destination currency lookup is temporarily unavailable. Choose a supported planning currency.');
           setContextMessage(error instanceof Error ? error.message : 'Destination details are temporarily unavailable.');
         }
       } finally { if (!controller.signal.aborted) { setContextBusy(false); setResolvedContextIdentity(contextIdentity); } }
@@ -114,17 +129,18 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
       setStayFreshness(null);
       setStayStatus('idle');
       try {
-        const occupancy = JSON.parse(occupancyIdentity) as RoomOccupancy;
         const result = await fetchDestinationAccommodations({
           destination: selectedDestination.label,
           countryCode: selectedDestination.countryCode,
+          locationId: selectedDestination.id,
+          locationProvider: selectedDestination.provider,
+          locationProviderId: selectedDestination.providerId,
+          administrativeCode: selectedDestination.administrativeCode,
+          provinceCode: selectedDestination.provinceCode,
           placeType: selectedDestination.placeType,
-          quotes: currencyResolved,
           checkInDate: startDate,
           checkOutDate,
-          adults: occupancy.reduce((sum, room) => sum + room.adults, 0),
-          occupancy,
-          guestNationality,
+          adults: travelers,
           currency,
           latitude: selectedDestination.latitude,
           longitude: selectedDestination.longitude,
@@ -150,20 +166,25 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
       } finally { if (!controller.signal.aborted) setStaysBusy(false); }
     })(); }, 400);
     return () => { window.clearTimeout(timeout); controller.abort(); };
-  }, [selectedDestination, accommodationNeedsArea, accommodationDatesValid, accommodationQueryKey, currency, currencyResolved, contextBusy, resolvedContextIdentity, contextIdentity, startDate, endDate, travelers, occupancyIdentity, guestNationality, staysRetry]);
+  }, [selectedDestination, accommodationNeedsArea, accommodationDatesValid, accommodationQueryKey, currency, currencyResolved, contextBusy, resolvedContextIdentity, contextIdentity, startDate, endDate, travelers, staysRetry]);
 
   const changeDestinationInput = useCallback((value: string) => {
+    paginationRequest.current?.abort(); setNextOffset(null);
     manualRequest.current?.abort();
     manuallyResolvedQuery.current = '';
     setManualBusy(false);
     setSuggestionLimit(10);
     setDestination(value);
     if (selectedDestination?.label === value) return;
+    setBrowsingDestination(null);
+    manualCurrency.current = null;
     setLocationsBusy(value.trim().length >= 2);
     setSuggestions([]);
     setLocationMessage('');
     setSelectedDestination(null);
     setCurrencyResolved(false);
+    setCurrencyWasDetected(false);
+    setCurrencyFallbackMessage('');
     setContextMessage('');
     setTransportationOptions([]);
     setTransportationPreference('');
@@ -174,26 +195,45 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
     setStayFreshness(null);
   }, [selectedDestination, setLiveAccommodations, setNearbyAccommodations, setResolvedContextIdentity, setStayResultKey]);
 
-  const selectDestination = useCallback((location: LocationSuggestion) => {
+  const selectDestination = useCallback(async (input: LocationCandidate, preserveBrowsing = false): Promise<boolean> => {
+    paginationRequest.current?.abort(); setNextOffset(null);
     manualRequest.current?.abort();
     setManualBusy(false);
-    if (!/^[A-Z]{2}$/.test(location.countryCode) || !Number.isFinite(location.latitude) || !Number.isFinite(location.longitude)) {
-      setSelectedDestination(null); setLocationMessage('This location has no valid country or coordinates. Resolve it before continuing.'); return;
+    const controller = new AbortController(); manualRequest.current = controller;
+    let location = input;
+    const officialArea = location.provider === 'psgc' && ['Province','Region'].includes(location.placeType);
+    if (!Number.isFinite(location.latitude) || !Number.isFinite(location.longitude)) {
+      if (!officialArea && location.provider === 'psgc') {
+        setManualBusy(true); setSelectedDestination(null); setDestination(location.label);
+        manuallyResolvedQuery.current = location.label;
+        setLocationMessage('Verifying coordinates for the selected official location…');
+        try { location = await resolveAdministrativeDestination(location, controller.signal); }
+        catch (error) { if (!controller.signal.aborted) setLocationMessage(error instanceof Error ? error.message : 'Coordinates could not be verified. Retry this location.'); return false; }
+        finally { if (!controller.signal.aborted) setManualBusy(false); }
+      } else if (!officialArea) { setSelectedDestination(null); setLocationMessage('This location has no valid country or coordinates. Resolve it before continuing.'); return false; }
     }
+    if (controller.signal.aborted) return false;
+    if (!/^[A-Z]{2}$/.test(location.countryCode)) { setLocationMessage('Choose a location with a verified country.'); return false; }
     setDestination(location.label);
+    manualCurrency.current = null;
     setSelectedDestination(location);
+    if (!preserveBrowsing) setBrowsingDestination(location.canBrowse || ['country','area'].includes(location.scopeType || '') || ['Country','Region','Province','Island','Administrative area'].includes(location.placeType) ? location : null);
     setLocationsBusy(false);
     setSuggestions([]);
     setLocationMessage('');
     setCurrencyResolved(false);
+    setCurrencyWasDetected(false);
+    setCurrencyFallbackMessage('');
     setLiveAccommodations([]);
     setNearbyAccommodations([]); setResolvedContextIdentity('');
     setStayResultKey(''); setStaysBusy(false);
     setStayMessage('');
     setStayFreshness(null);
+    return true;
   }, [setLiveAccommodations, setNearbyAccommodations, setResolvedContextIdentity, setStayResultKey]);
 
   const confirmManualDestination = useCallback(async (label: string) => {
+    paginationRequest.current?.abort(); setNextOffset(null);
     const normalized = label.trim().slice(0, 120);
     if (normalized.length < 2) return;
     manualRequest.current?.abort();
@@ -213,23 +253,30 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
   }, [selectDestination, setLiveAccommodations, setNearbyAccommodations]);
 
   const restoreDestination = useCallback((trip: SavedTrip, savedTransportation = '') => {
+    const storedAnchor = savedDestinationAnchor(trip.itinerary);
+    const anchor = storedAnchor && (!trip.destinationCountryCode || storedAnchor.countryCode === trip.destinationCountryCode) && (!trip.destinationCity || storedAnchor.city === trip.destinationCity) && (trip.latitude == null || Math.abs(trip.latitude - storedAnchor.latitude) <= 0.00000051) && (trip.longitude == null || Math.abs(trip.longitude - storedAnchor.longitude) <= 0.00000051) ? storedAnchor : undefined;
     const restored: SelectedDestination = {
-      id: 0,
-      name: trip.destinationCity || trip.destination.split(',')[0].trim(),
-      region: trip.destinationRegion || '',
-      country: trip.destinationCountry || '',
-      countryCode: trip.destinationCountryCode || '',
-      latitude: trip.latitude,
-      longitude: trip.longitude,
+      id: anchor?.id || 0,
+      name: trip.destinationCity || anchor?.city || trip.destination.split(',')[0].trim(),
+      region: trip.destinationRegion || anchor?.region || '',
+      country: trip.destinationCountry || anchor?.country || '',
+      countryCode: trip.destinationCountryCode || anchor?.countryCode || '',
+      latitude: anchor?.latitude ?? trip.latitude,
+      longitude: anchor?.longitude ?? trip.longitude,
       label: trip.destination,
-      placeType: 'Saved destination',
+      placeType: anchor?.placeType || 'Saved destination',
       contextLabel: `Saved destination • ${trip.destination}`,
+      coordinateStatus: anchor || trip.latitude != null && trip.longitude != null ? 'resolved' : 'unresolved',
+      sourceFeatureCode: anchor?.sourceFeatureCode, scopeType: anchor?.scopeType, locationPath: anchor?.locationPath, parentId: anchor?.parentId, canBrowse: anchor?.canBrowse,
+      ...(anchor?.provider ? { provider: anchor.provider, providerId: anchor.providerId, administrativeCode: anchor.administrativeCode, provinceCode: anchor.provinceCode, geographicProvinceCode: anchor.geographicProvinceCode, administrativeLevel: anchor.administrativeLevel, coordinateSource: anchor.coordinateSource } : {}),
     };
     setDestination(trip.destination);
     setSelectedDestination(restored);
+    setBrowsingDestination(restored.canBrowse || ['country','area'].includes(restored.scopeType || '') ? restored : null);
     setSuggestions([]);
     setCurrencyState(trip.currency);
     setCurrencyResolved(true);
+    setCurrencyWasDetected(false);
     setTransportationPreference(savedTransportation);
     if (!restored.countryCode) {
       setContextMessage('This older saved trip has no structured country details. Currency was restored from the saved plan.');
@@ -238,21 +285,34 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
 
   const setManualCurrency = useCallback((value: CurrencyCode) => {
     if (!SUPPORTED_CURRENCIES.includes(value)) return;
+    manualCurrency.current = { identity: contextIdentity, currency: value };
     setCurrencyState(value);
     setCurrencyResolved(true);
-  }, []);
+    setCurrencyWasDetected(false);
+  }, [contextIdentity]);
 
   return {
     destination,
     selectedDestination,
+    browsingDestination,
     suggestions: suggestions.slice(0, suggestionLimit),
-    hasMoreSuggestions: suggestions.length > suggestionLimit,
-    showMoreSuggestions: () => setSuggestionLimit(value => value + 10),
+    hasMoreSuggestions: suggestions.length > suggestionLimit || nextOffset !== null,
+    showMoreSuggestions: async () => {
+      if (suggestions.length > suggestionLimit) { setSuggestionLimit(value => value + 10); return; }
+      if (nextOffset === null || locationsBusy) return;
+      const controller = new AbortController(); paginationRequest.current?.abort(); paginationRequest.current = controller;
+      setLocationsBusy(true);
+      try { const page = await searchLocationPage(destination, nextOffset, controller.signal); if (!controller.signal.aborted) { setSuggestions(current => { const ids = new Set(current.map(p => p.id)); return [...current, ...page.locations.filter(p => !ids.has(p.id))]; }); setNextOffset(page.nextOffset ?? null); setSuggestionLimit(value => value + 20); } }
+      catch (error) { if (!controller.signal.aborted) setLocationMessage(error instanceof Error ? error.message : 'Could not load the next page. Retry.'); }
+      finally { if (!controller.signal.aborted) setLocationsBusy(false); }
+    },
     locationsBusy,
     locationMessage,
     currency,
     currencyResolved,
-    currencyNeedsFallback: Boolean(selectedDestination && !contextBusy && !currencyResolved),
+    currencyWasDetected,
+    currencyFallbackMessage,
+    currencyNeedsFallback: Boolean(selectedDestination && !contextBusy && (!currencyResolved || !currencyWasDetected)),
     contextBusy,
     contextMessage,
     transportationOptions,

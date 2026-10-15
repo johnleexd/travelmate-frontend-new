@@ -1,0 +1,1063 @@
+{
+  "anchor": {
+    "city": "Gimcheon",
+    "country": "South Korea",
+    "countryCode": "KR",
+    "latitude": 36.12176,
+    "longitude": 128.11981
+  },
+  "body": {
+    "destination": "Gimcheon, Gyeongsangbuk-do, South Korea",
+    "destinationDetails": {
+      "city": "Gimcheon",
+      "country": "South Korea",
+      "countryCode": "KR",
+      "latitude": 36.12176,
+      "longitude": 128.11981
+    },
+    "latitude": 36.12176,
+    "longitude": 128.11981,
+    "startDate": "2026-10-11",
+    "endDate": "2026-10-17",
+    "budget": 1000000,
+    "currency": "KRW",
+    "travelers": 1,
+    "partyType": "solo",
+    "interests": [
+      "culture",
+      "nature"
+    ],
+    "travelPace": "balanced"
+  },
+  "trip": {
+    "id": "f51f3175-b24e-56e6-9333-07014d09ae5f",
+    "saveKey": "content:b6492bc13cab8e05e95e7adcc36d8b7b2bb0cb67a8fb135a9c5522acbd25cc7a",
+    "saveRequestHash": "b6492bc13cab8e05e95e7adcc36d8b7b2bb0cb67a8fb135a9c5522acbd25cc7a",
+    "userId": "69c957ad-2cdb-5226-bcd6-725a3e96a28c",
+    "destination": "Gimcheon, Gyeongsangbuk-do, South Korea",
+    "destinationCity": "Gimcheon",
+    "destinationRegion": null,
+    "destinationCountry": "South Korea",
+    "destinationCountryCode": "KR",
+    "latitude": 36.12176,
+    "longitude": 128.11981,
+    "budget": 1000000,
+    "currency": "KRW",
+    "startDate": "2026-10-11",
+    "endDate": "2026-10-17",
+    "travelers": 1,
+    "partyType": "solo",
+    "interests": [
+      "culture",
+      "nature"
+    ],
+    "itinerary": {
+      "days": [
+        {
+          "day": 1,
+          "date": "2026-10-11",
+          "theme": "Gimcheon: Jikjisa, 문경 도천사지 삼층석탑",
+          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Jikjitempleentrance.jpg/1280px-Jikjitempleentrance.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "rideFare": 20000,
+          "crowdNote": "Low-confidence estimate from weekend timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+          "totalCost": 165238,
+          "activities": [
+            {
+              "id": "d45a1d09-19db-5b12-804d-3239ecd59544",
+              "icon": "map",
+              "time": "12:45 PM",
+              "place": {
+                "city": "Gimcheon",
+                "name": "Jikjisa",
+                "address": "Not available",
+                "country": "South Korea",
+                "placeId": "Q625286",
+                "latitude": 36.1165,
+                "provider": "wikidata",
+                "fetchedAt": "2026-10-11T08:50:46.511Z",
+                "longitude": 128.00433333,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q625286",
+                "countryCode": "KR",
+                "openingHours": "Opening hours need confirmation",
+                "selectedCity": "Gimcheon",
+                "locationScope": "city",
+                "membershipSourceUrl": "https://www.openstreetmap.org/relation/7715625",
+                "distanceFromDestinationKm": 10.39
+              },
+              "title": "Visit Jikjisa",
+              "status": "planned",
+              "category": "activity",
+              "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c7/Jikjitempleentrance.jpg/1280px-Jikjitempleentrance.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "unitCost": 28571,
+              "description": "Opening hours need confirmation. Buddhist temple. Suggested 60-minute visit. Address: Not available.",
+              "estimatedCost": 28571,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 28571,
+                "participants": 1,
+                "needsConfirmation": true
+              },
+              "scheduleLabel": "Suggested",
+              "travelMinutes": 0,
+              "durationMinutes": 60,
+              "imageAttribution": {
+                "creator": "Crossmr",
+                "license": "CC BY-SA 3.0",
+                "sourceUrl": "https://commons.wikimedia.org/?curid=4882959",
+                "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+              },
+              "placeVerification": "supporting-source-found"
+            },
+            {
+              "id": "5a1dd792-ca1e-5083-8c75-313e89a48965",
+              "icon": "map",
+              "time": "02:02 PM",
+              "place": {
+                "city": "Gimcheon",
+                "name": "문경 도천사지 삼층석탑",
+                "address": "Not available",
+                "country": "South Korea",
+                "placeId": "Q16092813",
+                "latitude": 36.11694444,
+                "provider": "wikidata",
+                "fetchedAt": "2026-10-11T08:50:46.511Z",
+                "longitude": 128.00333333,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q16092813",
+                "countryCode": "KR",
+                "openingHours": "Opening hours need confirmation",
+                "selectedCity": "Gimcheon",
+                "locationScope": "city",
+                "membershipSourceUrl": "https://www.openstreetmap.org/relation/7715625",
+                "distanceFromDestinationKm": 10.48
+              },
+              "title": "Visit 문경 도천사지 삼층석탑",
+              "status": "planned",
+              "category": "activity",
+              "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d9/%EB%B9%84%EB%A1%9C%EC%A0%84%EC%95%9E_%EC%84%9D%ED%83%91.jpg/1280px-%EB%B9%84%EB%A1%9C%EC%A0%84%EC%95%9E_%EC%84%9D%ED%83%91.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "unitCost": 28571,
+              "description": "Opening hours need confirmation. three-storied pagoda. Suggested 60-minute visit. Allow at least 17 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "estimatedCost": 28571,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 28571,
+                "participants": 1,
+                "needsConfirmation": true
+              },
+              "scheduleLabel": "Suggested",
+              "travelMinutes": 17,
+              "durationMinutes": 60,
+              "imageAttribution": {
+                "creator": "이차우",
+                "license": "CC BY-SA 4.0",
+                "sourceUrl": "https://commons.wikimedia.org/?curid=51501674",
+                "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+              },
+              "placeVerification": "supporting-source-found"
+            },
+            {
+              "id": "f04c672b-7d4e-510f-ba52-7c6af955ec7d",
+              "icon": "food",
+              "time": "Daily allowance",
+              "title": "Daily meals in Gimcheon",
+              "category": "food",
+              "unitCost": 31429,
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "estimatedCost": 31429,
+              "priceEvidence": {
+                "unit": "daily-per-person",
+                "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 31429,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "id": "b6a5321c-7c80-568e-bb1f-7c513c608765",
+              "icon": "bus",
+              "time": "Daily allowance",
+              "title": "Daily transport in Gimcheon",
+              "category": "transport",
+              "unitCost": 20000,
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "estimatedCost": 20000,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 20000,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            }
+          ],
+          "crowdLevel": "moderate",
+          "travelNote": "Suggested verified city and nearby visits; visit durations and walking transfers are estimates. Nearby visits reserve return travel to the selected city. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+          "crowdSource": "estimated",
+          "crowdFetchedAt": "2026-10-11T08:51:26.982Z",
+          "planningReason": "Suggested verified city and nearby visits; visit durations and walking transfers are estimates. Nearby visits reserve return travel to the selected city. Confirm current hours and access.",
+          "planningStatus": "suggested",
+          "scheduleBlocks": [
+            {
+              "kind": "meal",
+              "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+              "endMinutes": 765,
+              "startMinutes": 720
+            }
+          ],
+          "crowdConfidence": "low",
+          "imageAttribution": {
+            "creator": "Crossmr",
+            "license": "CC BY-SA 3.0",
+            "sourceUrl": "https://commons.wikimedia.org/?curid=4882959",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0"
+          },
+          "crowdRefreshAfter": "2026-10-12T08:51:26.982Z",
+          "crowdRecommendation": "Prefer an earlier arrival for major attractions and confirm venue hours. No activity was moved automatically."
+        },
+        {
+          "day": 2,
+          "date": "2026-10-12",
+          "theme": "Gimcheon: Gimcheon Gimsan Hyanggyo, 전 구미 강락사지 삼층석탑",
+          "imageUrl": "",
+          "rideFare": 20000,
+          "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+          "totalCost": 165238,
+          "activities": [
+            {
+              "id": "5234a05c-ac61-5b03-bc9a-2fe8b0c387f0",
+              "icon": "map",
+              "time": "09:58 AM",
+              "place": {
+                "city": "Gimcheon",
+                "name": "Gimcheon Gimsan Hyanggyo",
+                "address": "Not available",
+                "country": "South Korea",
+                "placeId": "Q18229777",
+                "latitude": 36.13944444,
+                "provider": "wikidata",
+                "fetchedAt": "2026-10-11T08:50:46.511Z",
+                "longitude": 128.09686111,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q18229777",
+                "countryCode": "KR",
+                "openingHours": "Opening hours need confirmation",
+                "selectedCity": "Gimcheon",
+                "locationScope": "city",
+                "membershipSourceUrl": "https://www.openstreetmap.org/relation/7715625",
+                "distanceFromDestinationKm": 2.85
+              },
+              "title": "Visit Gimcheon Gimsan Hyanggyo",
+              "status": "planned",
+              "category": "activity",
+              "unitCost": 28571,
+              "description": "Opening hours need confirmation. hyanggyo. Suggested 60-minute visit. Address: Not available.",
+              "estimatedCost": 28571,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 28571,
+                "participants": 1,
+                "needsConfirmation": true
+              },
+              "scheduleLabel": "Suggested",
+              "travelMinutes": 0,
+              "durationMinutes": 60,
+              "placeVerification": "supporting-source-found"
+            },
+            {
+              "id": "c15bf45d-b344-549b-ae1a-1a0d22125a15",
+              "icon": "map",
+              "time": "01:20 PM",
+              "place": {
+                "city": "Gimcheon",
+                "name": "전 구미 강락사지 삼층석탑",
+                "address": "Not available",
+                "country": "South Korea",
+                "placeId": "Q16094498",
+                "latitude": 36.11944444,
+                "provider": "wikidata",
+                "fetchedAt": "2026-10-11T08:50:46.511Z",
+                "longitude": 128.00611111,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q16094498",
+                "countryCode": "KR",
+                "openingHours": "Opening hours need confirmation",
+                "selectedCity": "Gimcheon",
+                "locationScope": "city",
+                "membershipSourceUrl": "https://www.openstreetmap.org/relation/7715625",
+                "distanceFromDestinationKm": 10.22
+              },
+              "title": "Visit 전 구미 강락사지 삼층석탑",
+              "status": "planned",
+              "category": "activity",
+              "unitCost": 28571,
+              "description": "Opening hours need confirmation. three-storied pagoda. Suggested 60-minute visit. Allow at least 142 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "estimatedCost": 28571,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 28571,
+                "participants": 1,
+                "needsConfirmation": true
+              },
+              "scheduleLabel": "Suggested",
+              "travelMinutes": 142,
+              "durationMinutes": 60,
+              "placeVerification": "supporting-source-found"
+            },
+            {
+              "id": "92c26291-cba4-5ad1-99ee-7f32b3d6c041",
+              "icon": "food",
+              "time": "Daily allowance",
+              "title": "Daily meals in Gimcheon",
+              "category": "food",
+              "unitCost": 31429,
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "estimatedCost": 31429,
+              "priceEvidence": {
+                "unit": "daily-per-person",
+                "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 31429,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "id": "8f366046-4798-5011-abfb-67f0aca95674",
+              "icon": "bus",
+              "time": "Daily allowance",
+              "title": "Daily transport in Gimcheon",
+              "category": "transport",
+              "unitCost": 20000,
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "estimatedCost": 20000,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 20000,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            }
+          ],
+          "crowdLevel": "low",
+          "travelNote": "Suggested verified city and nearby visits; visit durations and walking transfers are estimates. Nearby visits reserve return travel to the selected city. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+          "crowdSource": "estimated",
+          "crowdFetchedAt": "2026-10-11T08:51:26.982Z",
+          "planningReason": "Suggested verified city and nearby visits; visit durations and walking transfers are estimates. Nearby visits reserve return travel to the selected city. Confirm current hours and access.",
+          "planningStatus": "suggested",
+          "scheduleBlocks": [
+            {
+              "kind": "meal",
+              "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+              "endMinutes": 905,
+              "startMinutes": 860
+            },
+            {
+              "kind": "free-time",
+              "label": "Free time / rest — optional",
+              "endMinutes": 1080,
+              "startMinutes": 1029
+            }
+          ],
+          "crowdConfidence": "low",
+          "crowdRefreshAfter": "2026-10-12T08:51:26.982Z",
+          "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+        },
+        {
+          "day": 3,
+          "date": "2026-10-13",
+          "theme": "Gimcheon: 황의사",
+          "imageUrl": "",
+          "rideFare": 20000,
+          "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+          "totalCost": 136667,
+          "activities": [
+            {
+              "id": "0ac09c82-5ab1-524f-b0be-2a962fc1b680",
+              "icon": "map",
+              "time": "01:19 PM",
+              "place": {
+                "city": "Yeongdong County",
+                "name": "황의사",
+                "address": "Not available",
+                "country": "South Korea",
+                "placeId": "Q55736227",
+                "latitude": 36.155,
+                "provider": "wikidata",
+                "fetchedAt": "2026-10-11T08:50:46.511Z",
+                "longitude": 127.97833333,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q55736227",
+                "countryCode": "KR",
+                "openingHours": "Opening hours need confirmation",
+                "selectedCity": "Gimcheon",
+                "locationScope": "nearby",
+                "membershipSourceUrl": "https://www.openstreetmap.org/relation/2541040",
+                "distanceFromDestinationKm": 13.23
+              },
+              "title": "Visit 황의사",
+              "status": "planned",
+              "category": "activity",
+              "unitCost": 28571,
+              "description": "Nearby attraction — Yeongdong County, outside Gimcheon. 13.23 km straight-line from the selected city centre; 214 minutes each way estimated on foot, including a 15-minute buffer. Return time is reserved; confirm the actual route and transport. Opening hours need confirmation. Buddhist temple. Suggested 60-minute visit. Address: Not available.",
+              "estimatedCost": 28571,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 28571,
+                "participants": 1,
+                "needsConfirmation": true
+              },
+              "scheduleLabel": "Suggested",
+              "travelMinutes": 0,
+              "durationMinutes": 60,
+              "placeVerification": "supporting-source-found"
+            },
+            {
+              "id": "7d0416d8-bafe-5e78-95d8-db0e1b5637c2",
+              "icon": "food",
+              "time": "Daily allowance",
+              "title": "Daily meals in Gimcheon",
+              "category": "food",
+              "unitCost": 31429,
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "estimatedCost": 31429,
+              "priceEvidence": {
+                "unit": "daily-per-person",
+                "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 31429,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "id": "7cd94d19-0ccf-5805-85f8-67a0ccbdc77a",
+              "icon": "bus",
+              "time": "Daily allowance",
+              "title": "Daily transport in Gimcheon",
+              "category": "transport",
+              "unitCost": 20000,
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "estimatedCost": 20000,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 20000,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            }
+          ],
+          "crowdLevel": "low",
+          "travelNote": "Not enough unused, city/country-verified places are available for this day, or known opening windows and travel gaps do not fit. Missing opening hours alone do not exclude places. No suitable verified indoor alternative is available; review the weather alert before outdoor visits. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+          "crowdSource": "estimated",
+          "weatherAlert": "High rain chance (81%): bring rain gear and keep a backup activity.",
+          "crowdFetchedAt": "2026-10-11T08:51:26.982Z",
+          "planningReason": "Not enough unused, city/country-verified places are available for this day, or known opening windows and travel gaps do not fit. Missing opening hours alone do not exclude places. No suitable verified indoor alternative is available; review the weather alert before outdoor visits.",
+          "planningStatus": "incomplete",
+          "scheduleBlocks": [
+            {
+              "kind": "meal",
+              "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+              "endMinutes": 799,
+              "startMinutes": 754
+            }
+          ],
+          "crowdConfidence": "low",
+          "crowdRefreshAfter": "2026-10-12T08:51:26.982Z",
+          "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+        },
+        {
+          "day": 4,
+          "date": "2026-10-14",
+          "theme": "Gimcheon: 문경 도천사지 동·서 삼층석탑",
+          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/%EC%A7%81%EC%A7%80%EC%82%AC%EC%8C%8D%ED%83%91.jpg/1280px-%EC%A7%81%EC%A7%80%EC%82%AC%EC%8C%8D%ED%83%91.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "rideFare": 20000,
+          "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+          "totalCost": 136667,
+          "activities": [
+            {
+              "id": "1933c761-fdcd-509b-aa4c-6aa7fd2263ba",
+              "icon": "map",
+              "time": "12:45 PM",
+              "place": {
+                "city": "Gimcheon",
+                "name": "문경 도천사지 동·서 삼층석탑",
+                "address": "Not available",
+                "country": "South Korea",
+                "placeId": "Q16092808",
+                "latitude": 36.11972222,
+                "provider": "wikidata",
+                "fetchedAt": "2026-10-11T08:50:46.511Z",
+                "longitude": 128.00555556,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q16092808",
+                "countryCode": "KR",
+                "openingHours": "Opening hours need confirmation",
+                "selectedCity": "Gimcheon",
+                "locationScope": "city",
+                "membershipSourceUrl": "https://www.openstreetmap.org/relation/7715625",
+                "distanceFromDestinationKm": 10.26
+              },
+              "title": "Visit 문경 도천사지 동·서 삼층석탑",
+              "status": "planned",
+              "category": "activity",
+              "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f0/%EC%A7%81%EC%A7%80%EC%82%AC%EC%8C%8D%ED%83%91.jpg/1280px-%EC%A7%81%EC%A7%80%EC%82%AC%EC%8C%8D%ED%83%91.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+              "unitCost": 28571,
+              "description": "Opening hours need confirmation. three-storied pagoda. Suggested 60-minute visit. Address: Not available.",
+              "estimatedCost": 28571,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 28571,
+                "participants": 1,
+                "needsConfirmation": true
+              },
+              "scheduleLabel": "Suggested",
+              "travelMinutes": 0,
+              "durationMinutes": 60,
+              "imageAttribution": {
+                "creator": "이차우",
+                "license": "CC BY-SA 4.0",
+                "sourceUrl": "https://commons.wikimedia.org/?curid=51500566",
+                "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+              },
+              "placeVerification": "supporting-source-found"
+            },
+            {
+              "id": "900543b1-4f7d-54ae-9c98-7a4eef6999d9",
+              "icon": "food",
+              "time": "Daily allowance",
+              "title": "Daily meals in Gimcheon",
+              "category": "food",
+              "unitCost": 31429,
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "estimatedCost": 31429,
+              "priceEvidence": {
+                "unit": "daily-per-person",
+                "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 31429,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "id": "fd2253d0-b242-51fb-a92a-1c6eaf9e113c",
+              "icon": "bus",
+              "time": "Daily allowance",
+              "title": "Daily transport in Gimcheon",
+              "category": "transport",
+              "unitCost": 20000,
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "estimatedCost": 20000,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 20000,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            }
+          ],
+          "crowdLevel": "low",
+          "travelNote": "Not enough unused, city/country-verified places are available for this day, or known opening windows and travel gaps do not fit. Missing opening hours alone do not exclude places. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+          "crowdSource": "estimated",
+          "crowdFetchedAt": "2026-10-11T08:51:26.982Z",
+          "planningReason": "Not enough unused, city/country-verified places are available for this day, or known opening windows and travel gaps do not fit. Missing opening hours alone do not exclude places.",
+          "planningStatus": "incomplete",
+          "scheduleBlocks": [
+            {
+              "kind": "meal",
+              "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+              "endMinutes": 765,
+              "startMinutes": 720
+            },
+            {
+              "kind": "unscheduled",
+              "label": "Unplanned time — additional verified places needed",
+              "endMinutes": 1080,
+              "startMinutes": 994
+            }
+          ],
+          "crowdConfidence": "low",
+          "imageAttribution": {
+            "creator": "이차우",
+            "license": "CC BY-SA 4.0",
+            "sourceUrl": "https://commons.wikimedia.org/?curid=51500566",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+          },
+          "crowdRefreshAfter": "2026-10-12T08:51:26.982Z",
+          "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+        },
+        {
+          "day": 5,
+          "date": "2026-10-15",
+          "theme": "Gimcheon: 김천 도동서원",
+          "imageUrl": "",
+          "rideFare": 20000,
+          "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+          "totalCost": 136667,
+          "activities": [
+            {
+              "id": "55443d18-5cd8-5432-a657-df7574aa1318",
+              "icon": "map",
+              "time": "12:54 PM",
+              "place": {
+                "city": "Gimcheon",
+                "name": "김천 도동서원",
+                "address": "Not available",
+                "country": "South Korea",
+                "placeId": "Q61093177",
+                "latitude": 36.045,
+                "provider": "wikidata",
+                "fetchedAt": "2026-10-11T08:50:46.511Z",
+                "longitude": 128.03333333,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q61093177",
+                "countryCode": "KR",
+                "openingHours": "Opening hours need confirmation",
+                "selectedCity": "Gimcheon",
+                "locationScope": "city",
+                "membershipSourceUrl": "https://www.openstreetmap.org/relation/7715625",
+                "distanceFromDestinationKm": 11.54
+              },
+              "title": "Visit 김천 도동서원",
+              "status": "planned",
+              "category": "activity",
+              "unitCost": 28571,
+              "description": "Opening hours need confirmation. seowon (private confucian academy). Suggested 60-minute visit. Address: Not available.",
+              "estimatedCost": 28571,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 28571,
+                "participants": 1,
+                "needsConfirmation": true
+              },
+              "scheduleLabel": "Suggested",
+              "travelMinutes": 0,
+              "durationMinutes": 60,
+              "placeVerification": "supporting-source-found"
+            },
+            {
+              "id": "b976630e-fbfc-5a1c-ab4f-52c6bcf3f36a",
+              "icon": "food",
+              "time": "Daily allowance",
+              "title": "Daily meals in Gimcheon",
+              "category": "food",
+              "unitCost": 31429,
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "estimatedCost": 31429,
+              "priceEvidence": {
+                "unit": "daily-per-person",
+                "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 31429,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "id": "5926bdd1-8b13-5113-bf62-20e4624efecc",
+              "icon": "bus",
+              "time": "Daily allowance",
+              "title": "Daily transport in Gimcheon",
+              "category": "transport",
+              "unitCost": 20000,
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "estimatedCost": 20000,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 20000,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            }
+          ],
+          "crowdLevel": "low",
+          "travelNote": "Not enough unused, city/country-verified places are available for this day, or known opening windows and travel gaps do not fit. Missing opening hours alone do not exclude places. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+          "crowdSource": "estimated",
+          "crowdFetchedAt": "2026-10-11T08:51:26.982Z",
+          "planningReason": "Not enough unused, city/country-verified places are available for this day, or known opening windows and travel gaps do not fit. Missing opening hours alone do not exclude places.",
+          "planningStatus": "incomplete",
+          "scheduleBlocks": [
+            {
+              "kind": "meal",
+              "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+              "endMinutes": 774,
+              "startMinutes": 729
+            },
+            {
+              "kind": "unscheduled",
+              "label": "Unplanned time — additional verified places needed",
+              "endMinutes": 1080,
+              "startMinutes": 1023
+            }
+          ],
+          "crowdConfidence": "low",
+          "crowdRefreshAfter": "2026-10-12T08:51:26.982Z",
+          "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+        },
+        {
+          "day": 6,
+          "date": "2026-10-16",
+          "theme": "Gimcheon: details need confirmation",
+          "imageUrl": "",
+          "rideFare": 20000,
+          "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+          "totalCost": 108096,
+          "activities": [
+            {
+              "id": "1819ed5e-f3e4-5625-8fa2-ebb8cdf13ea7",
+              "icon": "food",
+              "time": "Daily allowance",
+              "title": "Daily meals in Gimcheon",
+              "category": "food",
+              "unitCost": 31429,
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "estimatedCost": 31429,
+              "priceEvidence": {
+                "unit": "daily-per-person",
+                "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 31429,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "id": "3f83b80a-a0c9-566b-95f4-9ac6dac88c78",
+              "icon": "bus",
+              "time": "Daily allowance",
+              "title": "Daily transport in Gimcheon",
+              "category": "transport",
+              "unitCost": 20000,
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "estimatedCost": 20000,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 20000,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            }
+          ],
+          "crowdLevel": "low",
+          "travelNote": "Not enough unused, city/country-verified places are available for this day, or known opening windows and travel gaps do not fit. Missing opening hours alone do not exclude places. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+          "crowdSource": "estimated",
+          "crowdFetchedAt": "2026-10-11T08:51:26.982Z",
+          "planningReason": "Not enough unused, city/country-verified places are available for this day, or known opening windows and travel gaps do not fit. Missing opening hours alone do not exclude places.",
+          "planningStatus": "incomplete",
+          "scheduleBlocks": [
+            {
+              "kind": "meal",
+              "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+              "endMinutes": 765,
+              "startMinutes": 720
+            },
+            {
+              "kind": "unscheduled",
+              "label": "Unplanned time — additional verified places needed",
+              "endMinutes": 1080,
+              "startMinutes": 765
+            }
+          ],
+          "crowdConfidence": "low",
+          "crowdRefreshAfter": "2026-10-12T08:51:26.982Z",
+          "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+        },
+        {
+          "day": 7,
+          "date": "2026-10-17",
+          "theme": "Gimcheon: details need confirmation",
+          "imageUrl": "",
+          "rideFare": 20000,
+          "crowdNote": "Low-confidence estimate from weekend timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+          "totalCost": 51429,
+          "activities": [
+            {
+              "id": "baa74aa3-a2bb-5489-ac59-4719e974e596",
+              "icon": "food",
+              "time": "Daily allowance",
+              "title": "Daily meals in Gimcheon",
+              "category": "food",
+              "unitCost": 31429,
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "estimatedCost": 31429,
+              "priceEvidence": {
+                "unit": "daily-per-person",
+                "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 31429,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            },
+            {
+              "id": "951061b1-4a56-535f-a13d-76e5fb852825",
+              "icon": "bus",
+              "time": "Daily allowance",
+              "title": "Daily transport in Gimcheon",
+              "category": "transport",
+              "unitCost": 20000,
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "estimatedCost": 20000,
+              "priceEvidence": {
+                "unit": "per-person",
+                "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                "source": "budget-allowance",
+                "status": "estimate",
+                "currency": "KRW",
+                "quantity": 1,
+                "fetchedAt": "2026-10-11T08:51:26.973Z",
+                "unitAmount": 20000,
+                "participants": 1,
+                "needsConfirmation": true
+              }
+            }
+          ],
+          "crowdLevel": "moderate",
+          "travelNote": "Not enough unused, city/country-verified places are available for this day, or known opening windows and travel gaps do not fit. Missing opening hours alone do not exclude places. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+          "crowdSource": "estimated",
+          "crowdFetchedAt": "2026-10-11T08:51:26.982Z",
+          "planningReason": "Not enough unused, city/country-verified places are available for this day, or known opening windows and travel gaps do not fit. Missing opening hours alone do not exclude places.",
+          "planningStatus": "incomplete",
+          "scheduleBlocks": [
+            {
+              "kind": "meal",
+              "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+              "endMinutes": 765,
+              "startMinutes": 720
+            },
+            {
+              "kind": "unscheduled",
+              "label": "Unplanned time — additional verified places needed",
+              "endMinutes": 1080,
+              "startMinutes": 765
+            }
+          ],
+          "crowdConfidence": "low",
+          "crowdRefreshAfter": "2026-10-12T08:51:26.982Z",
+          "crowdRecommendation": "Prefer an earlier arrival for major attractions and confirm venue hours. No activity was moved automatically."
+        }
+      ],
+      "source": "catalog",
+      "currency": "KRW",
+      "grounding": {
+        "rooms": 1,
+        "total": 990002,
+        "nights": 6,
+        "endDate": "2026-10-17",
+        "version": 1,
+        "currency": "KRW",
+        "subtotal": 900002,
+        "timeZone": "Asia/Seoul",
+        "fetchedAt": "2026-10-11T08:51:26.973Z",
+        "startDate": "2026-10-11",
+        "categories": {
+          "fees": 0,
+          "food": 220003,
+          "activities": 199997,
+          "contingency": 90000,
+          "accommodation": 340002,
+          "transportation": 140000
+        },
+        "destination": {
+          "city": "Gimcheon",
+          "country": "South Korea",
+          "latitude": 36.12176,
+          "longitude": 128.11981,
+          "countryCode": "KR"
+        },
+        "limitations": [
+          "AI scheduling was unavailable. Recommendations use only verified destination records, interest matching and estimated local schedules. Missing place coverage remains explicitly incomplete; no attractions or provider prices were invented.",
+          "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+          "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+          "Schedules use destination-local calendar dates and wall clocks. Supplied arrival/departure times reserve estimated 90-minute arrival and 120-minute departure buffers; booking and hotel check-in times still need confirmation.",
+          "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates."
+        ],
+        "budgetStatus": "needs-confirmation",
+        "accommodation": {
+          "unit": "per-room-night",
+          "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+          "source": "budget-allowance",
+          "status": "estimate",
+          "currency": "KRW",
+          "quantity": 6,
+          "fetchedAt": "2026-10-11T08:51:26.973Z",
+          "unitAmount": 56667,
+          "participants": 1,
+          "needsConfirmation": true
+        },
+        "additionalFees": 0,
+        "verifiedAmount": 0,
+        "estimatedAmount": 990002,
+        "placeDataStatus": "live",
+        "startingLocation": "",
+        "contingencyAmount": 90000,
+        "unknownPriceCount": 22,
+        "contingencyPercent": 10,
+        "foodDailyPerPerson": 31429
+      },
+      "partyType": "solo",
+      "travelers": 1,
+      "costSharing": {
+        "partyType": "solo",
+        "travelers": 1,
+        "groupBudget": 1000000,
+        "budgetShares": [
+          1000000
+        ],
+        "reserveShares": [
+          9998
+        ],
+        "plannedGroupSpend": 990002,
+        "plannedSpendShares": [
+          990002
+        ],
+        "accommodationShares": [
+          340002
+        ]
+      },
+      "destination": "Gimcheon, Gyeongsangbuk-do, South Korea",
+      "preferences": {
+        "pace": "balanced",
+        "activities": [],
+        "travelStyle": "balanced",
+        "accommodation": "no preference",
+        "transportation": "practical local transport"
+      },
+      "totalBudget": 1000000,
+      "budgetSummary": {
+        "food": 220000,
+        "total": 1000000,
+        "reserve": 100000,
+        "shortfall": 0,
+        "transport": 140000,
+        "activities": 200000,
+        "dailyAverage": 141429,
+        "plannedSpend": 990002,
+        "accommodation": 340000,
+        "variableBudget": 559998,
+        "remainingBudget": 9998,
+        "accommodationActual": 340002,
+        "travelOptionsActual": 0
+      },
+      "groundingProof": "fixture-only-proof-000000000000000000000000",
+      "budgetOptimization": {
+        "status": "within_budget",
+        "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary.",
+        "suggestions": [],
+        "targetSpend": 1000000,
+        "amountToTarget": 0,
+        "combinedEstimatedSavings": 0,
+        "projectedSpendIfAllApplied": 990002,
+        "remainingGapAfterSuggestions": 0
+      },
+      "selectedTravelCosts": {
+        "total": 0,
+        "activities": []
+      }
+    },
+    "weather": null,
+    "status": "active",
+    "createdAt": "2026-10-11T08:51:28.207Z",
+    "updatedAt": "2026-10-11T08:51:28.207Z"
+  }
+}

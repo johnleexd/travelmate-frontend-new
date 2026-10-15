@@ -47,3 +47,23 @@ next-env.d.ts
 
 # local TravelMate repository data (created and seeded at runtime)
 data/travelmate.json
+
+# Temporary signed session for an isolated live visit-recording check
+.trip-visits-live-fixture.json
+
+# Local diagnostics and credentials are not project source.
+*.log
+.cache/
+*.key
+*.p12
+*.pfx
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+credentials*.json
+*service-account*.json
+
+# One-off checks tied to private browser profiles / a private trip.
+/scripts/check-existing-browser-session.mjs
+/scripts/verify-actual-cheonan-back.mjs

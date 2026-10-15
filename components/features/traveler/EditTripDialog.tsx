@@ -17,6 +17,7 @@ type Props = {
   onClose: () => void;
   onSave: (trip: SavedTrip, itinerary: ItineraryResponse) => Promise<void>;
   onChangeDetails: (trip: SavedTrip) => void;
+  onManage?: (trip: SavedTrip, dayIndex: number) => void;
 };
 
 function usablePlan(value: unknown): value is ItineraryResponse {
@@ -30,7 +31,7 @@ function usablePlan(value: unknown): value is ItineraryResponse {
       && day.activities.every(activity => !!activity && typeof activity.title === 'string' && Number.isFinite(activity.estimatedCost)));
 }
 
-export function EditTripDialog({ trip: summary, onClose, onSave, onChangeDetails }: Props) {
+export function EditTripDialog({ trip: summary, onClose, onSave, onChangeDetails, onManage }: Props) {
   const [initialTrip] = useState(summary);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -146,8 +147,8 @@ export function EditTripDialog({ trip: summary, onClose, onSave, onChangeDetails
               <label className="text-xs font-semibold text-white/65">Day to edit<select value={dayIndex} disabled={sending} onChange={event => { setDayIndex(Number(event.target.value)); setRemoving(null); }} className="mt-2 block min-h-11 rounded-lg border border-white/20 bg-[#081b18] px-3 text-sm text-white focus-visible:outline-2 focus-visible:outline-[#ffcf70]">{plan.days.map((current, index) => <option key={current.day} value={index}>Day {current.day} · {current.date}</option>)}</select></label>
               <button type="button" disabled={sending || !day || day.activities.length >= 8} onClick={() => { setEditor({ dayIndex, activityIndex: null }); setActivityError(''); }} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#ffcf70]/35 px-3 text-xs font-bold text-[#ffcf70] hover:bg-[#ffcf70]/10 disabled:opacity-30"><Plus size={15}/>Add activity</button>
             </div>
-            {day && <><p className="mt-4 text-sm font-semibold text-white/85">{day.theme}</p><ol className="mt-3 space-y-2">{day.activities.map((activity, index) => <li key={`${dayIndex}-${index}`} className="rounded-xl border border-white/10 bg-[#081b18]/50 p-3">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wide text-[#ffcf70]">{activity.time} · {activity.category}</p><h4 className="mt-1 break-words text-sm font-semibold">{activity.title}</h4><p className="mt-1 text-xs text-white/50">{formatMoney(activity.estimatedCost, plan.currency)} group estimate{activity.durationMinutes ? ` · ${activity.durationMinutes} min` : ''}</p></div><div className="flex shrink-0 gap-1.5">
+            {day && <><div className="mt-4 flex flex-wrap items-center justify-between gap-2"><p className="text-sm font-semibold text-white/85">{day.theme}</p>{onManage && <button type="button" disabled={sending || dirty} onClick={() => { if (trip) onManage(trip, dayIndex); }} className="min-h-10 rounded-lg border border-white/20 px-3 text-xs font-semibold disabled:opacity-35">Manage activities / Replan My Day</button>}</div><ol className="mt-3 space-y-2">{day.activities.map((activity, index) => <li key={`${dayIndex}-${index}`} className="rounded-xl border border-white/10 bg-[#081b18]/50 p-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-wide text-[#ffcf70]">{activity.time} · {activity.category} · {activity.status || 'planned'}</p><h4 className="mt-1 break-words text-sm font-semibold">{activity.title}</h4><p className="mt-1 text-xs text-white/50">{formatMoney(activity.estimatedCost, plan.currency)} group estimate{activity.durationMinutes ? ` · ${activity.durationMinutes} min` : ''}</p></div><div className="flex shrink-0 gap-1.5">
                 <button type="button" disabled={sending || index === 0} aria-label={`Move ${activity.title} earlier`} onClick={() => changePlan(current => moveActivity(current, dayIndex, index, -1))} className={controlClass}><ArrowUp size={15}/></button>
                 <button type="button" disabled={sending || index === day.activities.length - 1} aria-label={`Move ${activity.title} later`} onClick={() => changePlan(current => moveActivity(current, dayIndex, index, 1))} className={controlClass}><ArrowDown size={15}/></button>
                 <button type="button" disabled={sending} aria-label={`Edit ${activity.title}`} onClick={() => { setEditor({ dayIndex, activityIndex: index }); setActivityError(''); }} className={controlClass}><Pencil size={15}/></button>

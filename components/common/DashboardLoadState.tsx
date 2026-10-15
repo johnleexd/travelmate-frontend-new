@@ -2,14 +2,16 @@
 
 import { AlertTriangle, RotateCw } from 'lucide-react';
 import { WorkspaceSkeleton, type WorkspaceSkeletonVariant } from './WorkspaceSkeleton';
+import theme from '@/components/features/traveler/TravelerDashboard.module.css';
+import type { TravelerTab } from '@/hooks/use-itinerary-navigation';
 
-export function DashboardLoadState({ label, error, onRetry, variant = 'traveler' }: { label: string; error?: string; onRetry?: () => void; variant?: WorkspaceSkeletonVariant }) {
+export function DashboardLoadState({ label, error, onRetry, variant = 'traveler', screen }: { label: string; error?: string; onRetry?: () => void; variant?: WorkspaceSkeletonVariant; screen?: TravelerTab }) {
   if (!error) {
-    return <WorkspaceSkeleton label={`Loading ${label}...`} variant={variant} />;
+    return <WorkspaceSkeleton label={`Loading ${label}...`} variant={variant} screen={screen} />;
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[#07111f] px-5 text-slate-100">
+    <main className={`${variant === 'admin' ? '' : theme.theme} grid min-h-screen place-items-center px-5 text-slate-100`} style={variant === 'admin' ? { backgroundColor: '#07111f' } : undefined}>
       <section className="w-full max-w-md rounded-2xl border border-red-900/70 bg-slate-950 p-6 text-center" role="alert" aria-labelledby="load-error-title">
         <AlertTriangle className="mx-auto text-red-300" aria-hidden="true" />
         <h1 id="load-error-title" className="mt-4 text-xl font-bold">Workspace unavailable</h1>

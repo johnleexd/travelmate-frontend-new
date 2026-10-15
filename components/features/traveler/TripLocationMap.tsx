@@ -5,7 +5,6 @@ import { ExternalLink, LocateFixed, MapPin, Maximize2, Navigation, Square } from
 import type * as Leaflet from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import styles from './TripLocationMap.module.css';
-import { GpsIcon } from '@/components/common/GpsIcon';
 import { useTripLocation, type TripLocation } from '@/hooks/use-trip-location';
 import { longitudeNear, straightLineDistanceKm, tripDirectionsUrl, type MapCoordinates } from '@/lib/trip-map';
 
@@ -90,7 +89,7 @@ export function TripLocationMap({ destination, point, onNavigate }: Props) {
     <div className="flex flex-wrap items-start justify-between gap-3 p-4 sm:p-5">
       <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-amber-300">Find your way</p><h2 id="trip-location-heading" ref={headingRef} tabIndex={-1} className="mt-1 scroll-mt-24 text-lg font-bold outline-none">Your trip map</h2><p className="mt-1 break-words text-sm text-white/65">{destination}</p></div>
       <div className="flex flex-wrap gap-2">
-        {onNavigate && <button onClick={onNavigate} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-amber-300/40 px-3 text-sm font-bold text-amber-200 hover:bg-amber-300/10"><GpsIcon size={18}/>Open GPS navigation</button>}
+        {onNavigate && <button onClick={() => { stop(); onNavigate(); }} className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-amber-300/40 px-3 text-sm font-bold text-amber-200 hover:bg-amber-300/10"><Navigation size={18}/>View trip map / Navigate</button>}
         <button onClick={sharing ? stop : start} className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-amber-300 px-3 text-sm font-bold text-[#10241e] hover:bg-amber-200">{sharing ? <Square size={15}/> : <LocateFixed size={16}/>}{sharing ? 'Stop sharing location' : status === 'error' ? 'Try location again' : 'Show my location'}</button>
         <a href={tripDirectionsUrl(destination, point, position)} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/20 px-3 text-sm font-semibold hover:bg-white/5"><Navigation size={15}/>Get directions<ExternalLink size={12}/></a>
       </div>

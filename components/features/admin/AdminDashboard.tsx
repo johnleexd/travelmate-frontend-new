@@ -176,41 +176,41 @@ export default function AdminDashboard() {
   const adminInitials = data.user.name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'AD';
   const nav: Array<[Tab, string, LucideIcon]> = [['overview', 'Overview', Activity], ['users', 'Users', Users], ['reports', 'Reports', Bell], ['health', 'System Health', HeartPulse], ['settings', 'Account Settings', Settings], ['feedback', 'User Feedback', Bell], ['notifications', 'Notifications', Bell]];
 
-  return <div ref={pageRef} className="admin-dashboard min-h-screen w-full max-w-full overflow-x-clip bg-[#0b1d1a] pt-20 text-slate-100">
+  return <div ref={pageRef} className="admin-dashboard min-h-screen w-full max-w-full overflow-x-clip bg-[#0b1d1a] pt-[calc(3.5rem+max(0.5rem,env(safe-area-inset-top)))] sm:pt-[calc(4rem+max(1rem,env(safe-area-inset-top)))] text-slate-100">
     <a href="#admin-main-content" className="sr-only z-[100] bg-[#f1ead8] px-4 py-2 font-bold text-[#14231f] focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to admin workspace</a>
-    <header className="fixed inset-x-0 top-0 z-40 px-4 pt-4 sm:px-6">
-      <div className="mx-auto flex h-16 w-full max-w-[1380px] items-center justify-between border border-white/15 bg-[#102824]/88 px-4 text-white shadow-[0_18px_50px_rgba(8,24,22,.22)] backdrop-blur-xl sm:px-6">
-        <button onClick={() => router.push('/')} className="group flex items-center gap-3 text-left" aria-label="TravelMate home">
-          <span className="grid size-9 place-items-center bg-[#ffcf70] text-[#102824] transition-transform duration-500 group-hover:-rotate-6"><Compass size={20} strokeWidth={2.2}/></span>
-          <span className="hidden text-lg font-semibold min-[440px]:inline">TravelMate</span>
+    <header className="fixed inset-x-0 top-0 z-40 px-3 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-6 sm:pt-[max(1rem,env(safe-area-inset-top))]">
+      <div className="mx-auto flex h-14 w-full max-w-[1380px] items-center justify-between gap-3 border border-white/15 bg-[#102824]/88 px-3 text-white shadow-[0_18px_50px_rgba(8,24,22,.22)] backdrop-blur-xl sm:h-16 sm:px-6">
+        <button onClick={() => router.push('/')} className="group flex min-h-11 min-w-11 shrink-0 items-center gap-2 text-left sm:gap-3" aria-label="TravelMate home">
+          <span className="grid size-8 place-items-center bg-[#ffcf70] text-[#102824] transition-transform duration-500 group-hover:-rotate-6 sm:size-9"><Compass size={20} strokeWidth={2.2} className="size-[18px] sm:size-5"/></span>
+          <span className="hidden text-base font-semibold min-[440px]:inline sm:text-lg">TravelMate</span>
         </button>
         <div className="flex min-w-0 items-center gap-2 sm:gap-3">
-          <button type="button" aria-label={unread ? 'Notifications, ' + unread + ' unread' : 'Notifications'} onClick={() => openTab('notifications')} className="relative grid size-10 shrink-0 place-items-center rounded-lg border border-white/15 text-[#ffcf70] hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-[#ffcf70]"><Bell size={18}/>{unread > 0 && <span className="absolute -right-1.5 -top-1.5 min-w-4 rounded-full bg-[#ffcf70] px-1 text-[9px] font-bold leading-4 text-[#102824]">{unread > 99 ? '99+' : unread}</span>}</button>
-          <button type="button" onClick={() => setProfileMenuOpen(true)} aria-label={`Open profile menu for ${data.user.name}`} aria-haspopup="dialog" aria-expanded={profileMenuOpen} aria-controls="admin-profile-menu" className="flex min-w-0 items-center gap-2 border border-white/15 bg-white/[0.04] py-1.5 pl-1.5 pr-3 text-left transition-colors hover:border-[#ffcf70]/50 hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffcf70] sm:gap-3">
+          <button type="button" aria-label={unread ? 'Notifications, ' + unread + ' unread' : 'Notifications'} onClick={() => openTab('notifications')} className="relative grid size-11 shrink-0 place-items-center rounded-lg border border-white/15 text-[#ffcf70] hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-[#ffcf70]"><Bell size={18}/>{unread > 0 && <span className="absolute -right-1.5 -top-1.5 min-w-4 rounded-full bg-[#ffcf70] px-1 text-[9px] font-bold leading-4 text-[#102824]">{unread > 99 ? '99+' : unread}</span>}</button>
+          <button type="button" onClick={() => setProfileMenuOpen(true)} aria-label={`Open profile menu for ${data.user.name}`} aria-haspopup="dialog" aria-expanded={profileMenuOpen} aria-controls="admin-profile-menu" className="flex size-11 shrink-0 items-center justify-center gap-2 border border-white/15 bg-white/[0.04] p-1.5 text-left [&>span:first-child]:size-7 md:h-auto md:w-auto md:min-w-0 md:justify-start md:pr-3 md:[&>span:first-child]:size-10 transition-colors hover:border-[#ffcf70]/50 hover:bg-white/[0.08] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#ffcf70] md:gap-3">
             <UserAvatar user={data.user}/>
-            <span className="hidden min-w-0 sm:block"><strong className="block max-w-36 truncate text-xs font-bold text-white">{data.user.name}</strong><span className="block max-w-44 truncate text-[10px] text-white/60">Admin · {data.user.email}</span></span>
-            <UserRound size={15} className="hidden shrink-0 text-[#ffcf70] sm:block" />
+            <span className="hidden min-w-0 md:block"><strong className="block max-w-36 truncate text-xs font-bold text-white">{data.user.name}</strong><span className="block max-w-44 truncate text-[10px] text-white/60">Admin · {data.user.email}</span></span>
+            <UserRound size={15} className="hidden shrink-0 text-[#ffcf70] md:block" />
           </button>
-          <button type="button" onClick={() => void logout()} className="inline-flex min-h-11 items-center gap-2 border border-[#ffcf70]/40 px-3 text-sm font-bold text-[#ffcf70] hover:bg-white/10"><LogOut size={16}/>Logout</button>
+          <button type="button" aria-label="Logout" onClick={() => void logout()} className="inline-flex size-11 shrink-0 items-center justify-center gap-2 border border-[#ffcf70]/40 text-sm font-bold text-[#ffcf70] hover:bg-white/10 md:w-auto md:px-3"><LogOut size={16}/><span className="hidden md:inline">Logout</span></button>
         </div>
       </div>
     </header>
 
     {profileMenuOpen && <div className="fixed inset-0 z-[80]">
       <button type="button" aria-label="Close profile menu" onClick={() => setProfileMenuOpen(false)} className="traveler-profile-backdrop absolute inset-0 bg-[#061714]/65 backdrop-blur-sm" />
-      <aside ref={profileMenuRef} id="admin-profile-menu" role="dialog" aria-modal="true" aria-labelledby="admin-profile-menu-title" tabIndex={-1} className="traveler-profile-drawer absolute inset-y-0 right-0 flex w-full max-w-sm flex-col border-l border-white/15 bg-[#102824] text-white shadow-[-24px_0_70px_rgba(0,0,0,.35)]">
-        <div className="flex items-center justify-between border-b border-white/10 px-5 py-4 sm:px-6">
+      <aside ref={profileMenuRef} id="admin-profile-menu" role="dialog" aria-modal="true" aria-labelledby="admin-profile-menu-title" tabIndex={-1} className="traveler-profile-drawer absolute inset-y-0 right-0 flex w-full max-w-sm flex-col overflow-y-auto overscroll-contain border-l border-white/15 bg-[#102824] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] text-white shadow-[-24px_0_70px_rgba(0,0,0,.35)]">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/10 px-5 py-4 sm:px-6">
           <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#ffcf70]">TravelMate</p><h2 id="admin-profile-menu-title" className="mt-1 text-lg font-semibold">Admin account</h2></div>
-          <button ref={profileMenuCloseRef} type="button" aria-label="Close profile menu" onClick={() => setProfileMenuOpen(false)} className="grid size-10 place-items-center border border-white/20 text-white/75 transition-colors hover:bg-white/10 hover:text-white"><X size={18}/></button>
+          <button ref={profileMenuCloseRef} type="button" aria-label="Close profile menu" onClick={() => setProfileMenuOpen(false)} className="grid size-11 shrink-0 place-items-center border border-white/20 text-white/75 transition-colors hover:bg-white/10 hover:text-white"><X size={18}/></button>
         </div>
-        <div className="p-5 sm:p-6">
+        <div className="shrink-0 p-5 sm:p-6">
           <div className="flex items-center gap-3 border border-white/15 bg-white/[0.04] p-3">
             <span className="grid size-12 shrink-0 place-items-center bg-[#ffcf70] text-sm font-black text-[#102824]">{adminInitials}</span>
             <span className="min-w-0"><strong className="block truncate text-sm text-white">{data.user.name}</strong><span className="mt-1 block truncate text-xs text-white/55">{data.user.email}</span></span>
           </div>
-          <div className="mt-4 flex items-center justify-between border-b border-white/10 pb-4 text-xs"><span className="text-white/55">Account role</span><span className="border border-[#ffcf70]/35 bg-[#ffcf70]/10 px-2 py-1 font-bold text-[#ffcf70]">Administrator</span></div>
+          <div className="mt-4 flex items-center justify-between gap-3 border-b border-white/10 pb-4 text-xs"><span className="text-white/55">Account role</span><span className="border border-[#ffcf70]/35 bg-[#ffcf70]/10 px-2 py-1 font-bold text-[#ffcf70]">Administrator</span></div>
         </div>
-        <div className="mt-auto border-t border-white/10 p-5 sm:p-6">
+        <div className="mt-auto shrink-0 border-t border-white/10 p-5 sm:p-6">
           <button type="button" onClick={() => { setProfileMenuOpen(false); openTab('reports'); }} className="flex min-h-12 w-full items-center gap-3 border border-white/15 px-4 text-sm font-semibold text-white/85 transition-colors hover:border-[#ffcf70]/50 hover:bg-white/[0.06]"><Bell size={17} className="text-[#ffcf70]"/>Reports{pending > 0 && <span className="ml-auto bg-[#ffcf70] px-1.5 py-0.5 text-[10px] font-black text-[#102824]">{pending}</span>}</button>
           <button type="button" onClick={() => { setProfileMenuOpen(false); openTab('health'); }} className="mt-2 flex min-h-12 w-full items-center gap-3 border border-white/15 px-4 text-sm font-semibold text-white/85 transition-colors hover:border-[#ffcf70]/50 hover:bg-white/[0.06]"><ShieldCheck size={17} className="text-[#ffcf70]"/>System Health<span className="ml-auto text-xs text-white/45">{data.audit.length}</span></button>
           <button type="button" onClick={() => void logout()} className="mt-2 flex min-h-12 w-full items-center gap-3 border border-white/15 px-4 text-sm font-semibold text-white/85 transition-colors hover:border-[#ffcf70]/50 hover:bg-white/[0.06]"><LogOut size={17} className="text-[#ffcf70]"/>Sign out</button>

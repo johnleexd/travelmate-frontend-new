@@ -1,0 +1,6 @@
+Natural Earth v5.1.2, 1:10m Admin-0 map units, grouped by stable ISO 3166-1 alpha-2 codes. Includes all 249 ISO countries/territories, Kosovo (XK), and separately identified non-ISO geographic areas (WD-Q identifiers).
+Source: https://raw.githubusercontent.com/nvkelso/natural-earth-vector/v5.1.2/geojson/ne_10m_admin_0_map_units.geojson
+SHA256: 57da82be755f4afccd8f3b14251bb2752f5df1395f47d2d86f817470c4a48862
+ISO reference: https://github.com/mledoze/countries (249 ISO entries plus XK). UM geometry aggregates the nine US minor outlying islands; the duplicate disputed Wake feature is deduplicated. Coordinates rounded to five decimal places; holes and antimeridian splits retained.
+Public domain: https://www.naturalearthdata.com/about/terms-of-use/
+Generalized geographic discovery, not legal boundaries or navigation.

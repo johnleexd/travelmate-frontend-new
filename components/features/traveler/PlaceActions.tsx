@@ -42,7 +42,7 @@ export function PlaceActions({ activity, destination, tripId, dayIndex, activity
   if (activity.category !== 'activity' && !activity.place) return null;
   const name = activity.place?.name || activity.title;
   return <div className="mt-3">
-    <div className="flex flex-wrap gap-2"><a href={placeMapUrl({ name, destination, latitude: activity.place?.latitude, longitude: activity.place?.longitude })} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${name} on Google Maps (opens a new tab)`} className="inline-flex min-h-10 items-center gap-1.5 rounded border border-white/20 px-3 text-xs font-semibold text-cyan-200"><MapPin size={14}/>Visit · map</a>
+    <div className="flex flex-wrap gap-2"><a href={placeMapUrl({ name, destination, latitude: activity.place?.latitude, longitude: activity.place?.longitude })} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${name} on Google Maps (opens a new tab)`} className="inline-flex min-h-10 items-center gap-1.5 rounded border border-white/20 px-3 text-xs font-semibold text-cyan-200"><MapPin size={14}/>Visit map</a>
       {canRecord && <button type="button" disabled={!tripId} onClick={() => setOpen(true)} title={!tripId ? 'Save this itinerary and any changes before recording a visit.' : undefined} className="inline-flex min-h-10 items-center gap-1.5 rounded border border-amber-300/30 px-3 text-xs font-semibold text-amber-300 disabled:opacity-40"><Check size={14}/>Mark as visited</button>}</div>
     {canRecord && !tripId && <p className="mt-1 text-[10px] text-white/45">Save changes to record a visit from this plan.</p>}
     {message && <p role="status" className="mt-2 text-xs text-emerald-300">{message}</p>}

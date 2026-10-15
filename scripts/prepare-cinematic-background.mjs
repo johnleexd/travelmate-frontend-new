@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import sharp from 'sharp';
+const source = process.argv[2];
+if (!source) throw new Error('Pass the scenery-only generated PNG');
+const directory = 'public/discovery/cinematic';
+await fs.mkdir(directory, { recursive: true });
+await sharp(source).resize(1600, 900, { fit: 'cover' }).webp({ quality: 83, effort: 5 }).toFile(directory + '/tropical-sunset-desktop.webp');
+await sharp(source).resize(960, 1000, { fit: 'cover', position: 'right' }).webp({ quality: 81, effort: 5 }).toFile(directory + '/tropical-sunset-tablet.webp');
+await sharp(source).resize(640, 960, { fit: 'cover', position: 'right' }).webp({ quality: 80, effort: 5 }).toFile(directory + '/tropical-sunset-mobile.webp');
+for (const name of await fs.readdir(directory)) console.log(name, (await fs.stat(directory + '/' + name)).size, 'bytes');

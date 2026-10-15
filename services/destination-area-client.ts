@@ -11,7 +11,11 @@ export function createDestinationAreaClient(fetcher: typeof fetch = (...args) =>
   function validate(value: ResponseData, parent: Parent, ids?: number[]) {
     if (!value || value.parentId !== parent.id || value.countryCode !== parent.countryCode || !Number.isFinite(Date.parse(value.fetchedAt)) || !Number.isFinite(Date.parse(value.expiresAt))) throw new Error('Area provider returned invalid destination data.');
     if ('areas' in value) {
-      if (!Array.isArray(value.areas) || !['ready','empty'].includes(value.status) || !Number.isSafeInteger(value.total) || value.total < value.areas.length || value.nextOffset !== null && (!Number.isSafeInteger(value.nextOffset) || value.nextOffset <= 0) || !Array.isArray(value.sourceUrls) || !value.areas.every(city => city.countryCode === parent.countryCode && Number.isSafeInteger(city.id) && Number.isFinite(city.latitude) && Math.abs(city.latitude) <= 90 && Number.isFinite(city.longitude) && Math.abs(city.longitude) <= 180 && typeof city.description === 'string' && ['country-code','administrative-hierarchy','boundary'].includes(city.membership) && typeof city.name === 'string' && typeof city.label === 'string' && typeof city.providerId === 'string')) throw new Error('City suggestions could not be validated within this destination.');
+      if (!Array.isArray(value.areas) || !['ready','empty'].includes(value.status) || !Number.isSafeInteger(value.total) || value.total < value.areas.length || value.nextOffset !== null && (!Number.isSafeInteger(value.nextOffset) || value.nextOffset <= 0) || !Array.isArray(value.sourceUrls) || !value.areas.every(city => {
+        const coordinates = typeof city.latitude === 'number' && Number.isFinite(city.latitude) && Math.abs(city.latitude) <= 90 && typeof city.longitude === 'number' && Number.isFinite(city.longitude) && Math.abs(city.longitude) <= 180;
+        const unresolved = city.provider === 'psgc' && city.countryCode === 'PH' && ['official-administrative','geographic-association'].includes(city.membership) && city.coordinateStatus === 'unresolved' && city.latitude === undefined && city.longitude === undefined && /^\d{10}$/.test(city.administrativeCode || '') && city.id === 1_000_000_000_000 + Number(city.administrativeCode);
+        return city.countryCode === parent.countryCode && Number.isSafeInteger(city.id) && (coordinates || unresolved) && typeof city.description === 'string' && ['country-code','administrative-hierarchy','boundary','official-administrative','geographic-association'].includes(city.membership) && typeof city.name === 'string' && typeof city.label === 'string' && typeof city.providerId === 'string';
+      })) throw new Error('City suggestions could not be validated within this destination.');
     } else if (!Array.isArray(value.profiles) || !value.profiles.every(profile => ids?.includes(profile.cityId) && [profile.foodPlaces,profile.culturePlaces,profile.naturePlaces].every(count => Number.isSafeInteger(count) && count >= 0 && count <= 600))) throw new Error('Area comparison returned invalid mapped information.');
   }
 
@@ -48,11 +52,11 @@ export function createDestinationAreaClient(fetcher: typeof fetch = (...args) =>
   }
   return {
     search(parent: Parent, query = '', offset = 0, signal?: AbortSignal) {
-      return get<DestinationAreasResponse>(`/api/locations/areas?${new URLSearchParams({ parentId: String(parent.id), countryCode: parent.countryCode, query: query.trim(), offset: String(offset) })}`, parent, signal);
+      return get<DestinationAreasResponse>(`/api/locations/areas?${new URLSearchParams({ parentId: String(parent.id), countryCode: parent.countryCode, query: query.trim(), offset: String(offset), hierarchy: 'true' })}`, parent, signal);
     },
     compare(parent: Parent, cityIds: number[], signal?: AbortSignal) {
       const ids = [...new Set(cityIds)].sort((a,b) => a-b);
-      return get<AreaComparisonResponse>(`/api/locations/areas/compare?${new URLSearchParams({ parentId: String(parent.id), countryCode: parent.countryCode, cityIds: ids.join(',') })}`, parent, signal, ids);
+      return get<AreaComparisonResponse>(`/api/locations/areas/compare?${new URLSearchParams({ parentId: String(parent.id), countryCode: parent.countryCode, cityIds: ids.join(','), hierarchy: 'true' })}`, parent, signal, ids);
     },
   };
 }

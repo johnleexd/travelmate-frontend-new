@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('admin overview shows persisted metrics, chart, account health and actionable reports', async ({ page, context }) => {
   await context.addCookies([{ name: 'travelmate_session', value: 'browser-test', domain: 'localhost', path: '/' }]);
-  const admin = { id: 'admin', name: 'Test Admin', email: 'admin@example.test', role: 'admin', accountStatus: 'active', emailVerified: true, profileStatus: 'verified' };
+  const admin = { id: 'admin', name: 'Alexandra Montgomery Longname', email: 'administrator-long-name@example.test', role: 'admin', accountStatus: 'active', emailVerified: true, profileStatus: 'verified' };
   const traveler = { ...admin, id: 'traveler', name: 'Test Traveler', role: 'traveler' };
   const date = '2026-10-07T12:00:00Z';
   const payload = { user: admin, directory: [admin, traveler, { ...traveler, id: 'suspended', accountStatus: 'suspended', emailVerified: false, profileStatus: 'unverified' }], moderation: [{ id: 'r1', subjectId: 'traveler', kind: 'report', title: 'My saved trip will not open', details: 'A saved trip is showing a blank screen.', status: 'pending', createdAt: date }, { id: 'a1', subjectId: 'suspended', kind: 'appeal', title: 'Account suspension appeal', details: 'Please review the suspension on my account.', status: 'pending', createdAt: date }], audit: [{ id: 'audit1', actorId: 'admin', action: 'resolve-report', targetId: 'r0', createdAt: date }], itineraryGenerations: [], integrations: { database: true }, adminOverview: { generatedPlans: 124, averageRating: 4.5, feedbackCount: 8, recentCompleted: 21, recentFailed: 0, timeZone: 'Asia/Shanghai', generationDays: [2, 3, 1, 5, 3, 4, 3].map((completed, index) => ({ date: '2026-10-0' + (index + 1), completed })) } };
@@ -17,9 +17,19 @@ test('admin overview shows persisted metrics, chart, account health and actionab
   await expect(page.getByRole('button', { name: /Active travelers/ })).toContainText('50%');
   await expect(page.getByText('Report marked resolved', { exact: true })).toBeVisible();
   await page.screenshot({ path: '../audit/2026-10-07/admin-overview-desktop.png', fullPage: true });
-  for (const width of [390, 768, 1440]) {
+  for (const width of [320, 360, 390, 440, 640, 667, 768, 1024, 1440, 1920]) {
     await page.setViewportSize({ width, height: 1000 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    const frame = (await page.locator('.admin-dashboard header > div').boundingBox())!;
+    const buttons = await page.locator('.admin-dashboard header button').all();
+    let previousRight = frame.x;
+    for (const button of buttons) {
+      const bounds = (await button.boundingBox())!;
+      expect(bounds.x).toBeGreaterThanOrEqual(previousRight);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(frame.x + frame.width);
+      expect(bounds.height).toBeGreaterThanOrEqual(44);
+      previousRight = bounds.x + bounds.width;
+    }
   }
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({ path: '../audit/2026-10-07/admin-overview-mobile.png', fullPage: true });

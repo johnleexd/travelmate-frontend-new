@@ -1,13 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { LocationSuggestion } from '@/lib/contracts';
+import type { LocationSuggestion, LocationCandidate } from '@/lib/contracts';
 import { fetchCurrentLocation, searchLocations } from '@/services/destination-planning.service';
 
 type State = { ownerId: string | undefined; value: string; selected: LocationSuggestion | null; message: string; detecting: boolean; searching: boolean; suggestions: LocationSuggestion[] };
 const empty = (ownerId?: string): State => ({ ownerId, value: '', selected: null, message: '', detecting: false, searching: false, suggestions: [] });
-const validLocation = (location: LocationSuggestion) => typeof location.label === 'string' && location.label.length >= 2
-  && Number.isFinite(location.latitude) && Math.abs(location.latitude) <= 90 && Number.isFinite(location.longitude) && Math.abs(location.longitude) <= 180;
+const validLocation = (location: LocationCandidate): location is LocationSuggestion => typeof location.label === 'string' && location.label.length >= 2
+  && typeof location.latitude === 'number' && Number.isFinite(location.latitude) && Math.abs(location.latitude) <= 90 && typeof location.longitude === 'number' && Number.isFinite(location.longitude) && Math.abs(location.longitude) <= 180;
 
 /** Draft origin stays in memory and is always bound to the currently authenticated user. */
 export function useStartingLocation(ownerId?: string) {
@@ -42,7 +42,7 @@ export function useStartingLocation(ownerId?: string) {
       setState(current => current.ownerId === ownerId ? { ...current, searching: true } : current);
       void searchLocations(visible.value, controller.signal).then(locations => {
         if (controller.signal.aborted || version.current !== attempt) return;
-        setState(current => current.ownerId === ownerId ? { ...current, suggestions: locations.filter(location => location.placeType !== 'Country' && validLocation(location)).slice(0, 10), searching: false, message: '' } : current);
+        setState(current => current.ownerId === ownerId ? { ...current, suggestions: locations.filter(validLocation).filter(location => location.placeType !== 'Country').slice(0, 10), searching: false, message: '' } : current);
       }).catch(error => {
         if (controller.signal.aborted || version.current !== attempt) return;
         setState(current => current.ownerId === ownerId ? { ...current, searching: false, message: `${error instanceof Error ? error.message : 'Location search is unavailable.'} You can still enter your starting city manually.` } : current);

@@ -1,16 +1,26 @@
-import type { AccommodationSearchResponse, DestinationContext, ExchangeRateQuote, FreshnessMetadata, LiveAccommodation, NearbyAccommodation, LocationSearchResponse, LocationSuggestion } from '@/lib/contracts';
+import type { AccommodationSearchResponse, DestinationContext, ExchangeRateQuote, FreshnessMetadata, LiveAccommodation, NearbyAccommodation, LocationSearchResponse, LocationSuggestion, LocationCandidate } from '@/lib/contracts';
 import type { CurrencyCode } from '@/lib/domain';
 import { handleResponse } from '@/services/api.service';
 import { exchangeRateClient } from './exchange-rate-client';
 
-export async function searchLocations(query: string, signal?: AbortSignal): Promise<LocationSuggestion[]> {
-  const response = await fetch(`/api/locations?q=${encodeURIComponent(query.trim())}`, { signal });
-  const result = await handleResponse<LocationSearchResponse>(response);
-  return result.locations;
+export async function searchLocations(query: string, signal?: AbortSignal): Promise<LocationCandidate[]> {
+  return (await searchLocationPage(query, 0, signal)).locations;
+}
+export async function searchLocationPage(query: string, offset = 0, signal?: AbortSignal, countryCode?: string): Promise<LocationSearchResponse> {
+  const params = new URLSearchParams({ q: query.trim(), offset: String(offset), ...(countryCode ? {countryCode} : {}) });
+  return handleResponse<LocationSearchResponse>(await fetch(`/api/locations?${params}`, { signal }));
+}
+
+export async function resolveAdministrativeDestination(location: Pick<LocationCandidate, 'id' | 'countryCode'>, signal?: AbortSignal): Promise<LocationSuggestion> {
+  const params = new URLSearchParams({ locationId: String(location.id), countryCode: location.countryCode });
+  const response = await fetch(`/api/locations/resolve?${params}`, { signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(35000)]) : AbortSignal.timeout(35000) });
+  const result = await handleResponse<{ location: LocationSuggestion }>(response);
+  if (!result.location || result.location.id !== location.id || result.location.countryCode !== location.countryCode || !Number.isFinite(result.location.latitude) || !Number.isFinite(result.location.longitude)) throw Error('The selected location coordinates could not be verified.');
+  return result.location;
 }
 
 export async function resolveManualDestination(query: string, signal?: AbortSignal): Promise<{ location: LocationSuggestion | null; candidates: LocationSuggestion[]; areas: LocationSuggestion[]; message: string }> {
-  const response = await fetch(`/api/locations/resolve?q=${encodeURIComponent(query.trim())}`, { signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(35000)]) : AbortSignal.timeout(35000) });
+  const response = await fetch(`/api/locations/resolve?q=${encodeURIComponent(query.trim())}&secondary=true`, { signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(35000)]) : AbortSignal.timeout(35000) });
   return handleResponse(response);
 }
 
@@ -36,26 +46,30 @@ export async function fetchDestinationAccommodations(input: {
   checkInDate: string;
   checkOutDate: string;
   adults: number;
-  guestNationality?: string;
-  occupancy?: import('@/lib/contracts').RoomOccupancy;
   currency: CurrencyCode;
   latitude?: number;
   longitude?: number;
   countryCode?: string;
+  locationId?: number;
+  locationProvider?: string;
+  locationProviderId?: string;
+  administrativeCode?: string;
+  provinceCode?: string;
   placeType?: string;
-  quotes?: boolean;
 }, signal?: AbortSignal): Promise<{ providerAccommodations?: import('@/lib/contracts').ProviderAccommodation[]; providerStatus?: AccommodationSearchResponse['providerStatus']; providerMessage?: string; providerEnvironment?: 'sandbox' | 'production'; accommodations: LiveAccommodation[]; nearbyAccommodations: NearbyAccommodation[]; message: string; status?: AccommodationSearchResponse['status']; freshness?: FreshnessMetadata }> {
   const params = new URLSearchParams({
     destination: input.destination,
     checkInDate: input.checkInDate,
     checkOutDate: input.checkOutDate,
     adults: String(input.adults),
-    ...(input.occupancy ? { occupancy: JSON.stringify(input.occupancy) } : {}),
+    mode: 'suggestions',
     currency: input.currency,
-    guestNationality: input.guestNationality || '',
     countryCode: input.countryCode || '',
     placeType: input.placeType || '',
-    quotes: String(input.quotes !== false),
+    quotes: 'false',
+    ...(input.locationId ? { locationId: String(input.locationId), locationProvider: input.locationProvider || '', locationProviderId: input.locationProviderId || '' } : {}),
+    ...(input.administrativeCode ? { administrativeCode: input.administrativeCode } : {}),
+    ...(input.provinceCode ? { provinceCode: input.provinceCode } : {}),
   });
   if (Number.isFinite(input.latitude) && Number.isFinite(input.longitude)) {
     params.set('latitude', String(input.latitude));

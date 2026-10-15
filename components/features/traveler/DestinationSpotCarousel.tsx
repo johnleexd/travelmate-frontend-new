@@ -7,7 +7,7 @@ import { ArrowRight, ChevronLeft, ChevronRight, ExternalLink, MapPin, X } from '
 import { PlacePhoto } from '@/components/common/PlacePhoto';
 import { useModalAccessibility } from '@/hooks/use-modal-accessibility';
 import { DESTINATION_SPOTS, type DestinationSpot } from '@/lib/destination-spots';
-import type { LocationSuggestion } from '@/lib/contracts';
+import type { LocationSuggestion, LocationCandidate } from '@/lib/contracts';
 import { resolveManualDestination, searchLocations } from '@/services/destination-planning.service';
 
 type Props = { busy: boolean; onPlan: (location: LocationSuggestion, spot: DestinationSpot) => void };
@@ -42,7 +42,7 @@ function SpotPreview({ spot, busy, onClose, onPlan }: Props & { spot: Destinatio
     const controller = new AbortController(); requestRef.current = controller;
     setLoading(true); setError(''); setCandidates([]);
     try {
-      const isCity = (location: LocationSuggestion) => location.countryCode === spot.countryCode && ['City', 'Town', 'Municipality'].includes(location.placeType);
+      const isCity = (location: LocationCandidate): location is LocationSuggestion => Number.isFinite(location.latitude) && Number.isFinite(location.longitude) && location.countryCode === spot.countryCode && (location.scopeType === 'locality' || ['City', 'Town', 'Municipality', 'Capital city', 'Administrative capital', 'City or locality'].includes(location.placeType));
       let matches = (await searchLocations(spot.city, AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]))).filter(isCity);
       const exact = matches.filter(location => location.name.toLowerCase() === spot.city.toLowerCase());
       if (exact.length) matches = exact;

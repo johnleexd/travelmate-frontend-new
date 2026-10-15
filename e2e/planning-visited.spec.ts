@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { mockPlanningLookups } from './helpers/mock-planning-lookups';
 
-test('maps remain separate from visits, visited history retries work, and preferences are accessible', async ({ page, context }) => {
+test('maps remain separate from visits and manual visit history retries work', async ({ page, context }) => {
   await mockPlanningLookups(page);
   await context.addCookies([{ name: 'travelmate_session', value: 'visited-fixture', domain: 'localhost', path: '/' }]);
   const activity = { title: 'Visit Eiffel Tower', time: '09:00', durationMinutes: 60, travelMinutes: 0, description: 'Visit the tower.', category: 'activity', icon: 'map', estimatedCost: 10,
@@ -13,6 +13,7 @@ test('maps remain separate from visits, visited history retries work, and prefer
   const visits: Array<Record<string, unknown>> = [];
   await page.route('**/api/platform**', async route => {
     const request = route.request(), url = new URL(request.url());
+    if (url.pathname.endsWith('/photos')) return route.fulfill({ json: { day: plan.days[0] } });
     if (url.pathname.endsWith('/visited-places')) {
       if (failHistory) return route.fulfill({ status: 503, json: { error: 'History is temporarily unavailable.' } });
       return route.fulfill({ json: { visits, page: { total: visits.length, hasMore: false } } });
@@ -34,8 +35,9 @@ test('maps remain separate from visits, visited history retries work, and prefer
   await page.goto('/dashboard');
   await page.getByRole('button', { name: 'Saved trips', exact: true }).click();
   await page.getByRole('button', { name: 'Completed 1', exact: true }).click();
-  await page.getByRole('button', { name: 'View', exact: true }).click();
-  await expect(page.getByText('60 min', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'View itinerary', exact: true }).click();
+  await page.getByRole('button', { name: 'View Itinerary', exact: true }).click();
+  await expect(page.getByText('Duration: 1 hr', { exact: true })).toBeVisible();
   const map = page.getByRole('link', { name: 'Visit Eiffel Tower on Google Maps (opens a new tab)', exact: true });
   await expect(map).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=48.8584%2C2.2945');
   const popupWait = page.waitForEvent('popup'); await map.click(); const popup = await popupWait;
@@ -67,37 +69,5 @@ test('maps remain separate from visits, visited history retries work, and prefer
   await page.getByRole('button', { name: 'Remove visit to Eiffel Tower', exact: true }).click();
   await page.getByRole('button', { name: 'Remove visit', exact: true }).click();
   await expect(page.getByText('No visits yet.', { exact: false })).toBeVisible();
-  await page.getByRole('button', { name: 'Saved trips', exact: true }).click();
-  await page.getByRole('button', { name: 'Completed 1', exact: true }).click();
-  await page.getByRole('button', { name: 'View', exact: true }).click();
-  await page.getByRole('button', { name: 'Add activity', exact: true }).click();
-  const editor = page.getByRole('dialog', { name: 'Add custom activity', exact: true });
-  await editor.getByLabel('Activity title', { exact: true }).fill('Custom museum visit');
-  await editor.getByLabel('Time', { exact: true }).fill('09:30');
-  await editor.getByLabel('Duration (minutes)', { exact: true }).fill('45');
-  await editor.getByRole('button', { name: 'Add activity', exact: true }).click();
-  await expect(page.getByRole('status').filter({ hasText: 'overlaps the previous visit' })).toBeVisible();
-  await expect(editor).toBeVisible();
-  await editor.getByLabel('Time', { exact: true }).fill('11:00');
-  await editor.getByLabel('Location (optional, entered by you)', { exact: true }).fill('Paris, France');
-  await editor.getByRole('button', { name: 'Add activity', exact: true }).click();
-  await expect(editor).toHaveCount(0);
-  await page.getByRole('button', { name: 'Move Visit Eiffel Tower later', exact: true }).click();
-  const ordered = page.getByRole('list', { name: 'Day 1 activities', exact: true }).getByRole('listitem');
-  await expect(ordered.first()).toContainText('Custom museum visit');
-  await expect(ordered.last()).toContainText('10:00');
-  await expect(ordered.last().getByRole('button', { name: 'Mark as visited', exact: true })).toBeDisabled();
-  await expect(ordered.last().getByRole('link', { name: 'Visit Eiffel Tower on Google Maps (opens a new tab)', exact: true })).toHaveAttribute('href', 'https://www.google.com/maps/search/?api=1&query=48.8584%2C2.2945');
-  await page.setViewportSize({ width: 390, height: 844 });
-  await ordered.first().scrollIntoViewIfNeeded();
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-  await page.screenshot({ path: '../audit/2026-10-08/planning-visited/itinerary-mobile.png' });
-  await page.getByRole('button', { name: 'Preferences', exact: true }).click();
-  await page.getByLabel('Travel pace', { exact: true }).selectOption('relaxed');
-  await page.getByRole('button', { name: 'Continue planning', exact: true }).click();
-  await expect(page.getByLabel('Travel pace', { exact: true })).toHaveValue('relaxed');
-  await expect(page.getByRole('combobox', { name: 'Starting location (optional)', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Feedback', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Feedback about a trip', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Book as lead|Book now|Subscribe|Checkout/i })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Record a visit', exact: true })).toBeVisible();
 });

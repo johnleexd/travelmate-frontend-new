@@ -24,6 +24,7 @@ async function setup(page: Page, context: BrowserContext, missingCoordinates = f
     const path = new URL(route.request().url()).pathname;
     requests.push({ path, method: route.request().method() });
     if (path.endsWith('/notifications')) return route.fulfill({ json: { notifications: [] } });
+    if (path.endsWith('/photos')) return route.fulfill({ json: { day: plan.days[0] } });
     const detail = missingCoordinates ? { ...trip, latitude: null, longitude: null } : trip;
     if (path.endsWith(`/trips/${trip.id}`)) return route.fulfill({ json: { trip: detail } });
     return route.fulfill({ json: { user, trips: [{ ...detail, itinerary: null }], tripsPage: { total: 1, hasMore: false, nextCursor: null }, directory: [], notifications: [], listings: [], bookings: [], moderation: [], audit: [], itineraryVersions: [], itineraryGenerations: [] } });
@@ -31,7 +32,7 @@ async function setup(page: Page, context: BrowserContext, missingCoordinates = f
   await page.route('**/api/locations/current**', () => { throw new Error('Trip GPS must not reverse-geocode or persist location.'); });
   await page.goto('/dashboard');
   await page.getByRole('navigation', { name: 'Traveler workspace' }).getByRole('button', { name: 'Saved trips', exact: true }).click();
-  await page.getByRole('region', { name: 'Saved plans' }).getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('region', { name: 'Saved plans' }).getByRole('button', { name: 'View itinerary', exact: true }).click();
   const map = page.getByRole('region', { name: 'Your trip map', exact: true });
   await expect(map).toBeVisible();
   return { map, requests };
@@ -48,6 +49,35 @@ async function instrumentGps(page: Page) {
   });
 }
 const gpsStats = (page: Page) => page.evaluate(() => (window as unknown as { tripGpsStats: { requested: number; cleared: number } }).tripGpsStats);
+
+test('itinerary navigation opens that saved trip map and stops the preview GPS watcher', async ({ page, context }) => {
+  await instrumentGps(page);
+  await context.grantPermissions(['geolocation']);
+  await context.setGeolocation({ latitude: 14.55, longitude: 121.05, accuracy: 20 });
+  const { map } = await setup(page, context);
+  const maps: string[] = [];
+  const place = { id: 'museum', name: 'Museum visit', address: 'Manila, Philippines', latitude: 14.59, longitude: 120.98, sourceUrl: '', photo: null };
+  const activity = { index: 0, title: 'Museum visit', time: '09:00', description: 'See the exhibits.', locationStatus: 'Verified saved place', place };
+  await page.route('**/api/navigation/trips/**', route => {
+    const parts = new URL(route.request().url()).pathname.split('/');
+    if (parts.at(-1) === 'map') {
+      maps.push(parts[4]);
+      return route.fulfill({ json: { map: { tripId: trip.id, destination: trip.destination, anchor: { city: 'Manila', country: 'Philippines', countryCode: 'PH', latitude: trip.latitude, longitude: trip.longitude }, days: [{ day: 1, date: '2040-10-08', theme: 'Manila day', activities: [activity] }] } } });
+    }
+    if (parts.at(-1) === 'activity') return route.fulfill({ json: { activity, candidates: [], message: '' } });
+    return route.fulfill({ json: { weather: { status: 'outside-horizon', kind: 'forecast', message: 'Forecast not available yet.' } } });
+  });
+  await map.getByRole('button', { name: 'Show my location', exact: true }).click();
+  await expect(map).toContainText('Live location');
+  await map.getByRole('button', { name: 'View trip map / Navigate', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Manila, Philippines', exact: true });
+  await expect(dialog.getByRole('button', { name: 'Activity 1: Museum visit', exact: true })).toBeVisible();
+  expect(maps).toEqual([trip.id]);
+  expect(await gpsStats(page)).toEqual({ requested: 1, cleared: 1 });
+  await dialog.getByRole('button', { name: 'Close trip map' }).click();
+  await expect(map).toBeVisible();
+  await expect(map.getByRole('button', { name: 'Show my location', exact: true })).toBeVisible();
+});
 
 test('saved-trip View maps destination and opt-in live GPS, updates directions, fits mobile, and stops on exit', async ({ page, context }) => {
   await instrumentGps(page);
@@ -83,7 +113,9 @@ test('saved-trip View maps destination and opt-in live GPS, updates directions, 
   await page.getByRole('navigation', { name: 'Traveler workspace' }).getByRole('button', { name: 'Saved trips', exact: true }).click();
   await expect(map).toHaveCount(0);
   await expect.poll(async () => (await gpsStats(page)).cleared).toBe(2);
-  expect(requests.every(request => request.method === 'GET')).toBe(true);
+  // Photo recovery has its own POST endpoint; viewing a map never saves GPS
+  // positions or updates the itinerary through the general platform action.
+  expect(requests.filter(request => request.method !== 'GET' && request.path !== `/api/platform/trips/${trip.id}/photos`)).toEqual([]);
 });
 
 test('denied permission and GPS timeout give retry messages while destination remains usable', async ({ page, context }) => {
@@ -149,7 +181,7 @@ test('temporary signal loss recovers, and late GPS callbacks cannot restore stop
   await page.getByRole('navigation', { name: 'Traveler workspace' }).getByRole('button', { name: 'Saved trips', exact: true }).click();
   await emitFix(page, 1, 14.60);
   expect(await page.evaluate(() => (window as unknown as { fakeTripGps: FakeGps }).fakeTripGps.cleared)).toEqual([0, 1]);
-  await page.getByRole('region', { name: 'Saved plans' }).getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('region', { name: 'Saved plans' }).getByRole('button', { name: 'View itinerary', exact: true }).click();
   await expect(map.getByRole('button', { name: 'Show my location', exact: true })).toBeVisible();
   expect(new URL((await directions.getAttribute('href'))!).searchParams.has('origin')).toBe(false);
 });

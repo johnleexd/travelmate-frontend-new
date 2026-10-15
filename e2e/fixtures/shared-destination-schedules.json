@@ -1,0 +1,3768 @@
+[
+  {
+    "anchor": {
+      "city": "Hamburg",
+      "country": "Germany",
+      "countryCode": "DE",
+      "latitude": 53.55073,
+      "longitude": 9.99302
+    },
+    "trip": {
+      "id": "e093fe7b-94a5-5c5d-b823-42a67aa84eb1",
+      "saveKey": "content:771c4eb526799e2e1172c84edad8ea4aa06afd43e8d749d1215ed47eaab2d262",
+      "saveRequestHash": "771c4eb526799e2e1172c84edad8ea4aa06afd43e8d749d1215ed47eaab2d262",
+      "userId": "b1e535b5-e06e-579a-beb6-26fd4de6caab",
+      "destination": "Hamburg, Germany",
+      "destinationCity": "Hamburg",
+      "destinationRegion": null,
+      "destinationCountry": "Germany",
+      "destinationCountryCode": "DE",
+      "latitude": 53.55073,
+      "longitude": 9.99302,
+      "budget": 10000,
+      "currency": "EUR",
+      "startDate": "2040-01-25",
+      "endDate": "2040-01-27",
+      "travelers": 1,
+      "partyType": "solo",
+      "interests": [
+        "culture",
+        "nature",
+        "food"
+      ],
+      "itinerary": {
+        "days": [
+          {
+            "day": 1,
+            "date": "2040-01-25",
+            "theme": "Hamburg: St. Peter’s Church, St. Catherine's Church, Hamburg, St. Michaelis Church, Hamburg",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 3566.66,
+            "activities": [
+              {
+                "id": "1c4dcee6-a4e7-5dd3-af67-5e9bf0b84e68",
+                "icon": "map",
+                "time": "09:00 AM",
+                "place": {
+                  "city": "Hamburg",
+                  "name": "St. Peter’s Church",
+                  "address": "Mönckebergstraße",
+                  "country": "Germany",
+                  "placeId": "Q535443",
+                  "latitude": 53.550278,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:46.524Z",
+                  "longitude": 9.996389,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q535443",
+                  "countryCode": "DE",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit St. Peter’s Church",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. church building in Altstadt (Hamburg), Germany. Suggested 60-minute visit. Address: Mönckebergstraße.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 0,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "eec316a2-f8d9-50ed-ab83-2f0c01014576",
+                "icon": "map",
+                "time": "10:23 AM",
+                "place": {
+                  "city": "Hamburg",
+                  "name": "St. Catherine's Church, Hamburg",
+                  "address": "Not available",
+                  "country": "Germany",
+                  "placeId": "Q616790",
+                  "latitude": 53.545833,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:46.524Z",
+                  "longitude": 9.994167,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q616790",
+                  "countryCode": "DE",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit St. Catherine's Church, Hamburg",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. church building in Hamburg, Germany. Suggested 60-minute visit. Allow at least 23 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 23,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "4ebdae13-6644-5044-8055-6ef237c1b91a",
+                "icon": "map",
+                "time": "01:16 PM",
+                "place": {
+                  "city": "Hamburg",
+                  "name": "St. Michaelis Church, Hamburg",
+                  "address": "Not available",
+                  "country": "Germany",
+                  "placeId": "Q674472",
+                  "latitude": 53.548333,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:46.524Z",
+                  "longitude": 9.978889,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q674472",
+                  "countryCode": "DE",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit St. Michaelis Church, Hamburg",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. Lutheran church in Hamburg, Germany. Suggested 60-minute visit. Allow at least 31 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 31,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "c0ef4517-4482-5f75-8c1b-aa18d9b4b0ca",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Hamburg",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "853785e4-6d55-5232-a498-8506604eb211",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Hamburg",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:46.552Z",
+            "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+            "planningStatus": "suggested",
+            "scheduleBlocks": [
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 720,
+                "startMinutes": 683
+              },
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 1080,
+                "startMinutes": 856
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:46.552Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          },
+          {
+            "day": 2,
+            "date": "2040-01-26",
+            "theme": "Hamburg: Hamburger Kunsthalle, Deutsches Schauspielhaus, Thalia Theater",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 3566.66,
+            "activities": [
+              {
+                "id": "84058ad2-e202-579a-aecd-12c348788029",
+                "icon": "map",
+                "time": "09:00 AM",
+                "place": {
+                  "city": "Hamburg",
+                  "name": "Hamburger Kunsthalle",
+                  "address": "Glockengießerwall 5, 20095 Hamburg",
+                  "country": "Germany",
+                  "placeId": "Q169542",
+                  "latitude": 53.555,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:46.524Z",
+                  "longitude": 10.00305556,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q169542",
+                  "countryCode": "DE",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Hamburger Kunsthalle",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. art museum in Hamburg, Germany. Suggested 90-minute visit. Address: Glockengießerwall 5, 20095 Hamburg.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 0,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "8c331e15-e1dd-5e85-a1c0-b4ed5699ffe0",
+                "icon": "map",
+                "time": "10:51 AM",
+                "place": {
+                  "city": "Hamburg",
+                  "name": "Deutsches Schauspielhaus",
+                  "address": "Not available",
+                  "country": "Germany",
+                  "placeId": "Q450777",
+                  "latitude": 53.55430556,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:46.524Z",
+                  "longitude": 10.00886111,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q450777",
+                  "countryCode": "DE",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Deutsches Schauspielhaus",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. theatre building in Hamburg, Germany. Suggested 60-minute visit. Allow at least 21 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 21,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "c579f34b-9d1d-5e45-bba7-343ccf50fb38",
+                "icon": "map",
+                "time": "01:13 PM",
+                "place": {
+                  "city": "Hamburg",
+                  "name": "Thalia Theater",
+                  "address": "Not available",
+                  "country": "Germany",
+                  "placeId": "Q456499",
+                  "latitude": 53.55277778,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:46.524Z",
+                  "longitude": 9.99694444,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q456499",
+                  "countryCode": "DE",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Thalia Theater",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. theatre in Hamburg. Suggested 60-minute visit. Allow at least 28 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 28,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "30b21ddb-f6d8-5292-b04e-ff1e0ea24c54",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Hamburg",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "48218289-7339-5441-b422-f720170df786",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Hamburg",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:46.552Z",
+            "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+            "planningStatus": "suggested",
+            "scheduleBlocks": [
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 1080,
+                "startMinutes": 853
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:46.552Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          },
+          {
+            "day": 3,
+            "date": "2040-01-27",
+            "theme": "Hamburg: Museum für Hamburgische Geschichte, Erotic Art Museum, St. Pauli Landing Stages",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 1866.66,
+            "activities": [
+              {
+                "id": "0f5b03d9-a9f0-538f-b2dc-2ccd244e675e",
+                "icon": "map",
+                "time": "09:00 AM",
+                "place": {
+                  "city": "Hamburg",
+                  "name": "Museum für Hamburgische Geschichte",
+                  "address": "Holstenwall 24, 20355 Hamburg",
+                  "country": "Germany",
+                  "placeId": "Q665171",
+                  "latitude": 53.5511,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:46.524Z",
+                  "longitude": 9.9731,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q665171",
+                  "countryCode": "DE",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Museum für Hamburgische Geschichte",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. History museum located in the city of Hamburg in northern Germany. Suggested 90-minute visit. Address: Holstenwall 24, 20355 Hamburg.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 0,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "33c3feff-e577-53b1-a3ab-69161febf5b5",
+                "icon": "map",
+                "time": "01:14 PM",
+                "place": {
+                  "city": "Hamburg",
+                  "name": "Erotic Art Museum",
+                  "address": "Bernhard-Nocht-Straße 69, 20359 Hamburg",
+                  "country": "Germany",
+                  "placeId": "Q475236",
+                  "latitude": 53.547,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:46.524Z",
+                  "longitude": 9.9613,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q475236",
+                  "countryCode": "DE",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Erotic Art Museum",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. museum of erotic art in the German red-light district of Hamburg's Reeperbahn. Suggested 90-minute visit. Allow at least 29 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Bernhard-Nocht-Straße 69, 20359 Hamburg.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 29,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "79da07a1-4e26-5ca1-b7be-e51d51b1fa0d",
+                "icon": "map",
+                "time": "03:05 PM",
+                "place": {
+                  "city": "Hamburg",
+                  "name": "St. Pauli Landing Stages",
+                  "address": "Not available",
+                  "country": "Germany",
+                  "placeId": "Q458970",
+                  "latitude": 53.54611111,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:46.524Z",
+                  "longitude": 9.96666667,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q458970",
+                  "countryCode": "DE",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit St. Pauli Landing Stages",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. bridge. Suggested 60-minute visit. Allow at least 21 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 21,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "b55fcbbb-4979-507e-a50a-4ca7111c7015",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Hamburg",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "5ce24082-1a47-5596-9432-7bec126c6138",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Hamburg",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:46.538Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:46.552Z",
+            "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+            "planningStatus": "suggested",
+            "scheduleBlocks": [
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 720,
+                "startMinutes": 630
+              },
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 1080,
+                "startMinutes": 965
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:46.552Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          }
+        ],
+        "source": "catalog",
+        "currency": "EUR",
+        "grounding": {
+          "rooms": 1,
+          "total": 9899.98,
+          "nights": 2,
+          "endDate": "2040-01-27",
+          "version": 1,
+          "currency": "EUR",
+          "subtotal": 8999.98,
+          "fetchedAt": "2026-10-10T18:24:46.538Z",
+          "startDate": "2040-01-25",
+          "categories": {
+            "fees": 0,
+            "food": 2199.99,
+            "activities": 1999.98,
+            "contingency": 900,
+            "accommodation": 3400,
+            "transportation": 1400.01
+          },
+          "destination": {
+            "city": "Hamburg",
+            "country": "Germany",
+            "latitude": 53.55073,
+            "longitude": 9.99302,
+            "countryCode": "DE"
+          },
+          "limitations": [
+            "AI scheduling was unavailable. Recommendations use only verified destination records, interest matching and estimated local schedules. Missing place coverage remains explicitly incomplete; no attractions or provider prices were invented.",
+            "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+            "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+            "Schedules use destination-local calendar dates and wall clocks. Supplied arrival/departure times reserve estimated 90-minute arrival and 120-minute departure buffers; booking and hotel check-in times still need confirmation.",
+            "An IANA destination time-zone reference is unavailable. Suggested local clocks are not converted to UTC or the browser time zone.",
+            "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates."
+          ],
+          "budgetStatus": "needs-confirmation",
+          "accommodation": {
+            "unit": "per-room-night",
+            "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "EUR",
+            "quantity": 2,
+            "fetchedAt": "2026-10-10T18:24:46.538Z",
+            "unitAmount": 1700,
+            "participants": 1,
+            "needsConfirmation": true
+          },
+          "additionalFees": 0,
+          "verifiedAmount": 0,
+          "estimatedAmount": 9899.98,
+          "placeDataStatus": "live",
+          "startingLocation": "",
+          "contingencyAmount": 900,
+          "unknownPriceCount": 16,
+          "contingencyPercent": 10,
+          "foodDailyPerPerson": 733.33
+        },
+        "partyType": "solo",
+        "travelers": 1,
+        "costSharing": {
+          "partyType": "solo",
+          "travelers": 1,
+          "groupBudget": 10000,
+          "budgetShares": [
+            10000
+          ],
+          "reserveShares": [
+            100.02
+          ],
+          "plannedGroupSpend": 9899.98,
+          "plannedSpendShares": [
+            9899.98
+          ],
+          "accommodationShares": [
+            3400
+          ]
+        },
+        "destination": "Hamburg, Germany",
+        "preferences": {
+          "pace": "balanced",
+          "activities": [],
+          "travelStyle": "balanced",
+          "accommodation": "no preference",
+          "transportation": "practical local transport"
+        },
+        "totalBudget": 10000,
+        "budgetSummary": {
+          "food": 2200,
+          "total": 10000,
+          "reserve": 1000,
+          "shortfall": 0,
+          "transport": 1400,
+          "activities": 2000,
+          "dailyAverage": 3299.99,
+          "plannedSpend": 9899.98,
+          "accommodation": 3400,
+          "variableBudget": 5600,
+          "remainingBudget": 100.02,
+          "accommodationActual": 3400,
+          "travelOptionsActual": 0
+        },
+        "groundingProof": "fixture-only-proof-000000000000000000000000",
+        "budgetOptimization": {
+          "status": "within_budget",
+          "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary.",
+          "suggestions": [],
+          "targetSpend": 10000,
+          "amountToTarget": 0,
+          "combinedEstimatedSavings": 0,
+          "projectedSpendIfAllApplied": 9899.98,
+          "remainingGapAfterSuggestions": 0
+        },
+        "selectedTravelCosts": {
+          "total": 0,
+          "activities": []
+        }
+      },
+      "weather": null,
+      "status": "active",
+      "createdAt": "2026-10-10T18:24:46.749Z",
+      "updatedAt": "2026-10-10T18:24:46.749Z"
+    },
+    "manifest": {
+      "tripId": "e093fe7b-94a5-5c5d-b823-42a67aa84eb1",
+      "revision": "d7685918a499cb3a0b42d41f4c1f356441f731ce64e72cdb7c598854b619f18c",
+      "tripStatus": "active",
+      "destination": "Hamburg, Germany",
+      "anchor": {
+        "city": "Hamburg",
+        "country": "Germany",
+        "countryCode": "DE",
+        "latitude": 53.55073,
+        "longitude": 9.99302
+      },
+      "currency": "EUR",
+      "days": [
+        {
+          "day": 1,
+          "date": "2040-01-25",
+          "theme": "Hamburg: St. Peter’s Church, St. Catherine's Church, Hamburg, St. Michaelis Church, Hamburg",
+          "activities": [
+            {
+              "activityId": "1c4dcee6-a4e7-5dd3-af67-5e9bf0b84e68",
+              "status": "planned",
+              "index": 0,
+              "title": "Visit St. Peter’s Church",
+              "time": "09:00 AM",
+              "description": "Opening hours need confirmation. church building in Altstadt (Hamburg), Germany. Suggested 60-minute visit. Address: Mönckebergstraße.",
+              "place": {
+                "id": "Q535443",
+                "name": "St. Peter’s Church",
+                "address": "Mönckebergstraße",
+                "latitude": 53.550278,
+                "longitude": 9.996389,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q535443",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "eec316a2-f8d9-50ed-ab83-2f0c01014576",
+              "status": "planned",
+              "index": 1,
+              "title": "Visit St. Catherine's Church, Hamburg",
+              "time": "10:23 AM",
+              "description": "Opening hours need confirmation. church building in Hamburg, Germany. Suggested 60-minute visit. Allow at least 23 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q616790",
+                "name": "St. Catherine's Church, Hamburg",
+                "address": "Not available",
+                "latitude": 53.545833,
+                "longitude": 9.994167,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q616790",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "4ebdae13-6644-5044-8055-6ef237c1b91a",
+              "status": "planned",
+              "index": 2,
+              "title": "Visit St. Michaelis Church, Hamburg",
+              "time": "01:16 PM",
+              "description": "Opening hours need confirmation. Lutheran church in Hamburg, Germany. Suggested 60-minute visit. Allow at least 31 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q674472",
+                "name": "St. Michaelis Church, Hamburg",
+                "address": "Not available",
+                "latitude": 53.548333,
+                "longitude": 9.978889,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q674472",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "c0ef4517-4482-5f75-8c1b-aa18d9b4b0ca",
+              "status": "planned",
+              "index": 3,
+              "title": "Daily meals in Hamburg",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "853785e4-6d55-5232-a498-8506604eb211",
+              "status": "planned",
+              "index": 4,
+              "title": "Daily transport in Hamburg",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "date": "2040-01-26",
+          "theme": "Hamburg: Hamburger Kunsthalle, Deutsches Schauspielhaus, Thalia Theater",
+          "activities": [
+            {
+              "activityId": "84058ad2-e202-579a-aecd-12c348788029",
+              "status": "planned",
+              "index": 0,
+              "title": "Visit Hamburger Kunsthalle",
+              "time": "09:00 AM",
+              "description": "Opening hours need confirmation. art museum in Hamburg, Germany. Suggested 90-minute visit. Address: Glockengießerwall 5, 20095 Hamburg.",
+              "place": {
+                "id": "Q169542",
+                "name": "Hamburger Kunsthalle",
+                "address": "Glockengießerwall 5, 20095 Hamburg",
+                "latitude": 53.555,
+                "longitude": 10.00305556,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q169542",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "8c331e15-e1dd-5e85-a1c0-b4ed5699ffe0",
+              "status": "planned",
+              "index": 1,
+              "title": "Visit Deutsches Schauspielhaus",
+              "time": "10:51 AM",
+              "description": "Opening hours need confirmation. theatre building in Hamburg, Germany. Suggested 60-minute visit. Allow at least 21 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q450777",
+                "name": "Deutsches Schauspielhaus",
+                "address": "Not available",
+                "latitude": 53.55430556,
+                "longitude": 10.00886111,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q450777",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "c579f34b-9d1d-5e45-bba7-343ccf50fb38",
+              "status": "planned",
+              "index": 2,
+              "title": "Visit Thalia Theater",
+              "time": "01:13 PM",
+              "description": "Opening hours need confirmation. theatre in Hamburg. Suggested 60-minute visit. Allow at least 28 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q456499",
+                "name": "Thalia Theater",
+                "address": "Not available",
+                "latitude": 53.55277778,
+                "longitude": 9.99694444,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q456499",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "30b21ddb-f6d8-5292-b04e-ff1e0ea24c54",
+              "status": "planned",
+              "index": 3,
+              "title": "Daily meals in Hamburg",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "48218289-7339-5441-b422-f720170df786",
+              "status": "planned",
+              "index": 4,
+              "title": "Daily transport in Hamburg",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "date": "2040-01-27",
+          "theme": "Hamburg: Museum für Hamburgische Geschichte, Erotic Art Museum, St. Pauli Landing Stages",
+          "activities": [
+            {
+              "activityId": "0f5b03d9-a9f0-538f-b2dc-2ccd244e675e",
+              "status": "planned",
+              "index": 0,
+              "title": "Visit Museum für Hamburgische Geschichte",
+              "time": "09:00 AM",
+              "description": "Opening hours need confirmation. History museum located in the city of Hamburg in northern Germany. Suggested 90-minute visit. Address: Holstenwall 24, 20355 Hamburg.",
+              "place": {
+                "id": "Q665171",
+                "name": "Museum für Hamburgische Geschichte",
+                "address": "Holstenwall 24, 20355 Hamburg",
+                "latitude": 53.5511,
+                "longitude": 9.9731,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q665171",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "33c3feff-e577-53b1-a3ab-69161febf5b5",
+              "status": "planned",
+              "index": 1,
+              "title": "Visit Erotic Art Museum",
+              "time": "01:14 PM",
+              "description": "Opening hours need confirmation. museum of erotic art in the German red-light district of Hamburg's Reeperbahn. Suggested 90-minute visit. Allow at least 29 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Bernhard-Nocht-Straße 69, 20359 Hamburg.",
+              "place": {
+                "id": "Q475236",
+                "name": "Erotic Art Museum",
+                "address": "Bernhard-Nocht-Straße 69, 20359 Hamburg",
+                "latitude": 53.547,
+                "longitude": 9.9613,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q475236",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "79da07a1-4e26-5ca1-b7be-e51d51b1fa0d",
+              "status": "planned",
+              "index": 2,
+              "title": "Visit St. Pauli Landing Stages",
+              "time": "03:05 PM",
+              "description": "Opening hours need confirmation. bridge. Suggested 60-minute visit. Allow at least 21 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q458970",
+                "name": "St. Pauli Landing Stages",
+                "address": "Not available",
+                "latitude": 53.54611111,
+                "longitude": 9.96666667,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q458970",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "b55fcbbb-4979-507e-a50a-4ca7111c7015",
+              "status": "planned",
+              "index": 3,
+              "title": "Daily meals in Hamburg",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "5ce24082-1a47-5596-9432-7bec126c6138",
+              "status": "planned",
+              "index": 4,
+              "title": "Daily transport in Hamburg",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "anchor": {
+      "city": "Tokyo",
+      "country": "Japan",
+      "countryCode": "JP",
+      "latitude": 35.6895,
+      "longitude": 139.69171
+    },
+    "trip": {
+      "id": "dda8d26c-7405-5dc1-aafb-bab7a4c308ff",
+      "saveKey": "content:9536afc7440c7b7008974c84911c247092c77fdd6a77f348a954cee9d81d9060",
+      "saveRequestHash": "9536afc7440c7b7008974c84911c247092c77fdd6a77f348a954cee9d81d9060",
+      "userId": "b1e535b5-e06e-579a-beb6-26fd4de6caab",
+      "destination": "Tokyo, Japan",
+      "destinationCity": "Tokyo",
+      "destinationRegion": null,
+      "destinationCountry": "Japan",
+      "destinationCountryCode": "JP",
+      "latitude": 35.6895,
+      "longitude": 139.69171,
+      "budget": 10000,
+      "currency": "EUR",
+      "startDate": "2040-01-25",
+      "endDate": "2040-01-27",
+      "travelers": 1,
+      "partyType": "solo",
+      "interests": [
+        "culture",
+        "nature",
+        "food"
+      ],
+      "itinerary": {
+        "days": [
+          {
+            "day": 1,
+            "date": "2040-01-25",
+            "theme": "Tokyo: Shinjuku Gyoen, Meiji Shrine Inner Garden, Watari Museum of Contemporary Art",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 3566.66,
+            "activities": [
+              {
+                "id": "e591ced4-5a8d-55a7-bdbf-a38909c8aac4",
+                "icon": "map",
+                "time": "09:00 AM",
+                "place": {
+                  "city": "Tokyo",
+                  "name": "Shinjuku Gyoen",
+                  "address": "Not available",
+                  "country": "Japan",
+                  "placeId": "Q776863",
+                  "latitude": 35.685,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:47.920Z",
+                  "longitude": 139.71,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q776863",
+                  "countryCode": "JP",
+                  "openingHours": "Opening hours need confirmation. Tuesday to Sunday: 09:00–16:30; Tuesday to Sunday: 09:00–18:00; Tuesday to Sunday: 09:00–19:00; Tuesday to Sunday: 09:00–18:00 (Wikidata reference; seasonal/holiday exceptions and current hours need confirmation)"
+                },
+                "title": "Visit Shinjuku Gyoen",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. park and garden in Shinjuku and Shibuya, Tokyo, Japan. Suggested 90-minute visit. Opening hours: Opening hours need confirmation. Tuesday to Sunday: 09:00–16:30; Tuesday to Sunday: 09:00–18:00; Tuesday to Sunday: 09:00–19:00; Tuesday to Sunday: 09:00–18:00 (Wikidata reference; seasonal/holiday exceptions and current hours need confirmation). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 0,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "1081cefc-3d43-5b05-8271-f9f1960cf67f",
+                "icon": "map",
+                "time": "01:25 PM",
+                "place": {
+                  "city": "Tokyo",
+                  "name": "Meiji Shrine Inner Garden",
+                  "address": "Not available",
+                  "country": "Japan",
+                  "placeId": "Q6810040",
+                  "latitude": 35.672791,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:47.920Z",
+                  "longitude": 139.700352,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q6810040",
+                  "countryCode": "JP",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Meiji Shrine Inner Garden",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. public garden in Shibuya, Tokyo Japan. Suggested 90-minute visit. Allow at least 40 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 40,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "f89e5042-432e-5d69-9762-5a219a522682",
+                "icon": "map",
+                "time": "03:28 PM",
+                "place": {
+                  "city": "Tokyo",
+                  "name": "Watari Museum of Contemporary Art",
+                  "address": "Not available",
+                  "country": "Japan",
+                  "placeId": "Q3915469",
+                  "latitude": 35.670695,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:47.920Z",
+                  "longitude": 139.713365,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q3915469",
+                  "countryCode": "JP",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Watari Museum of Contemporary Art",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. museum in Japan. Suggested 90-minute visit. Allow at least 33 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 33,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "3f8f84ed-2ac1-5de3-a91e-110bd6c3196e",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Tokyo",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "a897656c-0db1-5578-8d54-7cf95b155ec1",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Tokyo",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:47.929Z",
+            "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+            "planningStatus": "suggested",
+            "scheduleBlocks": [
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 720,
+                "startMinutes": 630
+              },
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 1080,
+                "startMinutes": 1018
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:47.929Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          },
+          {
+            "day": 2,
+            "date": "2040-01-26",
+            "theme": "Tokyo: Tokyo Japan Temple, Yamatane Museum of Art, Nezu Museum",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 3566.66,
+            "activities": [
+              {
+                "id": "a40706fc-0d17-5b8c-ab15-29217a0c538b",
+                "icon": "map",
+                "time": "09:00 AM",
+                "place": {
+                  "city": "Tokyo",
+                  "name": "Tokyo Japan Temple",
+                  "address": "Not available",
+                  "country": "Japan",
+                  "placeId": "Q2036364",
+                  "latitude": 35.652838,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:47.920Z",
+                  "longitude": 139.724539,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q2036364",
+                  "countryCode": "JP",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Tokyo Japan Temple",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. temple of the Church of Jesus Christ of Latter-day Saints in Tokyo, Japan. Suggested 60-minute visit. Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 0,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "8bafeeff-a9bf-5ca6-8f73-bc6f9ded82a1",
+                "icon": "map",
+                "time": "10:30 AM",
+                "place": {
+                  "city": "Tokyo",
+                  "name": "Yamatane Museum of Art",
+                  "address": "Not available",
+                  "country": "Japan",
+                  "placeId": "Q3329572",
+                  "latitude": 35.6532,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:47.920Z",
+                  "longitude": 139.7137,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q3329572",
+                  "countryCode": "JP",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Yamatane Museum of Art",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. museum in Japan. Suggested 90-minute visit. Allow at least 30 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 30,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "b70cb6d4-9354-5f60-acc5-ced93f3377cc",
+                "icon": "map",
+                "time": "01:16 PM",
+                "place": {
+                  "city": "Tokyo",
+                  "name": "Nezu Museum",
+                  "address": "Not available",
+                  "country": "Japan",
+                  "placeId": "Q1047097",
+                  "latitude": 35.66215,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:47.920Z",
+                  "longitude": 139.71703,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q1047097",
+                  "countryCode": "JP",
+                  "openingHours": "Opening hours need confirmation. Tuesday to Sunday: opening time not available–17:00 (Wikidata reference; seasonal/holiday exceptions and current hours need confirmation)"
+                },
+                "title": "Visit Nezu Museum",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. art museum. Suggested 90-minute visit. Allow at least 31 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Opening hours: Opening hours need confirmation. Tuesday to Sunday: opening time not available–17:00 (Wikidata reference; seasonal/holiday exceptions and current hours need confirmation). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 31,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "aa82b794-e308-5924-82a6-11552041b3eb",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Tokyo",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "e68f469b-55ec-55dc-99a3-989eea127a6f",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Tokyo",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:47.930Z",
+            "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+            "planningStatus": "suggested",
+            "scheduleBlocks": [
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 1080,
+                "startMinutes": 886
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:47.930Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          },
+          {
+            "day": 3,
+            "date": "2040-01-27",
+            "theme": "Tokyo: Shinjuku Central Park, Japanese Sword Museum, Shinjuku Musashinokan",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 1866.66,
+            "activities": [
+              {
+                "id": "b8ff49bc-ba39-5a9f-8990-4c82190430f3",
+                "icon": "map",
+                "time": "09:00 AM",
+                "place": {
+                  "city": "Tokyo",
+                  "name": "Shinjuku Central Park",
+                  "address": "東京都新宿区西新宿2-11",
+                  "country": "Japan",
+                  "placeId": "Q5364883",
+                  "latitude": 35.69007,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:47.920Z",
+                  "longitude": 139.68947,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q5364883",
+                  "countryCode": "JP",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Shinjuku Central Park",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. park in Japan. Suggested 90-minute visit. Address: 東京都新宿区西新宿2-11.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 0,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "3188dfd6-9bea-5345-b114-93d34de6d233",
+                "icon": "map",
+                "time": "01:15 PM",
+                "place": {
+                  "city": "Tokyo",
+                  "name": "Japanese Sword Museum",
+                  "address": "東京都墨田区横網一丁目12番9号",
+                  "country": "Japan",
+                  "placeId": "Q3329874",
+                  "latitude": 35.681456,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:47.920Z",
+                  "longitude": 139.69089,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q3329874",
+                  "countryCode": "JP",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Japanese Sword Museum",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. military museum in Japan. Suggested 90-minute visit. Allow at least 30 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: 東京都墨田区横網一丁目12番9号.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 30,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "6cc5fe97-eaf4-502a-8500-782080baa75a",
+                "icon": "map",
+                "time": "03:23 PM",
+                "place": {
+                  "city": "Tokyo",
+                  "name": "Shinjuku Musashinokan",
+                  "address": "東京都新宿区新宿3-27-10 武蔵野ビル3階",
+                  "country": "Japan",
+                  "placeId": "Q5206990",
+                  "latitude": 35.6911,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:47.920Z",
+                  "longitude": 139.7021,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q5206990",
+                  "countryCode": "JP",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Shinjuku Musashinokan",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. Japanese movie theater. Suggested 60-minute visit. Allow at least 38 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: 東京都新宿区新宿3-27-10 武蔵野ビル3階.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 38,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "24ee59e3-43f1-5ab2-93a0-de3b02cf4b3d",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Tokyo",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "3e547a19-7ec9-58e4-84de-c4c2c727af90",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Tokyo",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:47.927Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:47.930Z",
+            "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+            "planningStatus": "suggested",
+            "scheduleBlocks": [
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 720,
+                "startMinutes": 630
+              },
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 1080,
+                "startMinutes": 983
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:47.930Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          }
+        ],
+        "source": "catalog",
+        "currency": "EUR",
+        "grounding": {
+          "rooms": 1,
+          "total": 9899.98,
+          "nights": 2,
+          "endDate": "2040-01-27",
+          "version": 1,
+          "currency": "EUR",
+          "subtotal": 8999.98,
+          "fetchedAt": "2026-10-10T18:24:47.927Z",
+          "startDate": "2040-01-25",
+          "categories": {
+            "fees": 0,
+            "food": 2199.99,
+            "activities": 1999.98,
+            "contingency": 900,
+            "accommodation": 3400,
+            "transportation": 1400.01
+          },
+          "destination": {
+            "city": "Tokyo",
+            "country": "Japan",
+            "latitude": 35.6895,
+            "longitude": 139.69171,
+            "countryCode": "JP"
+          },
+          "limitations": [
+            "AI scheduling was unavailable. Recommendations use only verified destination records, interest matching and estimated local schedules. Missing place coverage remains explicitly incomplete; no attractions or provider prices were invented.",
+            "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+            "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+            "Schedules use destination-local calendar dates and wall clocks. Supplied arrival/departure times reserve estimated 90-minute arrival and 120-minute departure buffers; booking and hotel check-in times still need confirmation.",
+            "An IANA destination time-zone reference is unavailable. Suggested local clocks are not converted to UTC or the browser time zone.",
+            "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates."
+          ],
+          "budgetStatus": "needs-confirmation",
+          "accommodation": {
+            "unit": "per-room-night",
+            "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "EUR",
+            "quantity": 2,
+            "fetchedAt": "2026-10-10T18:24:47.927Z",
+            "unitAmount": 1700,
+            "participants": 1,
+            "needsConfirmation": true
+          },
+          "additionalFees": 0,
+          "verifiedAmount": 0,
+          "estimatedAmount": 9899.98,
+          "placeDataStatus": "live",
+          "startingLocation": "",
+          "contingencyAmount": 900,
+          "unknownPriceCount": 16,
+          "contingencyPercent": 10,
+          "foodDailyPerPerson": 733.33
+        },
+        "partyType": "solo",
+        "travelers": 1,
+        "costSharing": {
+          "partyType": "solo",
+          "travelers": 1,
+          "groupBudget": 10000,
+          "budgetShares": [
+            10000
+          ],
+          "reserveShares": [
+            100.02
+          ],
+          "plannedGroupSpend": 9899.98,
+          "plannedSpendShares": [
+            9899.98
+          ],
+          "accommodationShares": [
+            3400
+          ]
+        },
+        "destination": "Tokyo, Japan",
+        "preferences": {
+          "pace": "balanced",
+          "activities": [],
+          "travelStyle": "balanced",
+          "accommodation": "no preference",
+          "transportation": "practical local transport"
+        },
+        "totalBudget": 10000,
+        "budgetSummary": {
+          "food": 2200,
+          "total": 10000,
+          "reserve": 1000,
+          "shortfall": 0,
+          "transport": 1400,
+          "activities": 2000,
+          "dailyAverage": 3299.99,
+          "plannedSpend": 9899.98,
+          "accommodation": 3400,
+          "variableBudget": 5600,
+          "remainingBudget": 100.02,
+          "accommodationActual": 3400,
+          "travelOptionsActual": 0
+        },
+        "groundingProof": "fixture-only-proof-000000000000000000000000",
+        "budgetOptimization": {
+          "status": "within_budget",
+          "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary.",
+          "suggestions": [],
+          "targetSpend": 10000,
+          "amountToTarget": 0,
+          "combinedEstimatedSavings": 0,
+          "projectedSpendIfAllApplied": 9899.98,
+          "remainingGapAfterSuggestions": 0
+        },
+        "selectedTravelCosts": {
+          "total": 0,
+          "activities": []
+        }
+      },
+      "weather": null,
+      "status": "active",
+      "createdAt": "2026-10-10T18:24:48.092Z",
+      "updatedAt": "2026-10-10T18:24:48.092Z"
+    },
+    "manifest": {
+      "tripId": "dda8d26c-7405-5dc1-aafb-bab7a4c308ff",
+      "revision": "0ca3f93cde2a4693adf6ba31c58625af9edd56a07337fac36f670f9ffd50b2b6",
+      "tripStatus": "active",
+      "destination": "Tokyo, Japan",
+      "anchor": {
+        "city": "Tokyo",
+        "country": "Japan",
+        "countryCode": "JP",
+        "latitude": 35.6895,
+        "longitude": 139.69171
+      },
+      "currency": "EUR",
+      "days": [
+        {
+          "day": 1,
+          "date": "2040-01-25",
+          "theme": "Tokyo: Shinjuku Gyoen, Meiji Shrine Inner Garden, Watari Museum of Contemporary Art",
+          "activities": [
+            {
+              "activityId": "e591ced4-5a8d-55a7-bdbf-a38909c8aac4",
+              "status": "planned",
+              "index": 0,
+              "title": "Visit Shinjuku Gyoen",
+              "time": "09:00 AM",
+              "description": "Opening hours need confirmation. park and garden in Shinjuku and Shibuya, Tokyo, Japan. Suggested 90-minute visit. Opening hours: Opening hours need confirmation. Tuesday to Sunday: 09:00–16:30; Tuesday to Sunday: 09:00–18:00; Tuesday to Sunday: 09:00–19:00; Tuesday to Sunday: 09:00–18:00 (Wikidata reference; seasonal/holiday exceptions and current hours need confirmation). Address: Not available.",
+              "place": {
+                "id": "Q776863",
+                "name": "Shinjuku Gyoen",
+                "address": "Not available",
+                "latitude": 35.685,
+                "longitude": 139.71,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q776863",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "1081cefc-3d43-5b05-8271-f9f1960cf67f",
+              "status": "planned",
+              "index": 1,
+              "title": "Visit Meiji Shrine Inner Garden",
+              "time": "01:25 PM",
+              "description": "Opening hours need confirmation. public garden in Shibuya, Tokyo Japan. Suggested 90-minute visit. Allow at least 40 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q6810040",
+                "name": "Meiji Shrine Inner Garden",
+                "address": "Not available",
+                "latitude": 35.672791,
+                "longitude": 139.700352,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q6810040",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "f89e5042-432e-5d69-9762-5a219a522682",
+              "status": "planned",
+              "index": 2,
+              "title": "Visit Watari Museum of Contemporary Art",
+              "time": "03:28 PM",
+              "description": "Opening hours need confirmation. museum in Japan. Suggested 90-minute visit. Allow at least 33 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q3915469",
+                "name": "Watari Museum of Contemporary Art",
+                "address": "Not available",
+                "latitude": 35.670695,
+                "longitude": 139.713365,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q3915469",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "3f8f84ed-2ac1-5de3-a91e-110bd6c3196e",
+              "status": "planned",
+              "index": 3,
+              "title": "Daily meals in Tokyo",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "a897656c-0db1-5578-8d54-7cf95b155ec1",
+              "status": "planned",
+              "index": 4,
+              "title": "Daily transport in Tokyo",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "date": "2040-01-26",
+          "theme": "Tokyo: Tokyo Japan Temple, Yamatane Museum of Art, Nezu Museum",
+          "activities": [
+            {
+              "activityId": "a40706fc-0d17-5b8c-ab15-29217a0c538b",
+              "status": "planned",
+              "index": 0,
+              "title": "Visit Tokyo Japan Temple",
+              "time": "09:00 AM",
+              "description": "Opening hours need confirmation. temple of the Church of Jesus Christ of Latter-day Saints in Tokyo, Japan. Suggested 60-minute visit. Address: Not available.",
+              "place": {
+                "id": "Q2036364",
+                "name": "Tokyo Japan Temple",
+                "address": "Not available",
+                "latitude": 35.652838,
+                "longitude": 139.724539,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q2036364",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "8bafeeff-a9bf-5ca6-8f73-bc6f9ded82a1",
+              "status": "planned",
+              "index": 1,
+              "title": "Visit Yamatane Museum of Art",
+              "time": "10:30 AM",
+              "description": "Opening hours need confirmation. museum in Japan. Suggested 90-minute visit. Allow at least 30 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q3329572",
+                "name": "Yamatane Museum of Art",
+                "address": "Not available",
+                "latitude": 35.6532,
+                "longitude": 139.7137,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q3329572",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "b70cb6d4-9354-5f60-acc5-ced93f3377cc",
+              "status": "planned",
+              "index": 2,
+              "title": "Visit Nezu Museum",
+              "time": "01:16 PM",
+              "description": "Opening hours need confirmation. art museum. Suggested 90-minute visit. Allow at least 31 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Opening hours: Opening hours need confirmation. Tuesday to Sunday: opening time not available–17:00 (Wikidata reference; seasonal/holiday exceptions and current hours need confirmation). Address: Not available.",
+              "place": {
+                "id": "Q1047097",
+                "name": "Nezu Museum",
+                "address": "Not available",
+                "latitude": 35.66215,
+                "longitude": 139.71703,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q1047097",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "aa82b794-e308-5924-82a6-11552041b3eb",
+              "status": "planned",
+              "index": 3,
+              "title": "Daily meals in Tokyo",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "e68f469b-55ec-55dc-99a3-989eea127a6f",
+              "status": "planned",
+              "index": 4,
+              "title": "Daily transport in Tokyo",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "date": "2040-01-27",
+          "theme": "Tokyo: Shinjuku Central Park, Japanese Sword Museum, Shinjuku Musashinokan",
+          "activities": [
+            {
+              "activityId": "b8ff49bc-ba39-5a9f-8990-4c82190430f3",
+              "status": "planned",
+              "index": 0,
+              "title": "Visit Shinjuku Central Park",
+              "time": "09:00 AM",
+              "description": "Opening hours need confirmation. park in Japan. Suggested 90-minute visit. Address: 東京都新宿区西新宿2-11.",
+              "place": {
+                "id": "Q5364883",
+                "name": "Shinjuku Central Park",
+                "address": "東京都新宿区西新宿2-11",
+                "latitude": 35.69007,
+                "longitude": 139.68947,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q5364883",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "3188dfd6-9bea-5345-b114-93d34de6d233",
+              "status": "planned",
+              "index": 1,
+              "title": "Visit Japanese Sword Museum",
+              "time": "01:15 PM",
+              "description": "Opening hours need confirmation. military museum in Japan. Suggested 90-minute visit. Allow at least 30 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: 東京都墨田区横網一丁目12番9号.",
+              "place": {
+                "id": "Q3329874",
+                "name": "Japanese Sword Museum",
+                "address": "東京都墨田区横網一丁目12番9号",
+                "latitude": 35.681456,
+                "longitude": 139.69089,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q3329874",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "6cc5fe97-eaf4-502a-8500-782080baa75a",
+              "status": "planned",
+              "index": 2,
+              "title": "Visit Shinjuku Musashinokan",
+              "time": "03:23 PM",
+              "description": "Opening hours need confirmation. Japanese movie theater. Suggested 60-minute visit. Allow at least 38 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: 東京都新宿区新宿3-27-10 武蔵野ビル3階.",
+              "place": {
+                "id": "Q5206990",
+                "name": "Shinjuku Musashinokan",
+                "address": "東京都新宿区新宿3-27-10 武蔵野ビル3階",
+                "latitude": 35.6911,
+                "longitude": 139.7021,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q5206990",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "24ee59e3-43f1-5ab2-93a0-de3b02cf4b3d",
+              "status": "planned",
+              "index": 3,
+              "title": "Daily meals in Tokyo",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "3e547a19-7ec9-58e4-84de-c4c2c727af90",
+              "status": "planned",
+              "index": 4,
+              "title": "Daily transport in Tokyo",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "anchor": {
+      "city": "Manila",
+      "country": "Philippines",
+      "countryCode": "PH",
+      "latitude": 14.6042,
+      "longitude": 120.9822
+    },
+    "trip": {
+      "id": "adaf818e-574f-5a71-bc65-35741949e20f",
+      "saveKey": "content:5c049042ae779315b4f497ebbf13a97d77bd33cc887cdbdfaddc5650534cb7f6",
+      "saveRequestHash": "5c049042ae779315b4f497ebbf13a97d77bd33cc887cdbdfaddc5650534cb7f6",
+      "userId": "b1e535b5-e06e-579a-beb6-26fd4de6caab",
+      "destination": "Manila, Philippines",
+      "destinationCity": "Manila",
+      "destinationRegion": null,
+      "destinationCountry": "Philippines",
+      "destinationCountryCode": "PH",
+      "latitude": 14.6042,
+      "longitude": 120.9822,
+      "budget": 10000,
+      "currency": "EUR",
+      "startDate": "2040-01-25",
+      "endDate": "2040-01-27",
+      "travelers": 1,
+      "partyType": "solo",
+      "interests": [
+        "culture",
+        "nature",
+        "food"
+      ],
+      "itinerary": {
+        "days": [
+          {
+            "day": 1,
+            "date": "2040-01-25",
+            "theme": "Manila: Mehan Garden, Rizal Park, Rizal Monument",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 3566.66,
+            "activities": [
+              {
+                "id": "01056607-2784-58b7-b85f-c9d4f2d15bca",
+                "icon": "map",
+                "time": "09:00 AM",
+                "place": {
+                  "city": "Manila",
+                  "name": "Mehan Garden",
+                  "address": "Padre Burgos Avenue cor. Cecilia Muñoz-Palma Street",
+                  "country": "Philippines",
+                  "placeId": "Q6809213",
+                  "latitude": 14.592451,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:49.130Z",
+                  "longitude": 120.98063,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q6809213",
+                  "countryCode": "PH",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Mehan Garden",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. public park in Manila, Philippines. Suggested 90-minute visit. Address: Padre Burgos Avenue cor. Cecilia Muñoz-Palma Street.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 0,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "13d7f857-061b-5c22-b4f0-8f2932fef0c5",
+                "icon": "map",
+                "time": "01:18 PM",
+                "place": {
+                  "city": "Manila",
+                  "name": "Rizal Park",
+                  "address": "Not available",
+                  "country": "Philippines",
+                  "placeId": "Q2306339",
+                  "latitude": 14.5825,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:49.130Z",
+                  "longitude": 120.97833333,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q2306339",
+                  "countryCode": "PH",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Rizal Park",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. historic urban park in Manila, Philippines. Suggested 90-minute visit. Allow at least 33 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 33,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "b991470b-adb3-5e9a-a81a-d1c3a1234553",
+                "icon": "map",
+                "time": "03:06 PM",
+                "place": {
+                  "city": "Manila",
+                  "name": "Rizal Monument",
+                  "address": "Roxas Boulevard",
+                  "country": "Philippines",
+                  "placeId": "Q7339077",
+                  "latitude": 14.581669,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:49.130Z",
+                  "longitude": 120.976694,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q7339077",
+                  "countryCode": "PH",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Rizal Monument",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. primary monument to José Rizal, located at Rizal Park in Manila, Philippines. Suggested 90-minute visit. Allow at least 18 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Roxas Boulevard.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 18,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "2d7997b6-e04e-5a25-aea1-0cd04be466e0",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Manila",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "f2c4b8a6-8c2f-528f-a22b-9f7cf0242ec0",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Manila",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:49.133Z",
+            "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+            "planningStatus": "suggested",
+            "scheduleBlocks": [
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 720,
+                "startMinutes": 630
+              },
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 1080,
+                "startMinutes": 996
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:49.133Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          },
+          {
+            "day": 2,
+            "date": "2040-01-26",
+            "theme": "Manila: Paco Park, Cathedral of Praise, National Museum of Anthropology",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 3566.66,
+            "activities": [
+              {
+                "id": "45f7c123-d71e-51d3-a609-484e9d650896",
+                "icon": "map",
+                "time": "09:00 AM",
+                "place": {
+                  "city": "Manila",
+                  "name": "Paco Park",
+                  "address": "Not available",
+                  "country": "Philippines",
+                  "placeId": "Q7123089",
+                  "latitude": 14.58122,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:49.130Z",
+                  "longitude": 120.98889,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q7123089",
+                  "countryCode": "PH",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Paco Park",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. urban park and historic cemetery in Manila, Philippines. Suggested 90-minute visit. Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 0,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "47aadf2c-7faa-5958-a273-b8272aa0eb74",
+                "icon": "map",
+                "time": "10:50 AM",
+                "place": {
+                  "city": "Manila",
+                  "name": "Cathedral of Praise",
+                  "address": "Not available",
+                  "country": "Philippines",
+                  "placeId": "Q5052342",
+                  "latitude": 14.58133,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:49.130Z",
+                  "longitude": 120.98592,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q5052342",
+                  "countryCode": "PH",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Cathedral of Praise",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. megachurch in Manila, Philippines. Suggested 60-minute visit. Allow at least 20 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 20,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "a4f0a312-285d-528c-aaea-df10667201b8",
+                "icon": "map",
+                "time": "01:11 PM",
+                "place": {
+                  "city": "Manila",
+                  "name": "National Museum of Anthropology",
+                  "address": "Not available",
+                  "country": "Philippines",
+                  "placeId": "Q3330472",
+                  "latitude": 14.58527778,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:49.130Z",
+                  "longitude": 120.98083333,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q3330472",
+                  "countryCode": "PH",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit National Museum of Anthropology",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. constituent museum of the National Museum of the Philippines. Suggested 90-minute visit. Allow at least 26 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 26,
+                "durationMinutes": 90,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "dc3199d9-7c07-5743-8a80-19d59862017b",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Manila",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "ec2128e1-f404-5187-a0f2-edca77f397e1",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Manila",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:49.133Z",
+            "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+            "planningStatus": "suggested",
+            "scheduleBlocks": [
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 1080,
+                "startMinutes": 881
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:49.133Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          },
+          {
+            "day": 3,
+            "date": "2040-01-27",
+            "theme": "Manila: Knox United Methodist Church, Quiapo Church, San Sebastian Church",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 1866.66,
+            "activities": [
+              {
+                "id": "34e21388-534c-5102-ab55-98abc6168342",
+                "icon": "map",
+                "time": "09:00 AM",
+                "place": {
+                  "city": "Manila",
+                  "name": "Knox United Methodist Church",
+                  "address": "960 Rizal Avenue cor. Lope de Vega Street",
+                  "country": "Philippines",
+                  "placeId": "Q6423627",
+                  "latitude": 14.60628,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:49.130Z",
+                  "longitude": 120.9825,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q6423627",
+                  "countryCode": "PH",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Knox United Methodist Church",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. United Methodist church in Manila, Philippines. Suggested 60-minute visit. Address: 960 Rizal Avenue cor. Lope de Vega Street.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 0,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "3dcd55db-fcf4-5018-a09d-96d4c933aa57",
+                "icon": "map",
+                "time": "10:28 AM",
+                "place": {
+                  "city": "Manila",
+                  "name": "Quiapo Church",
+                  "address": "Not available",
+                  "country": "Philippines",
+                  "placeId": "Q1899439",
+                  "latitude": 14.598782,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:49.130Z",
+                  "longitude": 120.983783,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q1899439",
+                  "countryCode": "PH",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit Quiapo Church",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. Roman Catholic parish church in Manila. Suggested 60-minute visit. Allow at least 28 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 28,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "fba15185-7ae7-57fe-85e8-2b78e520ebf2",
+                "icon": "map",
+                "time": "01:09 PM",
+                "place": {
+                  "city": "Manila",
+                  "name": "San Sebastian Church",
+                  "address": "Pasaje del Carmen Street",
+                  "country": "Philippines",
+                  "placeId": "Q174968",
+                  "latitude": 14.5997,
+                  "provider": "wikidata",
+                  "fetchedAt": "2026-10-10T18:24:49.130Z",
+                  "longitude": 120.9889,
+                  "sourceUrl": "https://www.wikidata.org/wiki/Q174968",
+                  "countryCode": "PH",
+                  "openingHours": "Opening hours need confirmation"
+                },
+                "title": "Visit San Sebastian Church",
+                "status": "planned",
+                "category": "activity",
+                "unitCost": 222.22,
+                "description": "Opening hours need confirmation. all-steel church in Manila, Philippines. Suggested 60-minute visit. Allow at least 24 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Pasaje del Carmen Street.",
+                "estimatedCost": 222.22,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 222.22,
+                  "participants": 1,
+                  "needsConfirmation": true
+                },
+                "scheduleLabel": "Suggested",
+                "travelMinutes": 24,
+                "durationMinutes": 60,
+                "placeVerification": "supporting-source-found"
+              },
+              {
+                "id": "6518b3d8-4177-53a5-9f13-fe403f333b17",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Manila",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "f0ada174-7093-56b3-8c18-1dd1553e0de9",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Manila",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:49.132Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:49.133Z",
+            "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+            "planningStatus": "suggested",
+            "scheduleBlocks": [
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 720,
+                "startMinutes": 688
+              },
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "free-time",
+                "label": "Free time / rest — optional",
+                "endMinutes": 1080,
+                "startMinutes": 849
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:49.133Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          }
+        ],
+        "source": "catalog",
+        "currency": "EUR",
+        "grounding": {
+          "rooms": 1,
+          "total": 9899.98,
+          "nights": 2,
+          "endDate": "2040-01-27",
+          "version": 1,
+          "currency": "EUR",
+          "subtotal": 8999.98,
+          "fetchedAt": "2026-10-10T18:24:49.132Z",
+          "startDate": "2040-01-25",
+          "categories": {
+            "fees": 0,
+            "food": 2199.99,
+            "activities": 1999.98,
+            "contingency": 900,
+            "accommodation": 3400,
+            "transportation": 1400.01
+          },
+          "destination": {
+            "city": "Manila",
+            "country": "Philippines",
+            "latitude": 14.6042,
+            "longitude": 120.9822,
+            "countryCode": "PH"
+          },
+          "limitations": [
+            "AI scheduling was unavailable. Recommendations use only verified destination records, interest matching and estimated local schedules. Missing place coverage remains explicitly incomplete; no attractions or provider prices were invented.",
+            "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+            "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+            "Schedules use destination-local calendar dates and wall clocks. Supplied arrival/departure times reserve estimated 90-minute arrival and 120-minute departure buffers; booking and hotel check-in times still need confirmation.",
+            "An IANA destination time-zone reference is unavailable. Suggested local clocks are not converted to UTC or the browser time zone.",
+            "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates."
+          ],
+          "budgetStatus": "needs-confirmation",
+          "accommodation": {
+            "unit": "per-room-night",
+            "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "EUR",
+            "quantity": 2,
+            "fetchedAt": "2026-10-10T18:24:49.132Z",
+            "unitAmount": 1700,
+            "participants": 1,
+            "needsConfirmation": true
+          },
+          "additionalFees": 0,
+          "verifiedAmount": 0,
+          "estimatedAmount": 9899.98,
+          "placeDataStatus": "live",
+          "startingLocation": "",
+          "contingencyAmount": 900,
+          "unknownPriceCount": 16,
+          "contingencyPercent": 10,
+          "foodDailyPerPerson": 733.33
+        },
+        "partyType": "solo",
+        "travelers": 1,
+        "costSharing": {
+          "partyType": "solo",
+          "travelers": 1,
+          "groupBudget": 10000,
+          "budgetShares": [
+            10000
+          ],
+          "reserveShares": [
+            100.02
+          ],
+          "plannedGroupSpend": 9899.98,
+          "plannedSpendShares": [
+            9899.98
+          ],
+          "accommodationShares": [
+            3400
+          ]
+        },
+        "destination": "Manila, Philippines",
+        "preferences": {
+          "pace": "balanced",
+          "activities": [],
+          "travelStyle": "balanced",
+          "accommodation": "no preference",
+          "transportation": "practical local transport"
+        },
+        "totalBudget": 10000,
+        "budgetSummary": {
+          "food": 2200,
+          "total": 10000,
+          "reserve": 1000,
+          "shortfall": 0,
+          "transport": 1400,
+          "activities": 2000,
+          "dailyAverage": 3299.99,
+          "plannedSpend": 9899.98,
+          "accommodation": 3400,
+          "variableBudget": 5600,
+          "remainingBudget": 100.02,
+          "accommodationActual": 3400,
+          "travelOptionsActual": 0
+        },
+        "groundingProof": "fixture-only-proof-000000000000000000000000",
+        "budgetOptimization": {
+          "status": "within_budget",
+          "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary.",
+          "suggestions": [],
+          "targetSpend": 10000,
+          "amountToTarget": 0,
+          "combinedEstimatedSavings": 0,
+          "projectedSpendIfAllApplied": 9899.98,
+          "remainingGapAfterSuggestions": 0
+        },
+        "selectedTravelCosts": {
+          "total": 0,
+          "activities": []
+        }
+      },
+      "weather": null,
+      "status": "active",
+      "createdAt": "2026-10-10T18:24:49.276Z",
+      "updatedAt": "2026-10-10T18:24:49.276Z"
+    },
+    "manifest": {
+      "tripId": "adaf818e-574f-5a71-bc65-35741949e20f",
+      "revision": "e61ffa2865d957d1098cd69adfa8aabb8f425ff914fb170ad69a76f12ff16a0d",
+      "tripStatus": "active",
+      "destination": "Manila, Philippines",
+      "anchor": {
+        "city": "Manila",
+        "country": "Philippines",
+        "countryCode": "PH",
+        "latitude": 14.6042,
+        "longitude": 120.9822
+      },
+      "currency": "EUR",
+      "days": [
+        {
+          "day": 1,
+          "date": "2040-01-25",
+          "theme": "Manila: Mehan Garden, Rizal Park, Rizal Monument",
+          "activities": [
+            {
+              "activityId": "01056607-2784-58b7-b85f-c9d4f2d15bca",
+              "status": "planned",
+              "index": 0,
+              "title": "Visit Mehan Garden",
+              "time": "09:00 AM",
+              "description": "Opening hours need confirmation. public park in Manila, Philippines. Suggested 90-minute visit. Address: Padre Burgos Avenue cor. Cecilia Muñoz-Palma Street.",
+              "place": {
+                "id": "Q6809213",
+                "name": "Mehan Garden",
+                "address": "Padre Burgos Avenue cor. Cecilia Muñoz-Palma Street",
+                "latitude": 14.592451,
+                "longitude": 120.98063,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q6809213",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "13d7f857-061b-5c22-b4f0-8f2932fef0c5",
+              "status": "planned",
+              "index": 1,
+              "title": "Visit Rizal Park",
+              "time": "01:18 PM",
+              "description": "Opening hours need confirmation. historic urban park in Manila, Philippines. Suggested 90-minute visit. Allow at least 33 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q2306339",
+                "name": "Rizal Park",
+                "address": "Not available",
+                "latitude": 14.5825,
+                "longitude": 120.97833333,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q2306339",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "b991470b-adb3-5e9a-a81a-d1c3a1234553",
+              "status": "planned",
+              "index": 2,
+              "title": "Visit Rizal Monument",
+              "time": "03:06 PM",
+              "description": "Opening hours need confirmation. primary monument to José Rizal, located at Rizal Park in Manila, Philippines. Suggested 90-minute visit. Allow at least 18 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Roxas Boulevard.",
+              "place": {
+                "id": "Q7339077",
+                "name": "Rizal Monument",
+                "address": "Roxas Boulevard",
+                "latitude": 14.581669,
+                "longitude": 120.976694,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q7339077",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "2d7997b6-e04e-5a25-aea1-0cd04be466e0",
+              "status": "planned",
+              "index": 3,
+              "title": "Daily meals in Manila",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "f2c4b8a6-8c2f-528f-a22b-9f7cf0242ec0",
+              "status": "planned",
+              "index": 4,
+              "title": "Daily transport in Manila",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "date": "2040-01-26",
+          "theme": "Manila: Paco Park, Cathedral of Praise, National Museum of Anthropology",
+          "activities": [
+            {
+              "activityId": "45f7c123-d71e-51d3-a609-484e9d650896",
+              "status": "planned",
+              "index": 0,
+              "title": "Visit Paco Park",
+              "time": "09:00 AM",
+              "description": "Opening hours need confirmation. urban park and historic cemetery in Manila, Philippines. Suggested 90-minute visit. Address: Not available.",
+              "place": {
+                "id": "Q7123089",
+                "name": "Paco Park",
+                "address": "Not available",
+                "latitude": 14.58122,
+                "longitude": 120.98889,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q7123089",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "47aadf2c-7faa-5958-a273-b8272aa0eb74",
+              "status": "planned",
+              "index": 1,
+              "title": "Visit Cathedral of Praise",
+              "time": "10:50 AM",
+              "description": "Opening hours need confirmation. megachurch in Manila, Philippines. Suggested 60-minute visit. Allow at least 20 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q5052342",
+                "name": "Cathedral of Praise",
+                "address": "Not available",
+                "latitude": 14.58133,
+                "longitude": 120.98592,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q5052342",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "a4f0a312-285d-528c-aaea-df10667201b8",
+              "status": "planned",
+              "index": 2,
+              "title": "Visit National Museum of Anthropology",
+              "time": "01:11 PM",
+              "description": "Opening hours need confirmation. constituent museum of the National Museum of the Philippines. Suggested 90-minute visit. Allow at least 26 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q3330472",
+                "name": "National Museum of Anthropology",
+                "address": "Not available",
+                "latitude": 14.58527778,
+                "longitude": 120.98083333,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q3330472",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 90,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "dc3199d9-7c07-5743-8a80-19d59862017b",
+              "status": "planned",
+              "index": 3,
+              "title": "Daily meals in Manila",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "ec2128e1-f404-5187-a0f2-edca77f397e1",
+              "status": "planned",
+              "index": 4,
+              "title": "Daily transport in Manila",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "date": "2040-01-27",
+          "theme": "Manila: Knox United Methodist Church, Quiapo Church, San Sebastian Church",
+          "activities": [
+            {
+              "activityId": "34e21388-534c-5102-ab55-98abc6168342",
+              "status": "planned",
+              "index": 0,
+              "title": "Visit Knox United Methodist Church",
+              "time": "09:00 AM",
+              "description": "Opening hours need confirmation. United Methodist church in Manila, Philippines. Suggested 60-minute visit. Address: 960 Rizal Avenue cor. Lope de Vega Street.",
+              "place": {
+                "id": "Q6423627",
+                "name": "Knox United Methodist Church",
+                "address": "960 Rizal Avenue cor. Lope de Vega Street",
+                "latitude": 14.60628,
+                "longitude": 120.9825,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q6423627",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "3dcd55db-fcf4-5018-a09d-96d4c933aa57",
+              "status": "planned",
+              "index": 1,
+              "title": "Visit Quiapo Church",
+              "time": "10:28 AM",
+              "description": "Opening hours need confirmation. Roman Catholic parish church in Manila. Suggested 60-minute visit. Allow at least 28 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+              "place": {
+                "id": "Q1899439",
+                "name": "Quiapo Church",
+                "address": "Not available",
+                "latitude": 14.598782,
+                "longitude": 120.983783,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q1899439",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "fba15185-7ae7-57fe-85e8-2b78e520ebf2",
+              "status": "planned",
+              "index": 2,
+              "title": "Visit San Sebastian Church",
+              "time": "01:09 PM",
+              "description": "Opening hours need confirmation. all-steel church in Manila, Philippines. Suggested 60-minute visit. Allow at least 24 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Pasaje del Carmen Street.",
+              "place": {
+                "id": "Q174968",
+                "name": "San Sebastian Church",
+                "address": "Pasaje del Carmen Street",
+                "latitude": 14.5997,
+                "longitude": 120.9889,
+                "sourceUrl": "https://www.wikidata.org/wiki/Q174968",
+                "photo": null
+              },
+              "budgetOnly": false,
+              "durationMinutes": 60,
+              "estimatedCost": 222.22,
+              "category": "activity",
+              "locationStatus": "Verified saved place"
+            },
+            {
+              "activityId": "6518b3d8-4177-53a5-9f13-fe403f333b17",
+              "status": "planned",
+              "index": 3,
+              "title": "Daily meals in Manila",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "f0ada174-7093-56b3-8c18-1dd1553e0de9",
+              "status": "planned",
+              "index": 4,
+              "title": "Daily transport in Manila",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "anchor": {
+      "city": "Adamstown",
+      "country": "Pitcairn Islands",
+      "countryCode": "PN",
+      "latitude": -25.06597,
+      "longitude": -130.10147
+    },
+    "trip": {
+      "id": "36b3f39d-50cc-570c-8275-e38e78e92f5c",
+      "saveKey": "content:a37c39f1873725a605477490104bac4deae290587fa36521e93e2a98be01863c",
+      "saveRequestHash": "a37c39f1873725a605477490104bac4deae290587fa36521e93e2a98be01863c",
+      "userId": "b1e535b5-e06e-579a-beb6-26fd4de6caab",
+      "destination": "Adamstown, Pitcairn Islands",
+      "destinationCity": "Adamstown",
+      "destinationRegion": null,
+      "destinationCountry": "Pitcairn Islands",
+      "destinationCountryCode": "PN",
+      "latitude": -25.06597,
+      "longitude": -130.10147,
+      "budget": 10000,
+      "currency": "EUR",
+      "startDate": "2040-01-25",
+      "endDate": "2040-01-27",
+      "travelers": 1,
+      "partyType": "solo",
+      "interests": [
+        "culture",
+        "nature",
+        "food"
+      ],
+      "itinerary": {
+        "days": [
+          {
+            "day": 1,
+            "date": "2040-01-25",
+            "theme": "Adamstown: details need confirmation",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 2900,
+            "activities": [
+              {
+                "id": "bba43b8d-04dd-58b9-a86d-8f59f5769c73",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Adamstown",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:50.344Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "7be932ef-fc7a-5a39-9f42-1f5ac8d494a0",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Adamstown",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:50.344Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Place-provider coverage returned no suitable city/country-verified places within the supported search area. No attractions were invented. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:50.344Z",
+            "planningReason": "Place-provider coverage returned no suitable city/country-verified places within the supported search area. No attractions were invented.",
+            "planningStatus": "incomplete",
+            "scheduleBlocks": [
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "unscheduled",
+                "label": "Unplanned time — additional verified places needed",
+                "endMinutes": 1080,
+                "startMinutes": 765
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:50.344Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          },
+          {
+            "day": 2,
+            "date": "2040-01-26",
+            "theme": "Adamstown: details need confirmation",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 2900,
+            "activities": [
+              {
+                "id": "eb7934f8-b4c1-580e-8d0f-ae9eddf466b1",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Adamstown",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:50.344Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "d7475ee6-a764-5fba-9214-46143f4a72eb",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Adamstown",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:50.344Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Place-provider coverage returned no suitable city/country-verified places within the supported search area. No attractions were invented. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:50.344Z",
+            "planningReason": "Place-provider coverage returned no suitable city/country-verified places within the supported search area. No attractions were invented.",
+            "planningStatus": "incomplete",
+            "scheduleBlocks": [
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "unscheduled",
+                "label": "Unplanned time — additional verified places needed",
+                "endMinutes": 1080,
+                "startMinutes": 765
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:50.344Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          },
+          {
+            "day": 3,
+            "date": "2040-01-27",
+            "theme": "Adamstown: details need confirmation",
+            "imageUrl": "",
+            "rideFare": 466.67,
+            "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+            "totalCost": 1200,
+            "activities": [
+              {
+                "id": "d097371b-dbdb-5b62-acaa-959899e90a8c",
+                "icon": "food",
+                "time": "Daily allowance",
+                "title": "Daily meals in Adamstown",
+                "category": "food",
+                "unitCost": 733.33,
+                "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+                "estimatedCost": 733.33,
+                "priceEvidence": {
+                  "unit": "daily-per-person",
+                  "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:50.344Z",
+                  "unitAmount": 733.33,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              },
+              {
+                "id": "f9bc5920-0340-5590-8fff-f459e9b72260",
+                "icon": "bus",
+                "time": "Daily allowance",
+                "title": "Daily transport in Adamstown",
+                "category": "transport",
+                "unitCost": 466.67,
+                "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+                "estimatedCost": 466.67,
+                "priceEvidence": {
+                  "unit": "per-person",
+                  "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+                  "source": "budget-allowance",
+                  "status": "estimate",
+                  "currency": "EUR",
+                  "quantity": 1,
+                  "fetchedAt": "2026-10-10T18:24:50.344Z",
+                  "unitAmount": 466.67,
+                  "participants": 1,
+                  "needsConfirmation": true
+                }
+              }
+            ],
+            "crowdLevel": "low",
+            "travelNote": "Place-provider coverage returned no suitable city/country-verified places within the supported search area. No attractions were invented. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+            "crowdSource": "estimated",
+            "crowdFetchedAt": "2026-10-10T18:24:50.344Z",
+            "planningReason": "Place-provider coverage returned no suitable city/country-verified places within the supported search area. No attractions were invented.",
+            "planningStatus": "incomplete",
+            "scheduleBlocks": [
+              {
+                "kind": "meal",
+                "label": "Meal break — venue not selected; daily meal allowance covers the cost",
+                "endMinutes": 765,
+                "startMinutes": 720
+              },
+              {
+                "kind": "unscheduled",
+                "label": "Unplanned time — additional verified places needed",
+                "endMinutes": 1080,
+                "startMinutes": 765
+              }
+            ],
+            "crowdConfidence": "low",
+            "crowdRefreshAfter": "2026-10-11T18:24:50.344Z",
+            "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+          }
+        ],
+        "source": "catalog",
+        "currency": "EUR",
+        "grounding": {
+          "rooms": 1,
+          "total": 7700,
+          "nights": 2,
+          "endDate": "2040-01-27",
+          "version": 1,
+          "currency": "EUR",
+          "subtotal": 7000,
+          "fetchedAt": "2026-10-10T18:24:50.344Z",
+          "startDate": "2040-01-25",
+          "categories": {
+            "fees": 0,
+            "food": 2199.99,
+            "activities": 0,
+            "contingency": 700,
+            "accommodation": 3400,
+            "transportation": 1400.01
+          },
+          "destination": {
+            "city": "Adamstown",
+            "country": "Pitcairn Islands",
+            "latitude": -25.06597,
+            "longitude": -130.10147,
+            "countryCode": "PN"
+          },
+          "limitations": [
+            "AI scheduling was unavailable. Recommendations use only verified destination records, interest matching and estimated local schedules. Missing place coverage remains explicitly incomplete; no attractions or provider prices were invented.",
+            "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+            "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+            "Schedules use destination-local calendar dates and wall clocks. Supplied arrival/departure times reserve estimated 90-minute arrival and 120-minute departure buffers; booking and hotel check-in times still need confirmation.",
+            "An IANA destination time-zone reference is unavailable. Suggested local clocks are not converted to UTC or the browser time zone.",
+            "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates.",
+            "Place provider returned no city/country-validated attractions; no venues were invented."
+          ],
+          "budgetStatus": "needs-confirmation",
+          "accommodation": {
+            "unit": "per-room-night",
+            "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "EUR",
+            "quantity": 2,
+            "fetchedAt": "2026-10-10T18:24:50.344Z",
+            "unitAmount": 1700,
+            "participants": 1,
+            "needsConfirmation": true
+          },
+          "additionalFees": 0,
+          "verifiedAmount": 0,
+          "estimatedAmount": 7700,
+          "placeDataStatus": "live",
+          "startingLocation": "",
+          "contingencyAmount": 700,
+          "unknownPriceCount": 7,
+          "contingencyPercent": 10,
+          "foodDailyPerPerson": 733.33
+        },
+        "partyType": "solo",
+        "travelers": 1,
+        "costSharing": {
+          "partyType": "solo",
+          "travelers": 1,
+          "groupBudget": 10000,
+          "budgetShares": [
+            10000
+          ],
+          "reserveShares": [
+            2300
+          ],
+          "plannedGroupSpend": 7700,
+          "plannedSpendShares": [
+            7700
+          ],
+          "accommodationShares": [
+            3400
+          ]
+        },
+        "destination": "Adamstown, Pitcairn Islands",
+        "preferences": {
+          "pace": "balanced",
+          "activities": [],
+          "travelStyle": "balanced",
+          "accommodation": "no preference",
+          "transportation": "practical local transport"
+        },
+        "totalBudget": 10000,
+        "budgetSummary": {
+          "food": 2200,
+          "total": 10000,
+          "reserve": 1000,
+          "shortfall": 0,
+          "transport": 1400,
+          "activities": 2000,
+          "dailyAverage": 2566.67,
+          "plannedSpend": 7700,
+          "accommodation": 3400,
+          "variableBudget": 5600,
+          "remainingBudget": 2300,
+          "accommodationActual": 3400,
+          "travelOptionsActual": 0
+        },
+        "groundingProof": "fixture-only-proof-000000000000000000000000",
+        "budgetOptimization": {
+          "status": "within_budget",
+          "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary.",
+          "suggestions": [],
+          "targetSpend": 10000,
+          "amountToTarget": 0,
+          "combinedEstimatedSavings": 0,
+          "projectedSpendIfAllApplied": 7700,
+          "remainingGapAfterSuggestions": 0
+        },
+        "selectedTravelCosts": {
+          "total": 0,
+          "activities": []
+        }
+      },
+      "weather": null,
+      "status": "active",
+      "createdAt": "2026-10-10T18:24:50.495Z",
+      "updatedAt": "2026-10-10T18:24:50.495Z"
+    },
+    "manifest": {
+      "tripId": "36b3f39d-50cc-570c-8275-e38e78e92f5c",
+      "revision": "125388bdff7d816b16fd5160e1c02efd0b6cfd63e696dd87da2437db736500dd",
+      "tripStatus": "active",
+      "destination": "Adamstown, Pitcairn Islands",
+      "anchor": {
+        "city": "Adamstown",
+        "country": "Pitcairn Islands",
+        "countryCode": "PN",
+        "latitude": -25.06597,
+        "longitude": -130.10147
+      },
+      "currency": "EUR",
+      "days": [
+        {
+          "day": 1,
+          "date": "2040-01-25",
+          "theme": "Adamstown: details need confirmation",
+          "activities": [
+            {
+              "activityId": "bba43b8d-04dd-58b9-a86d-8f59f5769c73",
+              "status": "planned",
+              "index": 0,
+              "title": "Daily meals in Adamstown",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "7be932ef-fc7a-5a39-9f42-1f5ac8d494a0",
+              "status": "planned",
+              "index": 1,
+              "title": "Daily transport in Adamstown",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        },
+        {
+          "day": 2,
+          "date": "2040-01-26",
+          "theme": "Adamstown: details need confirmation",
+          "activities": [
+            {
+              "activityId": "eb7934f8-b4c1-580e-8d0f-ae9eddf466b1",
+              "status": "planned",
+              "index": 0,
+              "title": "Daily meals in Adamstown",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "d7475ee6-a764-5fba-9214-46143f4a72eb",
+              "status": "planned",
+              "index": 1,
+              "title": "Daily transport in Adamstown",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        },
+        {
+          "day": 3,
+          "date": "2040-01-27",
+          "theme": "Adamstown: details need confirmation",
+          "activities": [
+            {
+              "activityId": "d097371b-dbdb-5b62-acaa-959899e90a8c",
+              "status": "planned",
+              "index": 0,
+              "title": "Daily meals in Adamstown",
+              "time": "Daily allowance",
+              "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 733.33,
+              "category": "food",
+              "locationStatus": "Choose an exact place"
+            },
+            {
+              "activityId": "f9bc5920-0340-5590-8fff-f459e9b72260",
+              "status": "planned",
+              "index": 1,
+              "title": "Daily transport in Adamstown",
+              "time": "Daily allowance",
+              "description": "practical local transport. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+              "place": null,
+              "budgetOnly": true,
+              "estimatedCost": 466.67,
+              "category": "transport",
+              "locationStatus": "Choose an exact place"
+            }
+          ]
+        }
+      ]
+    }
+  }
+]

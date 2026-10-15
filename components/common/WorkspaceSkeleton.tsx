@@ -1,5 +1,8 @@
 import { Compass } from 'lucide-react';
+import type { ReactNode } from 'react';
 import { Skeleton, SkeletonRegion } from './Skeleton';
+import theme from '@/components/features/traveler/TravelerDashboard.module.css';
+import type { TravelerTab } from '@/hooks/use-itinerary-navigation';
 
 export type WorkspaceSkeletonVariant = 'traveler' | 'planner' | 'admin';
 
@@ -12,16 +15,56 @@ function CardSkeleton() {
   </div>;
 }
 
-export function WorkspaceSkeleton({ label = 'Loading your TravelMate workspace...', variant = 'traveler' }: {
+export function WorkspaceSkeleton({ label = 'Loading your TravelMate workspace...', variant = 'traveler', screen }: {
   label?: string;
   variant?: WorkspaceSkeletonVariant;
+  screen?: TravelerTab;
 }) {
-  return <main className="min-h-screen overflow-x-clip bg-[#0b1d1a] pt-20 text-white">
+  return variant === 'admin' ? <DarkWorkspaceSkeleton label={label} variant={variant}/> : <TravelerWorkspaceSkeleton label={label} screen={screen} planner={variant === 'planner'}/>;
+}
+
+function LoadingPanel({ children }: { children?: ReactNode }) {
+  return <div className="min-w-0 rounded-xl border border-white/15 bg-[#102824] p-5 sm:p-6">{children || <><Skeleton className="h-5 w-2/3 max-w-xs rounded"/><Skeleton className="mt-4 h-3 w-full rounded"/><Skeleton className="mt-2 h-3 w-4/5 rounded"/><Skeleton className="mt-5 h-11 w-36 rounded"/></>}</div>;
+}
+
+function TravelerWorkspaceSkeleton({ label, screen, planner }: { label: string; screen?: TravelerTab; planner: boolean }) {
+  const context = screen !== 'overview';
+  return <div data-workspace-skeleton="traveler" className={`${theme.theme} ${screen === 'overview' ? theme.homeTheme : ''} min-h-screen w-full max-w-full overflow-x-clip pt-[calc(3.5rem+max(0.5rem,env(safe-area-inset-top)))] sm:pt-[calc(4rem+max(1rem,env(safe-area-inset-top)))]`}>
     <SkeletonRegion label={label}>
-      <header className="fixed inset-x-0 top-0 z-40 px-4 pt-4 sm:px-6">
-        <div className="mx-auto flex h-16 max-w-[1380px] items-center justify-between border border-white/15 bg-[#102824] px-4 sm:px-6">
-          <div className="flex items-center gap-3"><span className="grid size-9 place-items-center bg-[#ffcf70] text-[#102824]"><Compass size={20} /></span><span className="text-lg font-semibold">TravelMate</span></div>
-          <div className="flex items-center gap-3 border border-white/15 p-1.5"><Skeleton className="size-9" /><div className="hidden w-32 space-y-2 sm:block"><Skeleton className="h-3 w-24" /><Skeleton className="h-2 w-full" /></div></div>
+      <header className="fixed inset-x-0 top-0 z-40 px-3 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-6 sm:pt-[max(1rem,env(safe-area-inset-top))]">
+        <div className="mx-auto flex h-14 w-full max-w-[1380px] items-center justify-between gap-3 border border-white/15 bg-[#102824] px-3 sm:h-16 sm:px-6">
+          <div className="flex min-h-11 shrink-0 items-center gap-2 sm:gap-3"><span className="grid size-8 place-items-center bg-[#ffcf70] text-[#102824] sm:size-9"><Compass size={20} className="size-[18px] sm:size-5"/></span><span className="text-base font-semibold sm:text-lg">TravelMate</span></div>
+          <div className="flex size-11 shrink-0 items-center justify-center gap-3 border border-white/15 p-1.5 sm:h-auto sm:w-auto sm:justify-start"><Skeleton className="size-7 shrink-0 sm:size-9"/><div className="hidden w-32 space-y-2 sm:block"><Skeleton className="h-3 w-24 rounded"/><Skeleton className="h-2 w-full rounded"/></div></div>
+        </div>
+      </header>
+      {context && <div className="border-b border-white/10 bg-[#102622] px-4 py-3 sm:px-6"><div className="mx-auto flex w-full max-w-[1600px] flex-wrap gap-x-6 gap-y-2"><Skeleton className="h-3 w-28 rounded"/><Skeleton className="h-3 w-40 rounded"/><Skeleton className="h-3 w-36 rounded"/></div></div>}
+      <div className="mx-auto grid w-full max-w-[1600px] grid-cols-[minmax(0,1fr)] px-4 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-10 lg:px-6 xl:gap-14">
+        <aside className="min-w-0 max-w-[calc(100vw-2rem)] py-4 lg:max-w-none lg:py-8">
+          <div className="flex gap-px overflow-hidden border border-white/10 bg-white/10 p-px lg:flex-col">{Array.from({ length: 8 }, (_, index) => <div key={index} className="flex h-[49px] min-w-36 items-center gap-3 bg-[#0b1d1a] px-4 lg:min-w-0"><Skeleton className="size-4 shrink-0 rounded"/><Skeleton className="h-3 w-24 rounded"/></div>)}</div>
+          <div className="mt-8 hidden space-y-2 border-t border-white/10 pt-5 lg:block"><Skeleton className="h-3 w-4/5 rounded"/><Skeleton className="h-3 w-full rounded"/><Skeleton className="h-3 w-3/5 rounded"/></div>
+        </aside>
+        <main className="min-w-0 w-full pb-20 pt-5 lg:pt-10">
+          <div className="mb-7 border-b border-white/10 pb-6"><Skeleton className="h-9 w-4/5 max-w-lg rounded sm:h-14"/><Skeleton className="mt-3 h-4 w-full max-w-2xl rounded"/></div>
+          {planner ? <><LoadingPanel><Skeleton className="h-40 w-full rounded sm:h-48"/></LoadingPanel><div className="mt-5 grid gap-5 rounded-xl border border-white/10 bg-[#102824] p-5 sm:grid-cols-2 sm:p-6">{Array.from({ length: 6 }, (_, index) => <div key={index} className="min-w-0"><Skeleton className="h-3 w-24 rounded"/><Skeleton className="mt-3 h-11 w-full rounded"/></div>)}<Skeleton className="h-11 w-40 max-w-full rounded"/></div></>
+            : screen === 'feedback' ? <div className="space-y-5"><LoadingPanel/><LoadingPanel><Skeleton className="h-5 w-48 max-w-full rounded"/><Skeleton className="mt-5 h-11 w-full rounded"/><Skeleton className="mt-4 h-24 w-full rounded"/><Skeleton className="mt-5 h-11 w-36 rounded"/></LoadingPanel></div>
+            : screen === 'bookings' || screen === 'visited' ? <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{[0, 1, 2].map(index => <LoadingPanel key={index}/>)}</div>
+            : <><LoadingPanel/><div className="mt-5 grid gap-4 sm:grid-cols-3">{[0, 1, 2].map(index => <LoadingPanel key={index}/>)}</div></>}
+        </main>
+      </div>
+    </SkeletonRegion>
+  </div>;
+}
+
+function DarkWorkspaceSkeleton({ label, variant }: {
+  label: string;
+  variant: WorkspaceSkeletonVariant;
+}) {
+  return <main className="min-h-screen overflow-x-clip bg-[#0b1d1a] pt-[calc(3.5rem+max(0.5rem,env(safe-area-inset-top)))] sm:pt-[calc(4rem+max(1rem,env(safe-area-inset-top)))] text-white">
+    <SkeletonRegion label={label}>
+      <header className="fixed inset-x-0 top-0 z-40 px-3 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-6 sm:pt-[max(1rem,env(safe-area-inset-top))]">
+        <div className="mx-auto flex h-14 max-w-[1380px] items-center justify-between gap-3 border border-white/15 bg-[#102824] px-3 sm:h-16 sm:px-6">
+          <div className="flex min-h-11 min-w-11 shrink-0 items-center gap-2 sm:gap-3"><span className="grid size-8 place-items-center bg-[#ffcf70] text-[#102824] sm:size-9"><Compass size={20} className="size-[18px] sm:size-5"/></span><span className="hidden text-base font-semibold min-[440px]:inline sm:text-lg">TravelMate</span></div>
+          <div className="flex size-11 shrink-0 items-center justify-center gap-3 border border-white/15 p-1.5 md:h-auto md:w-auto md:justify-start"><Skeleton className="size-7 shrink-0 md:size-10" /><div className="hidden w-32 space-y-2 md:block"><Skeleton className="h-3 w-24" /><Skeleton className="h-2 w-full" /></div></div>
         </div>
       </header>
       {variant === 'planner' && <div className="border-b border-white/10 bg-[#102622] px-4 py-3 sm:px-6"><Skeleton className="mx-auto h-4 max-w-[1600px]" /></div>}

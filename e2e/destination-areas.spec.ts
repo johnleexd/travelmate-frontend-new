@@ -8,9 +8,25 @@ type Evidence = { query: string; parent: LocationSuggestion; pages: DestinationA
 const evidence: { results: Evidence[] } = JSON.parse(readFileSync(new URL('./fixtures/destination-areas.json',import.meta.url),'utf8'));
 const staysEvidence: Array<{resolution: {location: LocationSuggestion}; stays: AccommodationSearchResponse & {nearbyAccommodations: NearbyAccommodation[]}}> = JSON.parse(readFileSync(new URL('./fixtures/manual-destinations.json',import.meta.url),'utf8')).results;
 const rowFor = (id: number) => evidence.results.find(row => row.parent?.id === id)!;
+// These captured records exercise a fresh cache hit regardless of the run date.
+// Keep their original fetchedAt/provenance; only the simulated cache expiry moves.
+const freshCacheResponse = <T extends { expiresAt: string }>(value: T): T => ({...value,expiresAt:new Date(Date.now()+6*60*60_000).toISOString()});
+
+async function expectCapturedStays(page: Page, count: number) {
+  await page.getByRole('button',{name:'Browse accommodations',exact:true}).click();
+  const dialog = page.getByRole('dialog',{name:'Browse accommodations',exact:true});
+  await expect(dialog.getByRole('list',{name:'Accommodation choices'}).getByRole('button',{name:/^Select accommodation:/})).toHaveCount(Math.min(6,count));
+  await expect(dialog.getByRole('navigation',{name:'Accommodation pagination'})).toContainText(`of ${count} accommodations`);
+  const unnamed = await dialog.locator('input,select,textarea').evaluateAll(elements => elements.filter(element => !element.id && !element.getAttribute('name')).map(element => element.outerHTML));
+  expect(unnamed).toEqual([]);
+  await dialog.getByRole('button',{name:'Close accommodations',exact:true}).click();
+}
 
 async function setup(page: Page, context: BrowserContext) {
   await context.addCookies([{name:'travelmate_session',value:'area-test',domain:'localhost',path:'/'}]); await page.emulateMedia({reducedMotion:'reduce'});
+  // Captured hotel image URLs are not live image-provider tests. Keep remote
+  // optimization out of this geography/selection regression suite.
+  await page.route('**/_next/image?**',route=>new URL(route.request().url()).searchParams.get('url')?.startsWith('http')?route.fulfill({status:404}):route.continue());
   const user = {id:'area-test',name:'Area Test',email:'areas@example.test',role:'traveler',accountStatus:'active',emailVerified:true};
   await page.route('**/api/platform**',route => route.fulfill({json:{user,directory:[user],trips:[],listings:[],bookings:[],moderation:[],audit:[],itineraryGenerations:[],itineraryVersions:[],notifications:[],reviews:[],promotions:[],blockedDates:[],transactions:[],ownerDocuments:[],metrics:{},integrations:{}}}));
   await page.route('**/api/locations?**',route => route.fulfill({json:{locations:searchDestinationIndex(new URL(route.request().url()).searchParams.get('q') || '')}}));
@@ -23,11 +39,11 @@ async function setup(page: Page, context: BrowserContext) {
     const query = url.searchParams.get('query')?.toLowerCase() || ''; const offset = Number(url.searchParams.get('offset'));
     const all = row.pages.flatMap(page => page.areas); const filtered = all.filter(city => city.name.toLowerCase().includes(query));
     const payload = query ? {...row.pages[0],areas:filtered.slice(offset,offset+20),total:filtered.length,nextOffset:null,status:filtered.length?'ready':'empty',message:filtered.length?'Choose a city to search accommodation.':'No verified cities or towns were found in this area.'} : row.pages[offset / 20];
-    await route.fulfill({json:payload});
+    await route.fulfill({json:freshCacheResponse(payload)});
   });
   await page.route('**/api/locations/areas/compare?**',route => {
     const url = new URL(route.request().url()); comparisons.push(url); const row = rowFor(Number(url.searchParams.get('parentId')));
-    if (row.comparison && 'profiles' in row.comparison) return route.fulfill({json:row.comparison});
+    if (row.comparison && 'profiles' in row.comparison) return route.fulfill({json:freshCacheResponse(row.comparison)});
     // Deterministic mapped-response fixture exercises ranking even when the
     // public map service lacks capacity. It is not live geographic evidence.
     const ids = url.searchParams.get('cityIds')!.split(',').map(Number);
@@ -42,10 +58,13 @@ async function setup(page: Page, context: BrowserContext) {
   return {areaRequests,comparisons,stays};
 }
 async function selectArea(page: Page, row: Evidence) {
+  const close = page.getByRole('button',{name:'Close destination browser',exact:true});
+  if(await close.isVisible()) await close.click();
+  await page.getByRole('combobox',{name:'Destination',exact:true}).click();
   await page.getByRole('combobox',{name:'Destination',exact:true}).fill(row.query);
   const options = page.locator('#destination-suggestions').getByRole('option');
   await options.filter({hasText:row.parent.contextLabel}).first().getByRole('button').click();
-  await expect(page.locator('#destination-status')).toHaveText(`Confirmed: ${row.parent.label}`);
+  await expect(page.getByText(`Places within ${row.parent.label}`,{exact:true})).toBeVisible();
 }
 for (const query of ['Honshū Island, Japan','Bali, Indonesia','France','Philippines','Scotland, United Kingdom','Central Visayas, Philippines','Île-de-France, France']) {
   test(`${query}: verified suggestions appear without typing and selecting a city loads its accommodations`,async ({page,context}) => {
@@ -54,42 +73,41 @@ for (const query of ['Honshū Island, Japan','Bali, Indonesia','France','Philipp
     await expect(page.getByRole('combobox',{name:'City or town within selected destination',exact:true})).toHaveValue('');
     const list = page.getByRole('listbox',{name:'Suggested cities in this area',exact:true});
     await expect(list.getByRole('option')).toHaveCount(row.pages[0].areas.length);
-    await expect(list.getByRole('option').first()).toContainText(row.pages[0].areas[0].description);
+    await expect(list.getByRole('option').first()).toContainText(row.pages[0].areas[0].name);
     expect(requests.stays).toHaveLength(0); expect(requests.areaRequests).toHaveLength(1);
     const city = row.pages[0].areas[0];
     await list.getByRole('button',{name:`Choose ${city.name}`,exact:true}).click();
     await expect.poll(()=>requests.stays.length).toBe(1);
     const request = requests.stays[0]; expect(request.searchParams.get('countryCode')).toBe(city.countryCode);
     expect(Number(request.searchParams.get('latitude'))).toBe(city.latitude); expect(Number(request.searchParams.get('longitude'))).toBe(city.longitude);
-    await expect(page.locator('#destination-status')).toHaveText(`Confirmed: ${city.label}`);
-    if(query === 'Central Visayas, Philippines') await expect(page.getByLabel('Accommodation',{exact:true}).locator('option[value^="mapped:"]')).toHaveCount(staysEvidence.find(row=>row.resolution?.location?.name==='Cebu City')!.stays.nearbyAccommodations.length);
+    await expect(page.locator('#destination-status')).toHaveText(`Confirmed: ${city.contextLabel}`);
+    if(query === 'Central Visayas, Philippines') await expectCapturedStays(page,staysEvidence.find(row=>row.resolution?.location?.name==='Cebu City')!.stays.nearbyAccommodations.length);
   });
 }
 test('Honshū search, pagination, idle time and budget edits use cached results; Kyoto loads real captured mapped stays',async ({page,context}) => {
-  const row = evidence.results[0]; const requests = await setup(page,context); await selectArea(page,row);
+  const row = evidence.results[0]; const requests = await setup(page,context); await page.getByRole('spinbutton',{name:/^Solo trip budget/}).fill('80000'); await selectArea(page,row);
   const list = page.getByRole('listbox',{name:'Suggested cities in this area'}); await expect(list.getByRole('option')).toHaveCount(20);
-  await page.waitForTimeout(2500); await page.getByRole('spinbutton',{name:/^Solo trip budget/}).fill('80000'); await page.waitForTimeout(1500); expect(requests.areaRequests).toHaveLength(1);
-  await page.getByRole('button',{name:'Show more cities and towns',exact:true}).click(); await expect(list.getByRole('option')).toHaveCount(40);
+  await page.waitForTimeout(2500); await page.getByRole('button',{name:'Close destination browser'}).click(); await page.getByRole('spinbutton',{name:/^Solo trip budget/}).fill('90000'); await selectArea(page,row); await expect(list.getByRole('option')).toHaveCount(20); await page.waitForTimeout(1500); expect(requests.areaRequests).toHaveLength(1);
+  await page.getByRole('button',{name:'Load more',exact:true}).click(); await expect(list.getByRole('option')).toHaveCount(40);
   const search = page.getByRole('combobox',{name:'City or town within selected destination',exact:true}); await search.fill('Kyoto');
   await expect(list.getByRole('option')).toHaveCount(1); await expect(list).toContainText('Kyoto');
   await search.fill(''); await expect(list.getByRole('option')).toHaveCount(20); expect(requests.areaRequests).toHaveLength(3);
   await search.fill('Kyoto'); await expect(list.getByRole('option')).toHaveCount(1); expect(requests.areaRequests).toHaveLength(3);
-  await search.press('ArrowDown'); await search.press('Enter'); await expect(page.locator('#destination-status')).toContainText('Confirmed: Kyoto');
-  await expect(page.getByLabel('Accommodation',{exact:true}).locator('option[value^="mapped:"]')).toHaveCount(staysEvidence.find(row=>row.resolution?.location?.name==='Kyoto')!.stays.nearbyAccommodations.length);
+  await search.press('ArrowDown'); await search.press('Enter'); await expect(page.locator('#destination-status')).toContainText('Kyoto, Japan');
+  await expectCapturedStays(page,staysEvidence.find(row=>row.resolution?.location?.name==='Kyoto')!.stays.nearbyAccommodations.length);
 });
 test('Help me choose compares budget and mapped interests without choosing a city or looping',async ({page,context}) => {
-  const requests = await setup(page,context); await selectArea(page,evidence.results[0]);
-  await page.getByRole('spinbutton',{name:/^Solo trip budget/}).fill('80000');
+  const requests = await setup(page,context); await page.getByRole('spinbutton',{name:/^Solo trip budget/}).fill('80000'); await selectArea(page,evidence.results[0]);
   await page.getByRole('button',{name:'Help me choose',exact:true}).click();
   const section = page.getByRole('region',{name:'Compare suggested areas',exact:true});
   await expect(section.getByText(/Your budget allows JPY/)).toBeVisible(); await expect(section.getByText(/Mapped sample within 1 km:/).first()).toBeVisible();
-  await expect(section).toContainText('no city is selected automatically'); await expect(page.locator('#destination-status')).toContainText('Confirmed: Honshū Island'); expect(requests.stays).toHaveLength(0);
-  await page.getByLabel('Interests',{exact:true}).fill('culture'); await page.getByRole('spinbutton',{name:/^Solo trip budget/}).fill('90000');
+  await expect(section).toContainText('no city is selected automatically'); await expect(page.getByText(`Places within ${evidence.results[0].parent.label}`,{exact:true})).toBeVisible(); expect(requests.stays).toHaveLength(0);
+  await page.getByRole('button',{name:'Close destination browser'}).click(); await page.getByLabel('Interests',{exact:true}).fill('culture'); await page.getByRole('spinbutton',{name:/^Solo trip budget/}).fill('90000'); await selectArea(page,evidence.results[0]); await expect(page.getByRole('button',{name:'Help me choose',exact:true})).toBeEnabled(); await page.getByRole('button',{name:'Help me choose',exact:true}).click(); await expect(section.getByText(/Mapped sample within/).first()).toBeVisible();
   await page.waitForTimeout(2500); expect(requests.areaRequests).toHaveLength(1); expect(requests.comparisons).toHaveLength(1); expect(requests.stays).toHaveLength(0);
   await page.getByRole('button',{name:'Close comparison',exact:true}).click(); await page.getByRole('button',{name:'Help me choose',exact:true}).click();
   await expect(section.getByText(/Mapped sample within/).first()).toBeVisible(); expect(requests.comparisons).toHaveLength(1);
   await page.setViewportSize({width:390,height:844}); expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({path:'../audit/2026-10-06/destination-area-comparison-mobile.png',fullPage:true});
+  await page.screenshot({path:'../audit/2026-10-14/modal-destination/comparison-mobile.png',fullPage:true});
 });
 test('loading, empty and provider errors are distinct; stale responses cannot replace another area',async ({page,context}) => {
   await setup(page,context); let release!:()=>void, started = false;
@@ -114,3 +132,4 @@ test('interest-provider errors leave geographic choices usable without invented 
   await expect(section).toContainText('Accommodation affordability is not confirmed'); expect(requests.stays).toHaveLength(0);
   await section.getByRole('button',{name:/Choose .* and find stays/}).first().click(); await expect.poll(()=>requests.stays.length).toBe(1);
 });
+

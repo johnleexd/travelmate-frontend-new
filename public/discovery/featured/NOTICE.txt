@@ -1,0 +1,35 @@
+el-nido.webp
+Photo: Philippine Fly Boy
+Source: https://commons.wikimedia.org/wiki/File:El_Nido_Palawan_2.jpg
+License: CC BY 2.0 https://creativecommons.org/licenses/by/2.0
+Changes: resized, cropped to 320 x 200 and encoded as WebP.
+
+tokyo.webp
+Photo: Morio
+Source: https://commons.wikimedia.org/wiki/File:Skyscrapers_of_Shinjuku_2009_January_(revised).jpg
+License: CC BY-SA 3.0 https://creativecommons.org/licenses/by-sa/3.0
+Changes: resized, cropped to 320 x 200 and encoded as WebP.
+
+singapore.webp
+Photo: chenisyuan
+Source: https://commons.wikimedia.org/wiki/File:1_singapore_city_skyline_dusk_panorama_2011.jpg
+License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+Changes: resized, cropped to 320 x 200 and encoded as WebP.
+
+bangkok.webp
+Photo: Preecha.MJ
+Source: https://commons.wikimedia.org/wiki/File:Temple_of_the_Emerald_of_buddha_or_Wat_Phra_Kaew_(cropped).jpg
+License: CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0
+Changes: resized, cropped to 320 x 200 and encoded as WebP.
+
+paris.webp
+Photo: Mauro Parra-Miranda
+Source: https://commons.wikimedia.org/wiki/File:Paris,_Eiffel_Tower,_October_2014.jpg
+License: CC BY 2.0 https://creativecommons.org/licenses/by/2.0/
+Changes: resized, cropped to 320 x 200 and encoded as WebP.
+
+sydney.webp
+Photo: Diliff
+Source: https://commons.wikimedia.org/wiki/File:Sydney_Opera_House_-_Dec_2008.jpg
+License: CC BY-SA 3.0 https://creativecommons.org/licenses/by-sa/3.0/
+Changes: resized, cropped to 320 x 200 and encoded as WebP.

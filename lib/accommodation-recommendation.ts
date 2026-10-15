@@ -19,7 +19,7 @@ export function recommendAccommodation(
   budget: number,
   currency: CurrencyCode,
 ): AccommodationRecommendation | null {
-  const eligible = accommodations.filter((stay) => stay.available && stay.currency === currency && stay.total > 0);
+  const eligible = accommodations.filter((stay) => stay.isLive && stay.available && stay.currency === currency && stay.total > 0);
   if (!eligible.length) return null;
 
   const normalizedPreference = preference.trim().toLowerCase();

@@ -26,6 +26,13 @@ test('destination browsing, keyboard card selection, generation and automatic sa
   // Broken, attributed property media must degrade to the placeholder.
   let mediaWorks = false;
   await page.route('https://upload.wikimedia.org/**', route => mediaWorks ? route.fulfill({ contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jB0kAAAAASUVORK5CYII=', 'base64') }) : route.abort());
+  await page.route('**/_next/image?**', route => {
+    const source = new URL(route.request().url()).searchParams.get('url');
+    if (source !== 'https://upload.wikimedia.org/wikipedia/commons/fixture-property.jpg') return route.fallback();
+    return mediaWorks
+      ? route.fulfill({ contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jB0kAAAAASUVORK5CYII=', 'base64') })
+      : route.fulfill({ status: 404, body: 'Missing test photo.' });
+  });
   const searches: URL[] = [];
   let fail = false, empty = false, delay = 0;
   await page.route('**/api/accommodations?**', async route => {
@@ -56,7 +63,9 @@ test('destination browsing, keyboard card selection, generation and automatic sa
     await page.locator('#destination-suggestions').getByRole('option').first().getByRole('button').click();
     await browse.click();
     await expect(modal.getByRole('list', { name: 'Accommodation choices' }).getByRole('listitem').filter({ has: page.getByRole('button', { name: /^Select accommodation:/ }) })).toHaveCount(5);
-    await expect(modal.getByText('Photo unavailable', { exact: true })).toHaveCount(5);
+    await expect(modal.getByText('Photo unavailable', { exact: true })).toHaveCount(4);
+    await expect(modal.getByText('Photo could not load. Please retry.', { exact: true })).toBeVisible();
+    await expect(modal.getByRole('button', { name: 'Retry photo', exact: true })).toBeEnabled();
     await expect(modal.getByText('Price unavailable', { exact: true })).toHaveCount(4);
     await expect(modal).not.toContainText('48.86000');
     await expect(modal).not.toContainText('Raw technical');
@@ -105,6 +114,7 @@ test('destination browsing, keyboard card selection, generation and automatic sa
   await page.getByRole('button', { name: 'Refresh stays', exact: true }).click();
   await browse.click();
   await expect(modal.getByText('Loading relevant accommodation…', { exact: true })).toBeVisible();
+  await expect(modal.getByText('Loading relevant accommodation…', { exact: true })).toHaveCount(0);
   await expect(modal.getByRole('button', { name: /^Select accommodation:/ })).toHaveCount(5);
   for (const width of [320, 390, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
@@ -142,6 +152,6 @@ test('destination browsing, keyboard card selection, generation and automatic sa
   await expect(page.getByText(/It was saved automatically/)).toBeVisible();
   await page.reload();
   await page.getByRole('button', { name: 'Saved trips', exact: true }).click();
-  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('button', { name: 'View itinerary', exact: true }).click();
   await expect(page.getByText('Paris Hotel fixture', { exact: true }).first()).toBeVisible();
 });

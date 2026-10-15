@@ -10,12 +10,14 @@ export type {
   NearbyAccommodation,
   LocationSearchResponse,
   LocationSuggestion,
+  AdministrativeLocationSuggestion,
   AreaSuggestion,
   DestinationAreasResponse,
   AreaInterestProfile,
   AreaComparisonResponse,
   TransportationOption,
 } from './generated/destination-contracts';
+export type LocationCandidate = import('./generated/destination-contracts').LocationSuggestion | import('./generated/destination-contracts').AdministrativeLocationSuggestion;
 export type { CrowdCondition, ForecastDay, WeatherData } from './generated/weather-contracts';
 export type { ActivityOption, FlightOption, TravelOptionFreshness, TravelOptionsResponse, TravelProviderStatus } from './generated/travel-option-contracts';
 export type {
@@ -50,6 +52,9 @@ export type {
   VisitedPlace,
   VisitRecordResponse,
   VisitedPlacesResponse,
+  TripVisitCandidate,
+  TripVisitCandidatesResponse,
+  TripVisitsRecordResponse,
   PageInfo,
   TripDetailResponse,
   TripVersionsResponse,

@@ -23,9 +23,46 @@ export interface LocationSuggestion {
   label: string;
   placeType: string;
   contextLabel: string;
-  provider?: "geonames" | "openstreetmap";
+  provider?: "geonames" | "openstreetmap" | "psgc";
   providerId?: string;
   bounds?: { south: number; north: number; west: number; east: number; };
+  administrativeCode?: string;
+  provinceCode?: string;
+  geographicProvinceCode?: string;
+  administrativeLevel?: "Region" | "Province" | "City" | "Municipality" | "Barangay";
+  coordinateSource?: string;
+  sourceFeatureCode?: string;
+  scopeType?: "country" | "area" | "locality" | "natural";
+  parentId?: number;
+  canBrowse?: boolean;
+  locationPath?: Array<{ id: number; providerId: string; name: string; type: string; countryCode: string; level?: number; }>;
+}
+
+export interface AdministrativeLocationSuggestion {
+  id: number;
+  name: string;
+  region: string;
+  country: string;
+  countryCode: string;
+  latitude?: number;
+  longitude?: number;
+  label: string;
+  placeType: string;
+  contextLabel: string;
+  provider?: "geonames" | "openstreetmap" | "psgc";
+  providerId?: string;
+  bounds?: { south: number; north: number; west: number; east: number; };
+  administrativeCode?: string;
+  provinceCode?: string;
+  geographicProvinceCode?: string;
+  administrativeLevel?: "Region" | "Province" | "City" | "Municipality" | "Barangay";
+  coordinateSource?: string;
+  sourceFeatureCode?: string;
+  scopeType?: "country" | "area" | "locality" | "natural";
+  parentId?: number;
+  canBrowse?: boolean;
+  locationPath?: Array<{ id: number; providerId: string; name: string; type: string; countryCode: string; level?: number; }>;
+  coordinateStatus?: "resolved" | "unresolved";
 }
 
 export interface AreaSuggestion {
@@ -34,17 +71,28 @@ export interface AreaSuggestion {
   region: string;
   country: string;
   countryCode: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   label: string;
   placeType: string;
   contextLabel: string;
-  provider?: "geonames" | "openstreetmap";
+  provider?: "geonames" | "openstreetmap" | "psgc";
   providerId?: string;
   bounds?: { south: number; north: number; west: number; east: number; };
+  administrativeCode?: string;
+  provinceCode?: string;
+  geographicProvinceCode?: string;
+  administrativeLevel?: "Region" | "Province" | "City" | "Municipality" | "Barangay";
+  coordinateSource?: string;
+  sourceFeatureCode?: string;
+  scopeType?: "country" | "area" | "locality" | "natural";
+  parentId?: number;
+  canBrowse?: boolean;
+  locationPath?: Array<{ id: number; providerId: string; name: string; type: string; countryCode: string; level?: number; }>;
   description: string;
   population?: number;
-  membership: "country-code" | "administrative-hierarchy" | "boundary";
+  membership: "country-code" | "administrative-hierarchy" | "boundary" | "official-administrative" | "geographic-association";
+  coordinateStatus?: "resolved" | "unresolved";
 }
 
 export interface DestinationAreasResponse {
@@ -58,6 +106,8 @@ export interface DestinationAreasResponse {
   fetchedAt: string;
   expiresAt: string;
   sourceUrls: Array<string>;
+  coverage?: "complete-administrative" | "partial-geographic";
+  catalogueAsOf?: string;
 }
 
 export interface AreaInterestProfile {
@@ -90,6 +140,7 @@ export interface DestinationContext {
   transportation: Array<TransportationOption>;
   transportationSource: "curated-country-city-guidance" | "unavailable";
   transportationMessage: string;
+  currencyMessage?: string;
 }
 
 export interface ExchangeRateQuote {
@@ -206,7 +257,12 @@ export interface NearbyAccommodation {
 }
 
 export interface LocationSearchResponse {
-  locations: Array<LocationSuggestion>;
+  locations: Array<LocationSuggestion | AdministrativeLocationSuggestion>;
+  total?: number;
+  nextOffset?: number | null;
+  coverage?: string;
+  message?: string;
+  countryScope?: LocationSuggestion;
 }
 
 export interface AccommodationSearchResponse {

@@ -75,15 +75,18 @@ export function upsertActivity(plan: ItineraryResponse, dayIndex: number, activi
   if (activityIndex === null && activities.length >= 8) throw new Error('A day can contain at most 8 activities.');
   const existing = activityIndex === null ? undefined : activities[activityIndex];
   if (activityIndex !== null && !existing) throw new Error('Select a valid activity.');
-  const identityUnchanged = existing && existing.title === draft.title.trim() && existing.description === draft.description.trim() && (existing.location || '') === (draft.location || '').trim();
+  // Notes, timing and cost do not identify a place. A title/location change does.
+  const identityUnchanged = existing && existing.title === draft.title.trim() && (existing.location || '') === (draft.location || '').trim();
   const priceUnchanged = identityUnchanged && existing.estimatedCost === draft.estimatedCost && existing.category === draft.category;
   const userEvidence: Partial<DayActivity> = plan.grounding && !priceUnchanged ? { ...(identityUnchanged ? {} : { place: undefined, imageUrl: undefined, imageAttribution: undefined, placeVerification: 'unverified' }), unitCost: draft.estimatedCost,
     priceEvidence: { status: 'estimate', source: 'user-entered', basis: 'User-entered whole-group estimate after editing; venue and price are unverified.', fetchedAt: new Date().toISOString(), currency: plan.currency, unit: 'group', unitAmount: draft.estimatedCost, quantity: 1, participants: plan.travelers || 1, needsConfirmation: true } } : {};
-  const activity: DayActivity = normalizedActivity({ ...existing, ...draft, durationMinutes: draft.durationMinutes ?? existing?.durationMinutes, ...userEvidence, icon: draft.category }, Math.max(1, plan.travelers || 1), plan.currency);
+  const activity: DayActivity = normalizedActivity({ ...existing, ...draft, durationMinutes: draft.durationMinutes ?? existing?.durationMinutes, ...userEvidence, ...(!identityUnchanged ? { place: undefined, googlePlaceId: undefined, imageUrl: undefined, imageAttribution: undefined, placeVerification: 'unverified' as const } : {}), icon: draft.category }, Math.max(1, plan.travelers || 1), plan.currency);
   if (activityIndex === null) activities.push(activity);
   else activities[activityIndex] = activity;
-  const checked = validateActivitySchedule(activities);
-  return recalculateItineraryCosts({ ...plan, days: plan.days.map((day, index) => index === dayIndex ? { ...day, activities: checked } : day) });
+  const checked = validateActivitySchedule(activities, plan.preferences?.transportation);
+  const oldCover = existing?.imageUrl && existing.imageUrl === plan.days[dayIndex].imageUrl && !identityUnchanged;
+  const replacement = oldCover ? checked.find(item => item.imageUrl) : undefined;
+  return recalculateItineraryCosts({ ...plan, days: plan.days.map((day, index) => index === dayIndex ? { ...day, activities: checked, ...(oldCover ? { imageUrl: replacement?.imageUrl || '', imageAttribution: replacement?.imageAttribution } : {}) } : day) });
 }
 
 export function removeActivity(plan: ItineraryResponse, dayIndex: number, activityIndex: number): ItineraryResponse {
@@ -99,6 +102,6 @@ export function moveActivity(plan: ItineraryResponse, dayIndex: number, activity
   const activities = [...plan.days[dayIndex].activities];
   if (!activities[activityIndex] || target < 0 || target >= activities.length) return plan;
   [activities[activityIndex], activities[target]] = [activities[target], activities[activityIndex]];
-  const scheduled = rescheduleActivities(activities);
+  const scheduled = rescheduleActivities(activities, plan.preferences?.transportation);
   return { ...plan, manuallyEdited: true, days: plan.days.map((day, index) => index === dayIndex ? { ...day, activities: scheduled } : day) };
 }

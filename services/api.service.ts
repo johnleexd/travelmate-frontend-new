@@ -14,6 +14,7 @@
  */
 
 // ─── Re-export shared types for convenience ───────────────────────────────────
+import type { DestinationAnchor } from '@/lib/contracts';
 export type {
   DayActivity,
   DayPlan,
@@ -32,7 +33,7 @@ import { handleResponse } from '@/services/api-response';
 import { fetchTripWithOptionalWeather } from '@/lib/trip-data';
 export { ApiError, handleResponse, isAuthenticationError } from '@/services/api-response';
 
-type TripOptions = { pace?: 'relaxed' | 'balanced' | 'active'; startingLocation?: string; destinationDetails?: { city: string; country: string; countryCode: string; latitude: number; longitude: number }; rooms?: number; foodDailyPerPerson?: number; nightlyRoomEstimate?: number; transportFare?: number; transportFareType?: 'shared-fare' | 'per-person'; fees?: number; contingencyPercent?: number; idempotencyKey?: string; currency?: CurrencyCode; travelers?: number; partyType?: PartyType; startDate?: string; endDate?: string; latitude?: number; longitude?: number; interests?: string[]; preferredActivities?: string[]; travelStyle?: string; accommodationPreference?: string; transportationPreference?: string; accommodationListingId?: string; plannedAccommodation?: PlannedAccommodation; selectedAccommodationQuote?: string; externalAccommodation?: { fetchedAt: string; total: number; hotelId: string; offerId: string; name: string; address: string; nightlyRate: number; currency: string; isLive: boolean; selectionToken: string }; selectedFlight?: { id: string; name: string; price: number; currency: string; fetchedAt: string; isLive?: boolean; selectionToken: string }; selectedActivities?: Array<{ id: string; name: string; price: number; currency: string; fetchedAt: string; isLive?: boolean; selectionToken: string }>; preTripCosts?: { startingLocation?: string; departureAirport?: string; passportCountry?: string; passportStatus?: 'valid' | 'needs_application' | 'needs_renewal' | 'not_sure'; airportTransferOutbound: number; airportTransferReturn: number; passport: number; visaOrAuthorization: number; departureTaxes: number; insurance: number; other: number } };
+type TripOptions = { scheduleConstraints?: { arrivalTime?: string; departureTime?: string; restDates?: string[] }; startingLocation?: string; destinationDetails?: DestinationAnchor; rooms?: number; foodDailyPerPerson?: number; nightlyRoomEstimate?: number; transportFare?: number; transportFareType?: 'shared-fare' | 'per-person'; fees?: number; contingencyPercent?: number; idempotencyKey?: string; currency?: CurrencyCode; travelers?: number; partyType?: PartyType; startDate?: string; endDate?: string; latitude?: number; longitude?: number; interests?: string[]; preferredActivities?: string[]; accommodationPreference?: string; transportationPreference?: string; accommodationListingId?: string; plannedAccommodation?: PlannedAccommodation; selectedAccommodationQuote?: string; externalAccommodation?: { fetchedAt: string; total: number; hotelId: string; offerId: string; name: string; address: string; nightlyRate: number; currency: string; isLive: boolean; selectionToken: string }; selectedFlight?: { id: string; name: string; price: number; currency: string; fetchedAt: string; isLive?: boolean; selectionToken: string }; selectedActivities?: Array<{ id: string; name: string; price: number; currency: string; fetchedAt: string; isLive?: boolean; selectionToken: string }>; preTripCosts?: { startingLocation?: string; departureAirport?: string; passportCountry?: string; passportStatus?: 'valid' | 'needs_application' | 'needs_renewal' | 'not_sure'; airportTransferOutbound: number; airportTransferReturn: number; passport: number; visaOrAuthorization: number; departureTaxes: number; insurance: number; other: number } };
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -41,8 +42,8 @@ type TripOptions = { pace?: 'relaxed' | 'balanced' | 'active'; startingLocation?
 /**
  * Fetch a date-range AI-generated itinerary from the configured provider.
  *
- * A disclosed mock is available only when the backend explicitly enables its
- * non-production fallback. Configured-provider failures remain errors.
+ * AI outages return an explicitly labeled verified-catalog schedule. Missing
+ * place coverage remains incomplete; invented demo venues are never substituted.
  *
  * @param destination  City / region name e.g. "Tokyo, Japan"
  * @param budget       Total group trip budget in the selected currency
@@ -56,12 +57,16 @@ export async function fetchItineraryFromAI(
   if (!destination?.trim()) throw new Error('destination must not be empty.');
   if (!Number.isFinite(budget) || budget <= 0) throw new Error('budget must be a positive number.');
 
+  // Retired controls may still exist in an older caller's options. They must
+  // never override the server's Balanced generation default.
+  const payload: Record<string, unknown> = { destination: destination.trim(), budget, ...options };
+  delete payload.travelStyle; delete payload.pace;
   let res: Response;
   try {
     res = await fetch('/api/itinerary', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(options?.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : {}) },
-      body: JSON.stringify({ destination: destination.trim(), budget, ...options }),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(570_000),
     });
   } catch (error) {
@@ -78,7 +83,7 @@ export async function refreshItineraryDayImages(destination: string, day: DayPla
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ destination, day, itinerary }),
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(55_000),
     });
   } catch (error) {
     throw new Error(error instanceof DOMException && error.name === 'TimeoutError' ? 'Activity photo refresh timed out.' : 'Activity photos are temporarily unavailable.');

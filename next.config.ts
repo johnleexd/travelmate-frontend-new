@@ -7,7 +7,7 @@ const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === 'development' ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: https://images.unsplash.com https://upload.wikimedia.org https://thumb.wikimedia.org https://flagcdn.com https://images.trvl-media.com https://a.travel-assets.com https://static.cupid.travel https://liteapi-travel-static-data.s3.amazonaws.com https://tile.openstreetmap.org",
+  "img-src 'self' data: https://images.unsplash.com https://upload.wikimedia.org https://thumb.wikimedia.org https://flagcdn.com https://images.trvl-media.com https://a.travel-assets.com https://static.cupid.travel https://liteapi-travel-static-data.s3.amazonaws.com https://tile.openstreetmap.org https://*.googleusercontent.com",
   "font-src 'self' data:",
   "connect-src 'self' ws: wss:",
   "object-src 'none'",

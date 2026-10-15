@@ -1,0 +1,86 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { expect, test } from '@playwright/test';
+import { mockPlanningLookups } from './helpers/mock-planning-lookups';
+import type { TripVisitCandidatesResponse, VisitedPlacesResponse } from '../lib/contracts';
+
+test('real API/database: Active visits, completion, Completed visits, duplicate retry, cancel and reload remain independent', async ({ page, context }) => {
+  test.skip(!existsSync('.trip-visits-live-fixture.json'), 'Create the isolated live fixture with verify-trip-visit-fixture.ts seed before this check.');
+  const fixture = JSON.parse(readFileSync('.trip-visits-live-fixture.json', 'utf8')) as { token: string; tripId: string };
+  await context.addCookies([{ name: 'travelmate_session', value: fixture.token, domain: 'localhost', path: '/' }]);
+  await mockPlanningLookups(page); await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/dashboard?tab=bookings');
+  const plans = page.getByRole('region', { name: 'Saved plans' }), dialog = page.getByRole('dialog', { name: 'Record visited places', exact: true });
+  const history = async () => {
+    const response = await page.request.get('/api/platform/visited-places'); expect(response.status()).toBe(200); return await response.json() as VisitedPlacesResponse;
+  };
+  const candidatesResponse = await page.request.get(`/api/platform/trips/${fixture.tripId}/visit-candidates`);
+  expect(candidatesResponse.status()).toBe(200);
+  const candidates = await candidatesResponse.json() as TripVisitCandidatesResponse;
+  // This script-created account contains only verification data. Reset its
+  // previous run through the normal API so this check can be repeated safely.
+  for (const visit of (await history()).visits) {
+    const removed = await page.request.post('/api/platform', { data: { action: 'remove-visit', id: visit.id } });
+    expect(removed.status()).toBe(200);
+  }
+  expect(candidates.places).toHaveLength(3); expect((await history()).page.total).toBe(0);
+  const open = async () => { await plans.getByRole('button', { name: 'Record visited places', exact: true }).click(); await expect(dialog.getByRole('checkbox', { name: /^Eiffel Tower/ })).toBeVisible(); };
+  await page.screenshot({ path: '../audit/2026-10-15/trip-visits/saved-trip-card-desktop.png', fullPage: true });
+  await open();
+  await expect(dialog.getByLabel('Visit date', { exact: true })).toHaveValue('');
+  await expect(dialog.getByRole('checkbox', { name: /^Eiffel Tower/ })).not.toBeChecked();
+  await dialog.getByRole('checkbox', { name: /^Eiffel Tower/ }).check();
+  await page.keyboard.press('Escape'); await expect(dialog).toHaveCount(0); expect((await history()).page.total).toBe(0);
+  await open();
+  await dialog.getByRole('checkbox', { name: /^Eiffel Tower/ }).check();
+  await dialog.getByRole('checkbox', { name: /^Louvre Museum/ }).check();
+  await dialog.getByLabel('Visit date', { exact: true }).fill('2020-01-01');
+  await expect(dialog.getByRole('status')).toContainText('2 places selected');
+  await dialog.screenshot({ path: '../audit/2026-10-15/trip-visits/modal-desktop.png' });
+  await dialog.getByRole('button', { name: 'Save visited places', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(plans.getByRole('button', { name: /^Active 1$/ })).toHaveAttribute('aria-pressed', 'true');
+  expect((await history()).visits.map(row => row.name).sort()).toEqual(['Eiffel Tower', 'Louvre Museum']);
+  await page.getByRole('navigation', { name: 'Traveler workspace' }).getByRole('button', { name: 'Visited places', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Eiffel Tower', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Louvre Museum', exact: true })).toBeVisible();
+  await page.getByRole('navigation', { name: 'Traveler workspace' }).getByRole('button', { name: 'Saved trips', exact: true }).click();
+  await plans.getByRole('button', { name: 'Mark as done', exact: true }).click();
+  await expect(plans.getByRole('button', { name: /^Completed 1$/ })).toHaveAttribute('aria-pressed', 'true');
+  expect((await history()).page.total).toBe(2);
+  await open();
+  await expect(dialog.getByRole('checkbox', { name: /^Eiffel Tower/ })).toBeDisabled();
+  await expect(dialog.getByText('Already recorded', { exact: true })).toHaveCount(2);
+  await dialog.getByRole('checkbox', { name: /^Notre-Dame de Paris/ }).check();
+  await dialog.getByLabel('Visit date', { exact: true }).fill('2020-01-01');
+  await dialog.getByRole('button', { name: 'Save visited places', exact: true }).click();
+  await expect(dialog).toHaveCount(0); expect((await history()).page.total).toBe(3);
+  await expect(plans.getByRole('button', { name: 'Mark as not done', exact: true })).toBeVisible();
+  const repeat = await page.request.post('/api/platform', { data: { action: 'record-trip-visits', tripId: fixture.tripId, visitDate: '2020-01-02', timeZone: 'Asia/Manila', places: candidates.places.map(({ key, fingerprint }) => ({ key, fingerprint })) } });
+  expect(repeat.status()).toBe(200); expect((await repeat.json()).result).toEqual({ recorded: 0, alreadyRecorded: 3 });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(); await expect(dialog.getByRole('checkbox', { name: /^Eiffel Tower/ })).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Save visited places', exact: true })).toBeDisabled();
+  expect(await dialog.evaluate(el => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.top >= 0 && r.bottom <= innerHeight; })).toBe(true);
+  await dialog.screenshot({ path: '../audit/2026-10-15/trip-visits/modal-mobile.png' });
+  await dialog.getByRole('button', { name: 'Cancel', exact: true }).click(); expect((await history()).page.total).toBe(3);
+  await plans.getByRole('button', { name: 'Mark as not done', exact: true }).click();
+  await expect(plans.getByRole('button', { name: /^Active 1$/ })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('navigation', { name: 'Traveler workspace' }).getByRole('button', { name: 'Visited places', exact: true }).click();
+  await page.reload();
+  for (const name of ['Eiffel Tower', 'Louvre Museum', 'Notre-Dame de Paris']) await expect(page.getByRole('heading', { name, exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Record a visit', exact: true })).toBeVisible();
+  expect((await history()).page.total).toBe(3);
+  await page.screenshot({ path: '../audit/2026-10-15/trip-visits/visited-after-reload-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'Record a visit', exact: true }).click();
+  const manual = page.getByRole('dialog', { name: 'Record a visit', exact: true });
+  await manual.getByLabel('Place name', { exact: true }).fill('Personal past visit fixture');
+  await manual.getByLabel('Destination', { exact: true }).fill('Paris, France');
+  await manual.getByLabel('Visit date', { exact: true }).fill('2020-01-01');
+  await manual.getByRole('button', { name: 'Mark as visited', exact: true }).click();
+  await expect(manual).toHaveCount(0);
+  const manualHistory = await history(); expect(manualHistory.page.total).toBe(4);
+  const recorded = manualHistory.visits.find(row => row.name === 'Personal past visit fixture')!;
+  expect(recorded.tripId).toBeUndefined();
+  expect((await page.request.post('/api/platform', { data: { action: 'remove-visit', id: recorded.id } })).status()).toBe(200);
+  expect((await history()).page.total).toBe(3);
+});

@@ -1,15 +1,22 @@
 'use client';
 
 import { PlaceActions } from './PlaceActions';
-import { PlacePhoto } from '@/components/common/PlacePhoto';
+import { RecoverableActivityPhoto as ActivityPhoto } from '@/components/common/RecoverableActivityPhoto';
+import { ActivityPhotoRecovery } from '@/components/common/ActivityPhotoRecovery';
+import { GoogleActivityPhotos } from '@/components/common/GoogleActivityPhoto';
+import { usePlacesPhotoView } from '@/components/common/PlacesPhotoMapBoundary';
+import { mapStoredActivity } from '@/lib/generated/stored-trip-media';
 import { ActivityEvidence } from './GroundingSummary';
-import { useState, type FormEvent, type RefObject } from 'react';
+import { useMemo, useState, type FormEvent, type RefObject } from 'react';
 import { BedDouble, BusFront, ChevronLeft, ChevronRight, Clock3, RefreshCw, X } from 'lucide-react';
 import { ReferenceAmount } from '@/components/common/ReferenceAmount';
 import { formatMoney, ZERO_DECIMAL_CURRENCIES, type CurrencyCode } from '@/lib/domain';
 import type { ExchangeRateQuote } from '@/lib/contracts';
 import type { DayActivity, ItineraryResponse } from '@/services/api.service';
-import { verifiedPlaceImage } from '@/lib/place-image';
+import { existingDestinationPhoto, savedDayTheme, storedActivityImage } from '@/lib/stored-trip-photos';
+import { dailyCardEntries } from '@/lib/itinerary-day-presentation';
+import { useActivityPhotoFallback } from '@/hooks/use-activity-photo-fallback';
+import { photoPatches } from '@/services/activity-photo.service';
 
 type ActivityEditor = { dayIndex: number; activityIndex: number | null };
 
@@ -26,7 +33,8 @@ type ActivityEditorDialogProps = {
   error?: string;
 };
 
-export function ActivityEditorDialog({ editor, day, activity, currency, modalRef, titleRef, onClose, onSubmit, nested = false, error }: ActivityEditorDialogProps) {
+export function ActivityEditorDialog({ editor, day, activity: rawActivity, currency, modalRef, titleRef, onClose, onSubmit, nested = false, error }: ActivityEditorDialogProps) {
+  const activity = rawActivity ? mapStoredActivity(rawActivity as unknown as Record<string, unknown>) as unknown as DayActivity : undefined;
   return (
     <div ref={modalRef} className={`fixed inset-0 ${nested ? 'z-[110]' : 'z-50'} overflow-y-auto bg-black/80 p-3 sm:p-6`} role="dialog" aria-modal="true" aria-labelledby="activity-editor-title" aria-describedby="activity-editor-description" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <form key={`${editor.dayIndex}-${editor.activityIndex ?? 'new'}`} onSubmit={(event: FormEvent<HTMLFormElement>) => { event.preventDefault(); onSubmit(event.currentTarget); }} className="mx-auto mt-8 max-w-xl rounded-2xl border border-slate-700 bg-[#0b1626] p-5 shadow-2xl sm:p-6">
@@ -39,6 +47,7 @@ export function ActivityEditorDialog({ editor, day, activity, currency, modalRef
           <label className="sm:col-span-2 text-xs font-medium text-slate-300">Description<textarea maxLength={1000} name="description" defaultValue={activity?.description || ''} rows={4} placeholder="Add helpful details, location, or reminders." className="mt-1.5 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-white placeholder:text-slate-600 focus:border-amber-400"/></label>
         </div>
         {error && <p role="alert" className="mt-4 rounded-lg border border-red-300/25 bg-red-300/10 p-3 text-sm text-red-200">{error}</p>}
+        <p className="mt-4 text-xs leading-5 text-slate-400">Photos are optional and load separately. Use the exact place name in the title and its address in Location. Generic activities use a labeled illustrative photo when available. You can always save without a photo.</p>
         <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><button type="button" onClick={onClose} className="min-h-11 rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-800">Cancel</button><button type="submit" className="min-h-11 rounded-lg bg-amber-400 px-5 py-2 text-sm font-extrabold text-slate-950 hover:bg-amber-300">{activity ? 'Save activity' : 'Add activity'}</button></div>
       </form>
     </div>
@@ -46,6 +55,7 @@ export function ActivityEditorDialog({ editor, day, activity, currency, modalRef
 }
 
 type DayDetailsDialogProps = {
+  draft?: boolean;
   visitTripId?: string | null;
   day: ItineraryResponse['days'][number];
   itinerary: ItineraryResponse;
@@ -59,56 +69,76 @@ type DayDetailsDialogProps = {
   onRefreshPhotos: (day: ItineraryResponse['days'][number]) => void;
 };
 
-export function DayDetailsDialog({ visitTripId, day, itinerary, travelers, referenceCurrency, exchangeQuotes, photoRefreshDay, modalRef, closeRef, onClose, onRefreshPhotos }: DayDetailsDialogProps) {
+export function DayDetailsDialog({ draft = false, visitTripId, day: storedDay, itinerary: storedItinerary, travelers, referenceCurrency, exchangeQuotes, photoRefreshDay, modalRef, closeRef, onClose, onRefreshPhotos }: DayDetailsDialogProps) {
+  const photoDays = useMemo(() => [storedDay.day], [storedDay.day]);
+  const selectedPlan = useMemo(() => ({ ...storedItinerary, days: storedItinerary.days.map(candidate => {
+    if (candidate.day !== storedDay.day || candidate.date !== storedDay.date) return candidate;
+    // storedDay is the workspace's already selected photo view. Retain those
+    // photo-only replacements when opening the dialog, without searching again.
+    const replacements = candidate.activities.flatMap((activity, index) => activity.imageUrl && activity.imageUrl !== storedDay.activities[index]?.imageUrl ? [{ index, imageUrl: activity.imageUrl }] : []);
+    const patches = photoPatches(candidate, storedDay, replacements);
+    return patches.length ? { ...candidate, imageUrl: storedDay.imageUrl || candidate.imageUrl, imageAttribution: storedDay.imageAttribution || candidate.imageAttribution, activities: candidate.activities.map((activity, index) => {
+      const patch = patches.find(item => item.index === index);
+      return patch ? { ...activity, imageUrl: patch.imageUrl, imageAttribution: patch.imageAttribution } : activity;
+    }) } : candidate;
+  }) }), [storedItinerary, storedDay]);
+  const { itinerary, onPhotoFailure, googlePhotos, onGooglePhotoFailure } = useActivityPhotoFallback(selectedPlan, photoDays, visitTripId, draft);
+  usePlacesPhotoView(Object.keys(googlePhotos).length > 0);
+  const day = itinerary.days.find(candidate => candidate.day === storedDay.day) || storedDay;
   const [activeActivityIndex, setActiveActivityIndex] = useState(0);
-  const activeActivity = day.activities[activeActivityIndex];
-  const heroImage = verifiedPlaceImage(activeActivity?.imageUrl);
-  const heroAttribution = heroImage ? activeActivity?.imageAttribution : undefined;
+  const dayIndex = itinerary.days.findIndex(candidate => candidate.day === day.day);
+  const { activities: visits, allowances } = dailyCardEntries(itinerary, dayIndex);
+  const activeActivity = visits[activeActivityIndex]?.activity;
+  const hasPrice = (item: DayActivity) => item.priceEvidence?.status !== 'unavailable' && Number.isFinite(item.estimatedCost);
+  const price = (item: DayActivity) => !hasPrice(item) ? 'Price unavailable' : travelers > 1 && item.unitCost !== undefined && (!item.priceEvidence || ['per-person', 'daily-per-person'].includes(item.priceEvidence.unit)) ? `${formatMoney(item.unitCost, itinerary.currency)}/person · ${formatMoney(item.estimatedCost, itinerary.currency)} group` : formatMoney(item.estimatedCost, itinerary.currency);
+  const destinationPhoto = existingDestinationPhoto(itinerary);
+  const heroImage = storedActivityImage(activeActivity?.imageUrl, activeActivity?.imageAttribution);
+  const heroAttribution = heroImage ? activeActivity?.imageAttribution : destinationPhoto?.imageAttribution;
+  const theme = savedDayTheme(day, itinerary.destination);
   const goToActivity = (direction: -1 | 1) => {
-    const activityCount = day.activities.length;
+    const activityCount = visits.length;
     if (activityCount === 0) return;
     setActiveActivityIndex((current) => (current + direction + activityCount) % activityCount);
   };
 
   return (
-    <div ref={modalRef} className="fixed inset-0 z-50 grid place-items-center overflow-hidden bg-black/80 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="day-dialog-title" aria-describedby="day-dialog-description" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <GoogleActivityPhotos.Provider value={{ photos: googlePhotos, onFailure: onGooglePhotoFailure }}><ActivityPhotoRecovery.Provider value={onPhotoFailure}><div ref={modalRef} className="fixed inset-0 z-50 grid place-items-center overflow-hidden bg-black/80 p-3 sm:p-6" role="dialog" aria-modal="true" aria-labelledby="day-dialog-title" aria-describedby="day-dialog-description" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <div className="mx-auto flex max-h-[calc(100dvh-1.5rem)] w-full max-w-4xl flex-col overflow-hidden rounded-md border border-slate-700 bg-[#07111f] shadow-2xl sm:max-h-[calc(100dvh-3rem)]">
-        <div className="relative h-[38dvh] max-h-[420px] min-h-[200px] shrink-0 bg-slate-950">
-          <PlacePhoto eager src={activeActivity?.imageUrl} alt={`${activeActivity?.title || day.theme} in ${itinerary.destination}`} sizes="(max-width: 900px) 100vw, 900px" className="object-contain"/>
+        <ActivityPhoto day={day.day} activityIndex={visits[activeActivityIndex]?.index} fallbackSrc={existingDestinationPhoto(itinerary, [activeActivity?.imageUrl || ""])?.imageUrl} fallbackAttribution={existingDestinationPhoto(itinerary, [activeActivity?.imageUrl || ""])?.imageAttribution} uncertainLocation={!!heroImage && !activeActivity?.place?.name && !heroAttribution?.illustrative} frameClassName="relative h-36 shrink-0 bg-slate-950" creditPosition="inside" creditClassName="absolute right-3 top-14 max-w-[65%] rounded bg-slate-950/85 px-2 py-1 text-[10px] text-slate-200" eager src={heroImage || destinationPhoto?.imageUrl} attribution={heroAttribution} alt={heroImage ? `${activeActivity?.title || day.theme} in ${itinerary.destination}` : `Destination photo: ${itinerary.destination}`} sizes="(max-width: 900px) 100vw, 900px" className="object-contain">
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Close day details" title="Close details" className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-md bg-slate-950/90 hover:bg-slate-800"><X size={20}/></button>
+          {!heroImage && !googlePhotos[`${day.day}:${visits[activeActivityIndex]?.index}`] && destinationPhoto && <span className="absolute bottom-3 left-3 bg-slate-950/90 px-2 py-1 text-xs">Destination photo</span>}
           <span className="absolute left-3 top-3 bg-slate-950/90 px-3 py-2 text-sm font-bold text-amber-300">DAY {day.day}</span>
-          <button type="button" disabled={day.activities.length < 2} onClick={() => goToActivity(-1)} aria-label="Previous activity" title="Previous activity" className="absolute left-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center bg-slate-950/90 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"><ChevronLeft size={21}/></button>
-          <button type="button" disabled={day.activities.length < 2} onClick={() => goToActivity(1)} aria-label="Next activity" title="Next activity" className="absolute right-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center bg-slate-950/90 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"><ChevronRight size={21}/></button>
-          <span className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-slate-950/90 px-3 py-1 text-xs text-white" aria-live="polite">{day.activities.length ? `Activity ${activeActivityIndex + 1} of ${day.activities.length}` : 'No activities'}</span>
-          {heroAttribution && <a href={heroAttribution.sourceUrl} target="_blank" rel="noreferrer" title={`${heroAttribution.creator} · ${heroAttribution.license}`} className="absolute right-3 top-14 max-w-[65%] truncate rounded bg-slate-950/85 px-2 py-1 text-[10px] text-slate-200">Photo: {heroAttribution.creator} · {heroAttribution.license}</a>}
-        </div>
+          <button type="button" disabled={visits.length < 2} onClick={() => goToActivity(-1)} aria-label="Previous activity" title="Previous activity" className="absolute left-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center bg-slate-950/90 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"><ChevronLeft size={21}/></button>
+          <button type="button" disabled={visits.length < 2} onClick={() => goToActivity(1)} aria-label="Next activity" title="Next activity" className="absolute right-3 top-1/2 z-10 grid size-11 -translate-y-1/2 place-items-center bg-slate-950/90 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-35"><ChevronRight size={21}/></button>
+          <span className="absolute bottom-3 left-1/2 -translate-x-1/2 bg-slate-950/90 px-3 py-1 text-xs text-white" aria-live="polite">{visits.length ? `Activity ${activeActivityIndex + 1} of ${visits.length}` : 'No activities'}</span>
+        </ActivityPhoto>
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6">
           {activeActivity && <div aria-live="polite" className="mb-5 border-b border-slate-700 pb-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-200 sm:text-xs">{activeActivity.time} · {activeActivity.category}</p>
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-200 sm:text-xs">{activeActivity.time} · {activeActivity.category}{activeActivity.status ? ' · ' + activeActivity.status : ''}</p>
                 <h3 className="mt-1 break-words text-base font-bold text-white sm:text-lg">{activeActivity.title}</h3>
                 <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-300">{activeActivity.description}</p><ActivityEvidence activity={activeActivity} currency={itinerary.currency}/>
               </div>
               <div className="shrink-0 sm:text-right">
                 <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400 sm:text-[10px]">Estimated price</span>
-                <p className="font-mono text-xs font-semibold text-white sm:text-sm">{travelers > 1 && activeActivity.unitCost !== undefined && (!activeActivity.priceEvidence || ["per-person", "daily-per-person"].includes(activeActivity.priceEvidence.unit)) ? `${formatMoney(activeActivity.unitCost, itinerary.currency)}/person` : formatMoney(activeActivity.estimatedCost, itinerary.currency)}</p>
-                {travelers > 1 && activeActivity.unitCost !== undefined && (!activeActivity.priceEvidence || ["per-person", "daily-per-person"].includes(activeActivity.priceEvidence.unit)) && <p className="font-mono text-[9px] text-slate-400 sm:text-[10px]">{formatMoney(activeActivity.estimatedCost, itinerary.currency)} group</p>}
-                <ReferenceAmount amount={activeActivity.estimatedCost} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} className="block text-[9px] font-normal text-cyan-200/75 sm:text-[10px]" />
+                <p className="font-mono text-xs font-semibold text-white sm:text-sm">{price(activeActivity)}</p>
+                {hasPrice(activeActivity) && <ReferenceAmount amount={activeActivity.estimatedCost} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} className="block text-[9px] font-normal text-cyan-200/75 sm:text-[10px]" />}
               </div>
             </div>
           </div>}
-          <div className="flex flex-wrap justify-between gap-3"><div><h2 id="day-dialog-title" className="text-xl font-bold">Day {day.day}: {day.theme}</h2><p id="day-dialog-description" className="text-sm text-slate-400">{day.date} · {itinerary.destination}</p></div><div className="text-right"><strong className="font-mono text-lg">{formatMoney(day.totalCost, itinerary.currency)}</strong><ReferenceAmount amount={day.totalCost} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/><p className="flex items-center justify-end gap-1 text-xs text-emerald-200"><BusFront size={13}/>Ride/boat fare {formatMoney(day.rideFare || 0, itinerary.currency)}</p><ReferenceAmount amount={day.rideFare || 0} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/><button type="button" disabled={photoRefreshDay === day.day} onClick={() => onRefreshPhotos(day)} className="mt-2 inline-flex items-center gap-1.5 rounded border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:border-cyan-500 hover:text-cyan-200 disabled:opacity-50"><RefreshCw size={13} className={photoRefreshDay === day.day ? 'animate-spin' : ''}/>{photoRefreshDay === day.day ? 'Refreshing photos...' : 'Refresh activity photos'}</button></div></div>
+          <div className="flex flex-wrap justify-between gap-3"><div><h2 id="day-dialog-title" className="text-xl font-bold">Day {day.day}: {theme}</h2><p id="day-dialog-description" className="text-sm text-slate-400">{day.date} · {itinerary.destination}</p></div><div className="text-right"><strong className="font-mono text-lg">{formatMoney(day.totalCost, itinerary.currency)}</strong><ReferenceAmount amount={day.totalCost} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/><p className="flex items-center justify-end gap-1 text-xs text-emerald-200"><BusFront size={13}/>Ride/boat fare {day.rideFare === undefined ? 'Unavailable' : formatMoney(day.rideFare, itinerary.currency)}</p>{day.rideFare !== undefined && <ReferenceAmount amount={day.rideFare} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>}<button type="button" disabled={photoRefreshDay === day.day} onClick={() => onRefreshPhotos(day)} className="mt-2 inline-flex items-center gap-1.5 rounded border border-slate-700 px-2 py-1 text-xs text-slate-300 hover:border-cyan-500 hover:text-cyan-200 disabled:opacity-50"><RefreshCw size={13} className={photoRefreshDay === day.day ? 'animate-spin' : ''}/>{photoRefreshDay === day.day ? 'Refreshing photos...' : 'Refresh activity photos'}</button></div></div>
           {day.travelNote && <p className="mt-4 flex items-start gap-2 border-l-2 border-cyan-400 pl-3 text-sm text-cyan-100"><Clock3 size={16} className="mt-0.5 shrink-0"/>{day.travelNote}</p>}
           {day.crowdLevel && <div className="mt-3 rounded-md border border-violet-900 bg-violet-950/30 px-3 py-3 text-xs leading-5 text-violet-200"><p><strong className="capitalize">{day.crowdLevel} estimated crowd.</strong> {day.crowdNote}</p>{day.crowdRecommendation && <p className="mt-2 border-t border-violet-800/50 pt-2 text-white/65"><strong>Planning recommendation:</strong> {day.crowdRecommendation}</p>}{day.crowdFetchedAt && <p className="mt-2 text-[10px] text-white/35">Estimated {new Date(day.crowdFetchedAt).toLocaleString()} · refresh after {day.crowdRefreshAfter ? new Date(day.crowdRefreshAfter).toLocaleString() : 'not recorded'}</p>}</div>}
-          <div className="mt-6 divide-y divide-slate-800 border-y border-slate-800">{day.activities.map((item, index) => <article key={`${item.time}-${index}`} className={`grid grid-cols-[88px_1fr] gap-3 border-l-2 py-4 pl-3 transition-colors sm:grid-cols-[128px_1fr_auto] sm:items-center ${activeActivityIndex === index ? 'border-amber-300 bg-amber-300/[0.045]' : 'border-transparent'}`}>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-slate-900"><PlacePhoto src={item.imageUrl} alt={`${item.title} in ${itinerary.destination}`} sizes="128px" emptyMessage="Photo unavailable"/>{item.imageAttribution && <a href={item.imageAttribution.sourceUrl} target="_blank" rel="noreferrer" title={`${item.imageAttribution.creator} · ${item.imageAttribution.license}`} className="absolute bottom-1 right-1 rounded bg-slate-950/85 px-1 text-[8px] text-slate-200">Photo info</a>}</div>
-            <div><p className="text-xs uppercase text-cyan-300">{item.time} · {item.category}</p><h3 className="font-semibold">{item.title}</h3><p className="mt-1 text-xs leading-relaxed text-slate-400">{item.description}</p><p className="mt-2 text-xs text-white/55">{item.durationMinutes ? `${item.durationMinutes} min visit` : 'Duration unavailable'}{item.travelMinutes ? ` · ${item.travelMinutes} min travel estimate` : ''}</p><p className="mt-1 text-xs text-white/50">{item.place ? `${item.place.city}, ${item.place.country}` : item.location || 'Location unverified'}</p><ActivityEvidence activity={item} currency={itinerary.currency}/><PlaceActions activity={item} destination={itinerary.destination} tripId={visitTripId} dayIndex={itinerary.days.findIndex(candidate => candidate.day === day.day)} activityIndex={index}/><p className="mt-2 font-mono text-sm sm:hidden">Estimated price: {travelers > 1 && item.unitCost !== undefined && (!item.priceEvidence || ["per-person", "daily-per-person"].includes(item.priceEvidence.unit)) ? `${formatMoney(item.unitCost, itinerary.currency)}/person · ${formatMoney(item.estimatedCost, itinerary.currency)} group` : formatMoney(item.estimatedCost, itinerary.currency)}</p><ReferenceAmount amount={item.estimatedCost} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} className="sm:hidden block text-[10px] font-normal text-cyan-200/70"/></div>
-            <p className="hidden text-right font-mono text-sm sm:block"><span className="text-xs uppercase tracking-wide text-slate-500">Estimated price</span><br/>{travelers > 1 && item.unitCost !== undefined && (!item.priceEvidence || ["per-person", "daily-per-person"].includes(item.priceEvidence.unit)) ? <>{formatMoney(item.unitCost, itinerary.currency)}/person<small className="block text-slate-500">{formatMoney(item.estimatedCost, itinerary.currency)} group</small></> : <>{formatMoney(item.estimatedCost, itinerary.currency)}</>}<ReferenceAmount amount={item.estimatedCost} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></p>
+          <div className="mt-6 divide-y divide-slate-800 border-y border-slate-800">{visits.map(({ activity: item, index }, displayIndex) => <article key={`${item.time}-${index}`} className={`grid grid-cols-[88px_1fr] gap-3 border-l-2 py-4 pl-3 transition-colors sm:grid-cols-[128px_1fr_auto] sm:items-center ${activeActivityIndex === displayIndex ? 'border-amber-300 bg-amber-300/[0.045]' : 'border-transparent'}`}>
+            <ActivityPhoto day={day.day} activityIndex={index} fallbackSrc={existingDestinationPhoto(itinerary, [item.imageUrl || ""])?.imageUrl} fallbackAttribution={existingDestinationPhoto(itinerary, [item.imageUrl || ""])?.imageAttribution} frameClassName="relative aspect-[4/3] overflow-hidden rounded-md bg-slate-900" creditPosition="inside" creditClassName="absolute bottom-1 right-1 rounded bg-slate-950/85 px-1 text-[8px] text-slate-200" src={storedActivityImage(item.imageUrl, item.imageAttribution) ? item.imageUrl : destinationPhoto?.imageUrl} attribution={storedActivityImage(item.imageUrl, item.imageAttribution) ? item.imageAttribution : destinationPhoto?.imageAttribution} alt={storedActivityImage(item.imageUrl, item.imageAttribution) ? `${item.title} in ${itinerary.destination}` : `Destination photo: ${itinerary.destination}`} sizes="128px" emptyMessage="Photo unavailable">{!storedActivityImage(item.imageUrl, item.imageAttribution) && !googlePhotos[`${day.day}:${index}`] && destinationPhoto && <span className="absolute left-1 top-1 rounded bg-slate-950/85 px-1 text-[8px] text-slate-200">Destination photo</span>}</ActivityPhoto>
+            <div><p className="text-xs uppercase text-cyan-300">{item.time} · {item.category}{item.status ? ' · ' + item.status : ''}</p><h3 className="font-semibold">{item.title}</h3><p className="mt-1 text-xs leading-relaxed text-slate-400">{item.description}</p><p className="mt-2 text-xs text-white/55">{item.durationMinutes ? `${item.durationMinutes} min visit` : 'Duration unavailable'}{item.travelMinutes ? ` · ${item.travelMinutes} min travel estimate` : ''}</p><p className="mt-1 text-xs text-white/50">{item.place ? `${item.place.city}, ${item.place.country}` : item.location || 'Location unverified'}</p><ActivityEvidence activity={item} currency={itinerary.currency}/><PlaceActions activity={item} destination={itinerary.destination} tripId={visitTripId} dayIndex={dayIndex} activityIndex={index}/><p className="mt-2 font-mono text-sm sm:hidden">Estimated price: {price(item)}</p>{hasPrice(item) && <ReferenceAmount amount={item.estimatedCost} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} className="sm:hidden block text-[10px] font-normal text-cyan-200/70"/>}</div>
+            <p className="hidden text-right font-mono text-sm sm:block"><span className="text-xs uppercase tracking-wide text-slate-500">Estimated price</span><br/>{price(item)}{hasPrice(item) && <ReferenceAmount amount={item.estimatedCost} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>}</p>
           </article>)}</div>
+          {allowances.length > 0 && <section aria-label="Budget allowances" className="mt-5 rounded-md border border-slate-700 p-3"><h3 className="font-semibold">Budget allowances</h3>{allowances.map(({ activity: item, index }) => <article key={index} className="mt-3 border-t border-slate-700 pt-3 text-sm"><h4>{item.title}</h4><p className="text-xs text-slate-400">{item.description}</p><p>{price(item)}</p><ActivityEvidence activity={item} currency={itinerary.currency}/>{hasPrice(item) && <ReferenceAmount amount={item.estimatedCost} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>}</article>)}</section>}
           {itinerary.accommodation && <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm"><div className="flex items-start gap-2 text-amber-200"><BedDouble size={17}/><span>{itinerary.accommodation.name} · {formatMoney(itinerary.accommodation.nightlyRate, itinerary.currency)}/night<ReferenceAmount amount={itinerary.accommodation.nightlyRate} currency={itinerary.currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/></span></div>{day.returnToStayAt && <strong>Return by {day.returnToStayAt}</strong>}</div>}
         </div>
       </div>
-    </div>
+    </div></ActivityPhotoRecovery.Provider></GoogleActivityPhotos.Provider>
   );
 }

@@ -7,6 +7,8 @@ const plannerOutputPath = resolve(process.cwd(), 'lib/generated/destination-cont
 const weatherOutputPath = resolve(process.cwd(), 'lib/generated/weather-contracts.ts');
 const travelOutputPath = resolve(process.cwd(), 'lib/generated/travel-option-contracts.ts');
 const coreOutputPath = resolve(process.cwd(), 'lib/generated/core-contracts.ts');
+const storedMediaOutputPath = resolve(process.cwd(), 'lib/generated/stored-trip-media.ts');
+const generatedStoredMedia = '// Generated from travelmate-backend-api/src/lib/stored-trip-media.ts. Do not edit by hand.\n' + await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/lib/stored-trip-media.ts'), 'utf8');
 const document = JSON.parse(await readFile(sourcePath, 'utf8'));
 const schemas = document?.components?.schemas;
 const schema = schemas?.ApiError;
@@ -42,6 +44,7 @@ const destinationSchemaNames = [
   'CurrencyCode',
   'FreshnessMetadata',
   'LocationSuggestion',
+  'AdministrativeLocationSuggestion',
   'AreaSuggestion',
   'DestinationAreasResponse',
   'AreaInterestProfile',
@@ -96,7 +99,7 @@ const coreSchemaNames = [
   'Listing', 'Booking', 'ListingBlockedDate', 'Promotion', 'Review', 'Notification', 'PaymentTransaction', 'OwnerDocument', 'ModerationItem', 'SavedTrip', 'ItineraryVersion',
   'ItineraryGenerationSummary', 'AuditEvent', 'PlatformMetrics',
   'PlatformIntegrations', 'PlatformResponse', 'PlatformActionResponse',
-  'VisitedPlace', 'VisitRecordResponse', 'VisitedPlacesResponse', 'PageInfo', 'TripDetailResponse', 'TripVersionsResponse', 'NotificationsResponse',
+  'VisitedPlace', 'VisitRecordResponse', 'VisitedPlacesResponse', 'VisitPlaceReference', 'TripVisitCandidate', 'TripVisitCandidatesResponse', 'TripVisitsRecordResponse', 'PageInfo', 'TripDetailResponse', 'TripVersionsResponse', 'NotificationsResponse',
   'ItineraryDayResponse',
   'FeedbackSentiment', 'FeedbackCategory', 'FeedbackInput', 'FeedbackEntry', 'FeedbackListResponse', 'FeedbackDetailResponse', 'FeedbackSubmissionResponse', 'FeedbackItineraryResponse',
 ];
@@ -110,17 +113,18 @@ const generatedCore = `// Generated from travelmate-backend-api/openapi/travelma
 }).join('\n\n')}\n`;
 
 if (process.argv.includes('--check')) {
-  const [currentError, currentDestination, currentWeather, currentTravel, currentCore] = await Promise.all([
+  const [currentError, currentDestination, currentWeather, currentTravel, currentCore, currentStoredMedia] = await Promise.all([
     readFile(errorOutputPath, 'utf8').catch(() => ''),
     readFile(plannerOutputPath, 'utf8').catch(() => ''),
     readFile(weatherOutputPath, 'utf8').catch(() => ''),
     readFile(travelOutputPath, 'utf8').catch(() => ''),
     readFile(coreOutputPath, 'utf8').catch(() => ''),
+    readFile(storedMediaOutputPath, 'utf8').catch(() => ''),
   ]);
   const normalizeLines = value => value.replace(/\r\n/g, '\n');
   if ([
     [currentError, generatedError], [currentDestination, generatedDestination],
-    [currentWeather, generatedWeather], [currentTravel, generatedTravel], [currentCore, generatedCore],
+    [currentWeather, generatedWeather], [currentTravel, generatedTravel], [currentCore, generatedCore], [currentStoredMedia, generatedStoredMedia],
   ].some(([current, generated]) => normalizeLines(current) !== normalizeLines(generated))) {
     console.error('Generated API contracts are stale. Run npm run contracts:sync.');
     process.exitCode = 1;
@@ -133,6 +137,12 @@ if (process.argv.includes('--check')) {
     writeFile(weatherOutputPath, generatedWeather, 'utf8'),
     writeFile(travelOutputPath, generatedTravel, 'utf8'),
     writeFile(coreOutputPath, generatedCore, 'utf8'),
+    writeFile(storedMediaOutputPath, generatedStoredMedia, 'utf8'),
   ]);
   console.log(`Updated ${errorOutputPath}, ${plannerOutputPath}, ${weatherOutputPath}, ${travelOutputPath}, and ${coreOutputPath}`);
 }
+
+const routeSource = await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/services/itinerary/transport-planning.ts'), 'utf8');
+const routeTarget = resolve(process.cwd(), 'lib/generated/transport-planning.ts');
+const routeContent = '// Generated from backend transport-planning.ts. Do not edit by hand.\n' + routeSource;
+if (process.argv.includes('--check')) { if (await readFile(routeTarget,'utf8').catch(()=>null) !== routeContent) throw new Error('Transport planning contract is stale.'); } else await writeFile(routeTarget,routeContent);

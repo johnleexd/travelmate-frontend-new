@@ -1,6 +1,9 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
+import TravelDiscoverySection from './TravelDiscoverySection';
+import DiscoveryCredits from './DiscoveryCredits';
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from 'react';
 import { useRouter } from 'next/navigation';
 import { useGSAP } from '@gsap/react';
@@ -28,6 +31,10 @@ import { ApiError, handleResponse } from '@/services/api.service';
 import type { AuthActionResponse } from '@/lib/contracts';
 import { fetchCurrentUser } from '@/services/session.service';
 import { useModalAccessibility } from '@/hooks/use-modal-accessibility';
+import { PasswordInput } from '@/components/common/PasswordInput';
+import { getRegistrationDetailsError } from '@/lib/registration-validation';
+import { ContactNumberInput } from '@/components/common/ContactNumberInput';
+import { normalizePhilippineMobile } from '@/lib/philippine-mobile';
 import {
   getPasswordStrength,
   getPasswordValidationError,
@@ -113,7 +120,9 @@ export default function TravelMateLanding() {
   const [verificationEmailSent, setVerificationEmailSent] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [name, setName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
@@ -289,6 +298,10 @@ export default function TravelMateLanding() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMessage('');
+    if (mode === 'register') {
+      const detailsError = getRegistrationDetailsError(firstName, lastName, phone);
+      if (detailsError) { setMessage(detailsError); return; }
+    }
     if ((mode === 'register' || mode === 'reset') && !isStrongPassword(password)) {
       setMessage(getPasswordValidationError(password) || STRONG_PASSWORD_REQUIREMENTS);
       return;
@@ -306,7 +319,7 @@ export default function TravelMateLanding() {
         setSessionChecked(true);
         router.push(data.redirect);
       } else if (mode === 'register') {
-        const data = await auth({ action: 'register', name, email, password, confirmPassword });
+        const data = await auth({ action: 'register', firstName: firstName.trim(), lastName: lastName.trim(), phone: normalizePhilippineMobile(phone), email, password, confirmPassword });
         setVerificationEmailSent(data.emailAccepted === true);
         clearAuthSecrets();
         setMode('verify');
@@ -369,11 +382,11 @@ export default function TravelMateLanding() {
     <div ref={pageRef} className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#f2efe6] font-sans text-[#142421] selection:bg-[#ffcf70] selection:text-[#142421]">
       <a href="#main-content" className="sr-only z-[100] bg-white px-4 py-2 text-[#142421] focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
 
-      <header className="fixed inset-x-0 top-0 z-50 px-4 pt-4 sm:px-6">
-        <div className="mx-auto flex h-16 max-w-[1380px] items-center justify-between border border-white/15 bg-[#102824]/88 px-4 text-white shadow-[0_18px_50px_rgba(8,24,22,.22)] backdrop-blur-xl sm:px-6">
-          <a href="#top" className="group flex items-center gap-3 font-semibold tracking-[-.02em]" aria-label="TravelMate home">
-            <span className="grid size-9 place-items-center bg-[#ffcf70] text-[#102824] transition-transform duration-500 group-hover:-rotate-6"><Compass size={20} strokeWidth={2.2} /></span>
-            <span className="text-lg">TravelMate</span>
+      <header className="fixed inset-x-0 top-0 z-50 px-3 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-6 sm:pt-[max(1rem,env(safe-area-inset-top))]">
+        <div className="mx-auto flex h-14 max-w-[1380px] items-center justify-between gap-3 border border-white/15 bg-[#102824]/88 px-3 text-white shadow-[0_18px_50px_rgba(8,24,22,.22)] backdrop-blur-xl sm:h-16 sm:px-6">
+          <a href="#top" className="group flex min-h-11 shrink-0 items-center gap-2 font-semibold tracking-[-.02em] sm:gap-3" aria-label="TravelMate home">
+            <span className="grid size-8 place-items-center bg-[#ffcf70] text-[#102824] transition-transform duration-500 group-hover:-rotate-6 sm:size-9"><Compass size={20} strokeWidth={2.2} className="size-[18px] sm:size-5"/></span>
+            <span className="text-base sm:text-lg">TravelMate</span>
           </a>
           <nav aria-label="Primary navigation" className="hidden items-center gap-8 text-sm text-white/70 lg:flex">
             <a className="transition-colors hover:text-white" href="#features">Why TravelMate</a>
@@ -386,12 +399,12 @@ export default function TravelMateLanding() {
             <button type="button" onClick={openAccount} disabled={!sessionChecked} aria-busy={!sessionChecked} title={!sessionChecked ? 'Checking your session' : sessionUnavailable ? 'Your session could not be checked. Try again.' : undefined} className="px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/10 disabled:cursor-wait">{dashboardPath || !sessionChecked ? 'Dashboard' : sessionUnavailable ? 'Retry connection' : 'Sign in'}</button>
             <button type="button" onClick={startPlanning} className="bg-[#ffcf70] px-5 py-2.5 text-sm font-bold text-[#102824] hover:bg-[#ffe1a1]">Plan a trip</button>
           </div>
-          <button type="button" aria-expanded={menu} aria-controls="mobile-navigation" aria-label={menu ? 'Close navigation' : 'Open navigation'} onClick={() => setMenu((current) => !current)} className="grid size-10 place-items-center border border-white/20 lg:hidden">
-            {menu ? <X size={20} /> : <Menu size={20} />}
+          <button type="button" aria-expanded={menu} aria-controls="mobile-navigation" aria-label={menu ? 'Close navigation' : 'Open navigation'} onClick={() => setMenu((current) => !current)} className="grid size-11 shrink-0 place-items-center border border-white/20 lg:hidden">
+            {menu ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
         {menu && (
-          <nav id="mobile-navigation" aria-label="Mobile navigation" className="mx-auto max-w-[1380px] border-x border-b border-white/15 bg-[#102824] px-4 py-5 text-white shadow-2xl lg:hidden">
+          <nav id="mobile-navigation" aria-label="Mobile navigation" className="mx-auto max-h-[calc(100dvh-3.5rem-max(0.5rem,env(safe-area-inset-top))-max(1rem,env(safe-area-inset-bottom)))] max-w-[1380px] overflow-y-auto overscroll-contain border-x border-b border-white/15 bg-[#102824] px-4 py-5 text-white shadow-2xl sm:max-h-[calc(100dvh-4rem-max(1rem,env(safe-area-inset-top))-max(1rem,env(safe-area-inset-bottom)))] lg:hidden">
             <div className="grid gap-1 text-sm font-semibold">
               {([['Why TravelMate', '#features'], ['How it works', '#workflow'], ['Budget', '#budget'], ['Product', '#preview'], ['Questions', '#faq']] as const).map(([label, href]) => <a key={href} href={href} onClick={() => setMenu(false)} className="border-b border-white/10 px-2 py-3 text-white/75 hover:text-white">{label}</a>)}
               <div className="mt-4 grid grid-cols-2 gap-2">
@@ -481,6 +494,8 @@ export default function TravelMateLanding() {
             </div>
           </div>
         </section>
+
+        <TravelDiscoverySection />
 
         <section id="workflow" className="scroll-mt-24 px-5 py-32 sm:px-8 md:py-44">
           <div className="mx-auto max-w-[1380px]">
@@ -603,12 +618,13 @@ export default function TravelMateLanding() {
 
       <footer className="bg-[#081b18] px-5 py-12 text-white sm:px-8">
         <div className="mx-auto max-w-[1380px]">
-          <div className="flex flex-col gap-10 sm:flex-row sm:items-end sm:justify-between"><div><a href="#top" className="flex items-center gap-3 text-lg font-semibold"><span className="grid size-9 place-items-center bg-[#ffcf70] text-[#102824]"><Compass size={19} /></span>TravelMate</a><p className="mt-5 max-w-md text-sm leading-6 text-white/45">AI-powered itinerary planning, budget estimates, clearly sourced travel options, and saved-trip management in one system.</p></div><div className="flex flex-wrap gap-x-7 gap-y-3 text-sm text-white/58"><a href="#features" className="hover:text-white">Why TravelMate</a><a href="#workflow" className="hover:text-white">How it works</a><a href="#faq" className="hover:text-white">Questions</a><button type="button" onClick={() => show('login')} className="hover:text-white">Sign in</button></div></div>
+          <div className="flex flex-col gap-10 sm:flex-row sm:items-end sm:justify-between"><div><a href="#top" className="flex items-center gap-3 text-lg font-semibold"><span className="grid size-9 place-items-center bg-[#ffcf70] text-[#102824]"><Compass size={19} /></span>TravelMate</a><p className="mt-5 max-w-md text-sm leading-6 text-white/45">AI-powered itinerary planning, budget estimates, clearly sourced travel options, and saved-trip management in one system.</p></div><div className="flex flex-wrap gap-x-7 gap-y-3 text-sm text-white/58"><a href="#features" className="hover:text-white">Why TravelMate</a><a href="#workflow" className="hover:text-white">How it works</a><a href="#faq" className="hover:text-white">Questions</a><Link href="/terms" className="hover:text-white">Terms of use</Link><Link href="/privacy" className="hover:text-white">Privacy policy</Link><button type="button" onClick={() => show('login')} className="hover:text-white">Sign in</button></div></div>
           <div className="mt-10 flex flex-col gap-2 border-t border-white/12 pt-6 text-xs text-white/35 sm:flex-row sm:justify-between"><span>© 2026 TravelMate. Capstone project.</span><span>Planning guidance, not a guarantee of price or availability.</span></div>
         </div>
+        <DiscoveryCredits />
       </footer>
 
-      {open && <AuthDialog mode={mode} setMode={changeAuthMode} email={email} verificationEmailSent={verificationEmailSent} setEmail={setEmail} password={password} setPassword={setPassword} confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword} name={name} setName={setName} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onResendVerification={() => void resendVerification()} onClose={closeAuthDialog} containerRef={authDialogRef} closeButtonRef={closeButtonRef} />}
+      {open && <AuthDialog mode={mode} setMode={changeAuthMode} email={email} verificationEmailSent={verificationEmailSent} setEmail={setEmail} password={password} setPassword={setPassword} confirmPassword={confirmPassword} setConfirmPassword={setConfirmPassword} firstName={firstName} setFirstName={setFirstName} lastName={lastName} setLastName={setLastName} phone={phone} setPhone={setPhone} code={code} setCode={setCode} message={message} busy={busy} onSubmit={submit} onResendVerification={() => void resendVerification()} onClose={closeAuthDialog} containerRef={authDialogRef} closeButtonRef={closeButtonRef} />}
     </div>
   );
 }
@@ -634,8 +650,12 @@ type AuthDialogProps = {
   setPassword: (value: string) => void;
   confirmPassword: string;
   setConfirmPassword: (value: string) => void;
-  name: string;
-  setName: (value: string) => void;
+  firstName: string;
+  setFirstName: (value: string) => void;
+  lastName: string;
+  setLastName: (value: string) => void;
+  phone: string;
+  setPhone: (value: string) => void;
   code: string;
   setCode: (value: string) => void;
   message: string;
@@ -647,7 +667,7 @@ type AuthDialogProps = {
   closeButtonRef: RefObject<HTMLButtonElement | null>;
 };
 
-function AuthDialog({ mode, setMode, email, verificationEmailSent, setEmail, password, setPassword, confirmPassword, setConfirmPassword, name, setName, code, setCode, message, busy, onSubmit, onResendVerification, onClose, containerRef, closeButtonRef }: AuthDialogProps) {
+function AuthDialog({ mode, setMode, email, verificationEmailSent, setEmail, password, setPassword, confirmPassword, setConfirmPassword, firstName, setFirstName, lastName, setLastName, phone, setPhone, code, setCode, message, busy, onSubmit, onResendVerification, onClose, containerRef, closeButtonRef }: AuthDialogProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (contentRef.current) contentRef.current.scrollTop = 0;
@@ -686,16 +706,20 @@ function AuthDialog({ mode, setMode, email, verificationEmailSent, setEmail, pas
           <form onSubmit={onSubmit} autoComplete="on" className="mt-6 space-y-5 sm:mt-8">
             {mode === 'login' && <><div><a href="/api/auth/oauth/google" className="flex min-h-12 w-full items-center justify-center gap-3 border border-[#142421]/25 bg-white px-5 py-3.5 font-semibold transition hover:border-[#142421] hover:bg-[#faf8f1]"><span aria-hidden="true" className="grid size-7 place-items-center rounded-full border border-[#142421]/15 font-bold text-[#4285f4]">G</span>Continue with Google</a><p className="mt-2 text-xs text-[#71807c]">Google uses your saved account role. New Google accounts start as travelers.</p></div><div className="flex items-center gap-3 text-xs text-[#71807c]"><span className="h-px flex-1 bg-[#142421]/15"/><span>or use email and password</span><span className="h-px flex-1 bg-[#142421]/15"/></div></>}
             {mode === 'register' && <>
-              <label className="block text-sm font-semibold" htmlFor="auth-name">Full name<input id="auth-name" required minLength={2} autoComplete="name" value={name} onChange={(event) => setName(event.target.value)} className={inputClass} placeholder="Your name" /></label>
+              <div className="grid min-w-0 gap-5 sm:grid-cols-2">
+                <label className="block min-w-0 text-sm font-semibold" htmlFor="auth-first-name">First name<input id="auth-first-name" name="firstName" required maxLength={80} autoComplete="given-name" value={firstName} onChange={(event) => setFirstName(event.target.value)} className={inputClass} placeholder="First name" /></label>
+                <label className="block min-w-0 text-sm font-semibold" htmlFor="auth-last-name">Last name<input id="auth-last-name" name="lastName" required maxLength={80} autoComplete="family-name" value={lastName} onChange={(event) => setLastName(event.target.value)} className={inputClass} placeholder="Last name" /></label>
+              </div>
             </>}
             {(mode === 'login' || mode === 'register' || mode === 'forgot') && <label className="block text-sm font-semibold" htmlFor="auth-email">Email address<input id="auth-email" name="email" required type="email" autoComplete="email" value={email} onChange={(event) => setEmail(event.target.value)} className={inputClass} placeholder="you@example.com" /></label>}
+            {mode === 'register' && <div><label className="block text-sm font-semibold" htmlFor="auth-phone">Contact number <span className="font-normal text-[#71807c]">(optional)</span></label><ContactNumberInput id="auth-phone" value={phone} onChange={setPhone}/></div>}
             {(mode === 'verify' || mode === 'reset') && <label className="block text-sm font-semibold" htmlFor="auth-code">{mode === 'verify' ? 'Verification code' : 'Password reset code'}<input id="auth-code" required minLength={8} maxLength={8} autoComplete="one-time-code" value={code} onChange={(event) => setCode(event.target.value.toUpperCase())} className={`${inputClass} font-mono text-lg uppercase tracking-[.2em]`} placeholder="Enter your code" /></label>}
-            {mode === 'login' && <label className="block text-sm font-semibold" htmlFor="auth-password">Password<input id="auth-password" name="password" required type="password" minLength={8} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} placeholder="At least 8 characters" /></label>}
+            {mode === 'login' && <div className="text-sm font-semibold"><label htmlFor="auth-password">Password</label><PasswordInput key={mode} id="auth-password" name="password" required minLength={8} autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} className={inputClass} placeholder="At least 8 characters" /></div>}
             {(mode === 'register' || mode === 'reset') && <>
-              <label className="block text-sm font-semibold" htmlFor="auth-password">Password<input id="auth-password" required type="password" minLength={8} maxLength={64} pattern={STRONG_PASSWORD_PATTERN.source} autoComplete="new-password" aria-describedby="auth-password-strength auth-password-requirements" aria-invalid={password.length > 0 && !isStrongPassword(password)} value={password} onChange={(event) => setPassword(event.target.value)} className={`${inputClass} ${password.length > 0 && !isStrongPassword(password) ? 'border-[#b54537]' : ''}`} placeholder="Create a strong password" title={getPasswordValidationError(password) || STRONG_PASSWORD_REQUIREMENTS} /></label>
+              <div className="text-sm font-semibold"><label htmlFor="auth-password">Password</label><PasswordInput key={mode} id="auth-password" name="password" required minLength={8} maxLength={64} pattern={STRONG_PASSWORD_PATTERN.source} autoComplete="new-password" aria-describedby="auth-password-strength auth-password-requirements" aria-invalid={password.length > 0 && !isStrongPassword(password)} value={password} onChange={(event) => setPassword(event.target.value)} className={`${inputClass} ${password.length > 0 && !isStrongPassword(password) ? 'border-[#b54537]' : ''}`} placeholder="Create a strong password" title={getPasswordValidationError(password) || STRONG_PASSWORD_REQUIREMENTS} /></div>
               <div id="auth-password-strength" role="status" aria-live="polite" aria-label={`Password strength: ${strengthIndicator.label}`} className="-mt-2 space-y-2"><div className="flex items-center justify-between text-xs"><span className="font-medium text-[#71807c]">Password strength</span><span className={`font-semibold ${strengthIndicator.text}`}>{strengthIndicator.label}</span></div><div className="grid grid-cols-3 gap-1.5" aria-hidden="true">{[1, 2, 3].map((segment) => <span key={segment} className={`h-1.5 ${segment <= strengthIndicator.segments ? strengthIndicator.bar : 'bg-[#d8d8d0]'}`} />)}</div></div>
               <p id="auth-password-requirements" className="-mt-2 text-xs leading-5 text-[#71807c]">{STRONG_PASSWORD_REQUIREMENTS}</p>
-              <label className="block text-sm font-semibold" htmlFor="auth-confirm-password">Confirm password<input id="auth-confirm-password" required type="password" minLength={8} maxLength={64} autoComplete="new-password" aria-describedby="auth-confirm-password-message" aria-invalid={confirmPassword.length > 0 && password !== confirmPassword} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className={inputClass} placeholder="Re-enter your password" /></label>
+              <div className="text-sm font-semibold"><label htmlFor="auth-confirm-password">Confirm password</label><PasswordInput key={mode + '-confirm'} id="auth-confirm-password" name="confirmPassword" visibilityLabel="confirm password" required minLength={8} maxLength={64} autoComplete="new-password" aria-describedby="auth-confirm-password-message" aria-invalid={confirmPassword.length > 0 && password !== confirmPassword} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} className={inputClass} placeholder="Re-enter your password" /></div>
               <p id="auth-confirm-password-message" aria-live="polite" className={`-mt-2 text-xs ${confirmPassword.length > 0 && password !== confirmPassword ? 'text-[#9f3025]' : 'text-[#71807c]'}`}>{confirmPassword.length > 0 ? password !== confirmPassword ? 'Confirm password does not match Password.' : 'Passwords match.' : 'Confirm your password.'}</p>
             </>}
             <button disabled={busy} className="mt-2 inline-flex w-full items-center justify-center gap-2 bg-[#142421] px-5 py-4 font-semibold text-white hover:bg-[#23423c] disabled:cursor-wait disabled:opacity-55">{submitLabel}<ArrowRight size={18} /></button>

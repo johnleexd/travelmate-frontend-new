@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 380" preserveAspectRatio="none">
+<!-- Decorative island and mountain silhouettes; not destination imagery. -->
+<defs>
+ <linearGradient id="far" x2="0" y2="1"><stop stop-color="#64897b" stop-opacity=".38"/><stop offset="1" stop-color="#1b4035" stop-opacity=".2"/></linearGradient>
+ <linearGradient id="near" x2="0" y2="1"><stop stop-color="#112e27"/><stop offset="1" stop-color="#061b18"/></linearGradient>
+ <linearGradient id="mist" x2="0" y2="1"><stop stop-color="#b1ccc5" stop-opacity="0"/><stop offset=".45" stop-color="#b1ccc5" stop-opacity=".13"/><stop offset="1" stop-color="#b1ccc5" stop-opacity="0"/></linearGradient>
+</defs>
+<path fill="url(#far)" d="M0 250 60 229 103 187 135 197 178 140 218 169 260 126 307 179 330 169 398 235 480 247 531 220 577 178 609 195 650 136 690 164 729 140 789 225 880 249 951 233 1001 185 1030 200 1085 114 1113 142 1140 131 1197 216 1232 203 1280 240 1340 215 1385 169 1420 181 1470 124 1516 175 1600 235V380H0Z"/>
+<path fill="url(#mist)" d="M0 197Q360 220 800 198T1600 220V310Q1200 288 800 319T0 295Z"/>
+<path fill="#244b3d" opacity=".7" d="M0 285 92 248 137 257 190 222 245 273 303 258 365 284 479 280 540 252 578 264 615 221 652 240 675 235 742 288 895 278 965 244 1010 261 1060 233 1100 281 1260 265 1330 231 1360 242 1410 213 1470 252 1500 248 1600 289V380H0Z"/>
+<path fill="url(#near)" d="M0 325 57 304 87 309 127 276 152 292 172 283 218 320 305 334 430 326 503 338 582 319 626 281 642 291 674 265 690 281 723 270 770 320 830 336 992 330 1050 314 1092 282 1119 298 1168 277 1200 312 1250 318 1380 310 1428 280 1452 293 1498 256 1532 283 1565 273 1600 305V380H0Z"/>
+</svg>

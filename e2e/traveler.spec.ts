@@ -148,7 +148,6 @@ test('traveler workspace tabs stay inside a 390px mobile viewport', async ({ pag
     ['Home', 'Your travel home'],
     ['Plan a trip', 'Start a new trip'],
     ['Budget review', 'Does this plan fit your budget?'],
-    ['Travel options', 'Compare available travel options'],
     ['Local stays', 'Browse local stays'],
     ['Saved trips', 'Saved trips and bookings'],
     ['Account', 'Your account'],
@@ -430,7 +429,7 @@ test('saved trips retain supported currencies and reject mixed-currency itinerar
   }
 });
 
-test('provider failures preserve local comparison data and allow itinerary retry without weather claims', async ({ page }) => {
+test('hotel provider failures allow itinerary retry without weather claims', async ({ page }) => {
   await login(page);
   await page.route('**/api/locations?**', (route) => route.fulfill({
     status: 200,
@@ -447,11 +446,6 @@ test('provider failures preserve local comparison data and allow itinerary retry
       transportationMessage: 'Common destination-specific modes from TravelMate guidance; availability and schedules are not live.',
     }),
   }));
-  await page.route('**/api/travel-options?**', (route) => route.fulfill({
-    status: 503,
-    contentType: 'application/json',
-    body: JSON.stringify({ error: 'Flight and activity provider unavailable.' }),
-  }));
   await page.route('**/api/accommodations?**', (route) => route.fulfill({
     status: 503,
     contentType: 'application/json',
@@ -463,17 +457,6 @@ test('provider failures preserve local comparison data and allow itinerary retry
   await page.getByRole('option').getByRole('button', { name: /Cordova/i }).click();
   await expect(page.getByRole('combobox', { name: /Destination currency/i, exact: false })).toHaveValue('PHP');
   await expect(page.getByText('Hotel provider unavailable.')).toBeVisible();
-
-  await page.getByRole('button', { name: 'Travel options', exact: true }).click();
-  await page.getByRole('button', { name: 'Compare prices', exact: true }).click();
-
-  const status = page.getByRole('status');
-  await expect(status).toContainText('Flight and activity provider unavailable.');
-  await expect(page.getByText('Run a comparison to retrieve flight offers.')).toBeVisible();
-  await expect(page.getByText('Run a comparison to retrieve activity options.')).toBeVisible();
-  await expect(page.getByText('TravelMate database · not live').first()).toBeVisible();
-  await expect(page.getByText('Harbor View Guesthouse')).toBeVisible();
-  await expect(page).toHaveURL(/\/dashboard$/);
 
   let itineraryShouldFail = true;
   let weatherShouldBeMalformed = false;
@@ -573,7 +556,6 @@ test('provider failures preserve local comparison data and allow itinerary retry
     });
   });
 
-  await page.getByRole('button', { name: 'Plan a trip', exact: true }).click();
   await page.getByRole('button', { name: 'Generate my trip', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('AI itinerary generation is temporarily unavailable.');
   await expect(page.getByRole('heading', { name: 'Required trip details', exact: true })).toBeVisible();
@@ -583,20 +565,21 @@ test('provider failures preserve local comparison data and allow itinerary retry
   await expect(page.getByRole('status')).toContainText('Demo fallback plan ready. Its recommendations and prices are estimates.');
   await expect(page.getByText('Weather unavailable for Cordova, Cebu, Philippines')).toBeVisible();
   await expect(page.getByText('No current conditions or alerts are being claimed.', { exact: false })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Provider recovery test', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Day 1: Provider recovery test', exact: true })).toBeVisible();
 
   conditionsRefreshed = true;
   await page.getByRole('button', { name: 'Refresh conditions', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Your itinerary activities and manual edits were not changed.');
   await expect(page.getByText('Visit before 9:00 AM. No activity was moved automatically.')).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Provider recovery test', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Day 1: Provider recovery test', exact: true })).toBeVisible();
 
   itineraryShouldFail = true;
   await page.getByRole('button', { name: 'Generate my trip', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('AI itinerary generation is temporarily unavailable.');
-  await expect(page.getByRole('heading', { name: 'Provider recovery test', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Day 1: Provider recovery test', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Retry generation', exact: true })).toBeVisible();
 
+  await page.getByRole('button', { name: 'View Itinerary', exact: true }).click();
   const fullDetailsButton = page.getByRole('button', { name: 'Full details', exact: true });
   await fullDetailsButton.click();
   const dayDialog = page.getByRole('dialog', { name: 'Day 1: Provider recovery test' });
@@ -620,6 +603,6 @@ test('provider failures preserve local comparison data and allow itinerary retry
   weatherShouldBeMalformed = true;
   await page.getByRole('button', { name: 'Retry generation', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Weather service returned an invalid response.');
-  await expect(page.getByRole('heading', { name: 'Provider recovery test', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Day 1: Provider recovery test', exact: true })).toBeVisible();
   await expect(page).toHaveURL(/\/dashboard$/);
 });

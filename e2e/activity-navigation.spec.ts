@@ -19,13 +19,14 @@ test('activity arrows work on short and narrow screens without a photo', async (
   await context.addCookies([{ name: 'travelmate_session', value: 'layout-test', domain: 'localhost', path: '/' }]);
   await page.route('**/api/platform**', (route) => route.fulfill({ json: {
     user: { id: 'layout', name: 'Layout Test', email: 'layout@example.test', role: 'traveler', emailVerified: true, accountStatus: 'active' },
-    trips: [{ id: 'trip', destination: itinerary.destination, startDate: date, endDate: date, budget: 1000, currency: 'JPY', travelers: 1, partyType: 'solo', interests: [], status: 'saved', itinerary, createdAt: date }],
+    trips: [{ id: 'trip', destination: itinerary.destination, startDate: date, endDate: date, budget: 1000, currency: 'JPY', travelers: 1, partyType: 'solo', interests: [], status: 'active', itinerary, createdAt: date }],
     listings: [], bookings: [], directory: [], moderation: [], audit: [], itineraryGenerations: [], itineraryVersions: [], notifications: [], reviews: [], promotions: [], blockedDates: [], transactions: [], ownerDocuments: [], metrics: {},
   } }));
   await page.route('**/api/itinerary/images', (route) => route.fulfill({ json: { day } }));
   await page.goto('/dashboard');
   await page.getByRole('button', { name: 'Saved trips', exact: true }).click();
-  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('button', { name: 'View itinerary', exact: true }).click();
+  await page.getByRole('button', { name: 'View Itinerary', exact: true }).click();
   await page.getByRole('button', { name: 'Full details', exact: true }).click();
   const dialog = page.getByRole('dialog');
   for (const viewport of [{ width: 1085, height: 500 }, { width: 390, height: 844 }, { width: 667, height: 375 }]) {

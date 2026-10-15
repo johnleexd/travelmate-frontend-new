@@ -27,3 +27,10 @@ test('budget recommendation ignores unavailable and wrong-currency offers', () =
   ], 'budget-friendly', 30000, 'JPY');
   assert.equal(result?.accommodation.id, 'affordable');
 });
+
+test('sandbox amounts never justify an accommodation budget recommendation', () => {
+  const sandbox = stay({ id: 'sandbox', isLive: false, total: 1, rating: 5 });
+  assert.equal(recommendAccommodation([sandbox], 'budget-friendly', 30000, 'JPY'), null);
+  const result = recommendAccommodation([sandbox, stay({ id: 'actual', total: 7000 })], 'budget-friendly', 30000, 'JPY');
+  assert.equal(result?.accommodation.id, 'actual');
+});

@@ -1,0 +1,1519 @@
+{
+  "sufficient": {
+    "destination": "Paris, France",
+    "totalBudget": 10000,
+    "currency": "EUR",
+    "travelers": 2,
+    "partyType": "couple",
+    "source": "catalog",
+    "days": [
+      {
+        "day": 1,
+        "date": "2040-01-25",
+        "planningStatus": "suggested",
+        "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+        "scheduleBlocks": [
+          {
+            "kind": "free-time",
+            "startMinutes": 630,
+            "endMinutes": 720,
+            "label": "Free time / rest — optional"
+          },
+          {
+            "kind": "meal",
+            "startMinutes": 720,
+            "endMinutes": 765,
+            "label": "Meal break — venue not selected; daily meal allowance covers the cost"
+          },
+          {
+            "kind": "free-time",
+            "startMinutes": 977,
+            "endMinutes": 1080,
+            "label": "Free time / rest — optional"
+          }
+        ],
+        "theme": "Paris: Synthetic museum 1, Synthetic museum 2, Synthetic museum 3",
+        "imageUrl": "",
+        "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+        "rideFare": 466.66,
+        "totalCost": 3566.66,
+        "activities": [
+          {
+            "id": "573e692d-1675-53cb-a303-475b2cfb0b37",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 0,
+            "time": "09:00 AM",
+            "title": "Visit Synthetic museum 1",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 222.22,
+            "unitCost": 111.11,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q100",
+              "name": "Synthetic museum 1",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8534,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q100",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 111.11,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "id": "0ab2d4fe-594f-5a86-a91e-8dc1d68f9e39",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 16,
+            "time": "01:01 PM",
+            "title": "Visit Synthetic museum 2",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Allow at least 16 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 222.22,
+            "unitCost": 111.11,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q101",
+              "name": "Synthetic museum 2",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8536,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q101",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 111.11,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "id": "f0b9b851-3064-51b9-a213-20ab39a9cfbb",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 16,
+            "time": "02:47 PM",
+            "title": "Visit Synthetic museum 3",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Allow at least 16 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 222.22,
+            "unitCost": 111.11,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q102",
+              "name": "Synthetic museum 3",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8538,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q102",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 111.11,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily meals in Paris",
+            "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+            "category": "food",
+            "icon": "food",
+            "estimatedCost": 733.34,
+            "unitCost": 366.67,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 366.67,
+              "quantity": 1,
+              "unit": "daily-per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "8f64f850-7a5e-5f78-9674-78b49a9d7211"
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily transport in Paris",
+            "description": "Walking. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+            "category": "transport",
+            "icon": "bus",
+            "estimatedCost": 466.66,
+            "unitCost": 233.33,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 233.33,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "6737265e-29da-5c01-9e58-e1a81b6028e5"
+          }
+        ]
+      },
+      {
+        "day": 2,
+        "date": "2040-01-26",
+        "planningStatus": "suggested",
+        "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+        "scheduleBlocks": [
+          {
+            "kind": "free-time",
+            "startMinutes": 630,
+            "endMinutes": 720,
+            "label": "Free time / rest — optional"
+          },
+          {
+            "kind": "meal",
+            "startMinutes": 720,
+            "endMinutes": 765,
+            "label": "Meal break — venue not selected; daily meal allowance covers the cost"
+          },
+          {
+            "kind": "free-time",
+            "startMinutes": 977,
+            "endMinutes": 1080,
+            "label": "Free time / rest — optional"
+          }
+        ],
+        "theme": "Paris: Synthetic museum 4, Synthetic museum 5, Synthetic museum 6",
+        "imageUrl": "",
+        "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+        "rideFare": 466.66,
+        "totalCost": 3566.66,
+        "activities": [
+          {
+            "id": "d142945f-5cae-5e52-b9df-9a4e7fca8d71",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 0,
+            "time": "09:00 AM",
+            "title": "Visit Synthetic museum 4",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 222.22,
+            "unitCost": 111.11,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q103",
+              "name": "Synthetic museum 4",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.854,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q103",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 111.11,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "id": "26b77b3e-3e56-5ac4-8639-f56fbc825a5a",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 16,
+            "time": "01:01 PM",
+            "title": "Visit Synthetic museum 5",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Allow at least 16 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 222.22,
+            "unitCost": 111.11,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q104",
+              "name": "Synthetic museum 5",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8542,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q104",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 111.11,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "id": "53f360ba-81a3-5555-b8dc-c499a8328e93",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 16,
+            "time": "02:47 PM",
+            "title": "Visit Synthetic museum 6",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Allow at least 16 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 222.22,
+            "unitCost": 111.11,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q105",
+              "name": "Synthetic museum 6",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8544,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q105",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 111.11,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily meals in Paris",
+            "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+            "category": "food",
+            "icon": "food",
+            "estimatedCost": 733.34,
+            "unitCost": 366.67,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 366.67,
+              "quantity": 1,
+              "unit": "daily-per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "3c34dbfb-c187-5dce-a2d8-b68a4dd1dd50"
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily transport in Paris",
+            "description": "Walking. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+            "category": "transport",
+            "icon": "bus",
+            "estimatedCost": 466.66,
+            "unitCost": 233.33,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 233.33,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "852bca5c-c020-5b9a-b616-b6eb5e3232c3"
+          }
+        ]
+      },
+      {
+        "day": 3,
+        "date": "2040-01-27",
+        "planningStatus": "suggested",
+        "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+        "scheduleBlocks": [
+          {
+            "kind": "free-time",
+            "startMinutes": 630,
+            "endMinutes": 720,
+            "label": "Free time / rest — optional"
+          },
+          {
+            "kind": "meal",
+            "startMinutes": 720,
+            "endMinutes": 765,
+            "label": "Meal break — venue not selected; daily meal allowance covers the cost"
+          },
+          {
+            "kind": "free-time",
+            "startMinutes": 977,
+            "endMinutes": 1080,
+            "label": "Free time / rest — optional"
+          }
+        ],
+        "theme": "Paris: Synthetic museum 7, Synthetic museum 8, Synthetic museum 9",
+        "imageUrl": "",
+        "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+        "rideFare": 466.66,
+        "totalCost": 1866.66,
+        "activities": [
+          {
+            "id": "69048df5-1219-5208-a0b0-97aa198d3ee9",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 0,
+            "time": "09:00 AM",
+            "title": "Visit Synthetic museum 7",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 222.22,
+            "unitCost": 111.11,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q106",
+              "name": "Synthetic museum 7",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8546,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q106",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 111.11,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "id": "10ef5e6f-da23-51da-9bc3-46ad4b3da63a",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 16,
+            "time": "01:01 PM",
+            "title": "Visit Synthetic museum 8",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Allow at least 16 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 222.22,
+            "unitCost": 111.11,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q107",
+              "name": "Synthetic museum 8",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8548,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q107",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 111.11,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "id": "f317fcb7-d895-5009-bf5e-e3fd7f1e74f0",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 16,
+            "time": "02:47 PM",
+            "title": "Visit Synthetic museum 9",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Allow at least 16 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 222.22,
+            "unitCost": 111.11,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q108",
+              "name": "Synthetic museum 9",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.855000000000004,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q108",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 111.11,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily meals in Paris",
+            "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+            "category": "food",
+            "icon": "food",
+            "estimatedCost": 733.34,
+            "unitCost": 366.67,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 366.67,
+              "quantity": 1,
+              "unit": "daily-per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "3a8531a0-b2f9-57da-8555-1c0412c81974"
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily transport in Paris",
+            "description": "Walking. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+            "category": "transport",
+            "icon": "bus",
+            "estimatedCost": 466.66,
+            "unitCost": 233.33,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.487Z",
+              "currency": "EUR",
+              "unitAmount": 233.33,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "4e0fb903-0c53-5c60-accd-028c51b53506"
+          }
+        ]
+      }
+    ],
+    "budgetSummary": {
+      "accommodation": 3400,
+      "food": 2200.02,
+      "activities": 1999.98,
+      "transport": 1399.98,
+      "reserve": 900,
+      "dailyAverage": 3299.99,
+      "total": 10000,
+      "accommodationActual": 3400,
+      "plannedSpend": 9899.98,
+      "remainingBudget": 100.02,
+      "shortfall": 0
+    },
+    "costSharing": {
+      "partyType": "couple",
+      "travelers": 2,
+      "groupBudget": 10000,
+      "plannedGroupSpend": 9899.98,
+      "budgetShares": [
+        5000,
+        5000
+      ],
+      "plannedSpendShares": [
+        4949.99,
+        4949.99
+      ],
+      "accommodationShares": [
+        1700,
+        1700
+      ],
+      "reserveShares": [
+        50.01,
+        50.01
+      ]
+    },
+    "grounding": {
+      "version": 1,
+      "destination": {
+        "city": "Paris",
+        "country": "France",
+        "countryCode": "FR",
+        "latitude": 48.8534,
+        "longitude": 2.3488
+      },
+      "startingLocation": "",
+      "startDate": "2040-01-25",
+      "endDate": "2040-01-27",
+      "timeZone": "Europe/Paris",
+      "fetchedAt": "2026-10-10T17:14:49.487Z",
+      "placeDataStatus": "live",
+      "currency": "EUR",
+      "rooms": 1,
+      "nights": 2,
+      "foodDailyPerPerson": 366.67,
+      "accommodation": {
+        "status": "estimate",
+        "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+        "source": "budget-allowance",
+        "fetchedAt": "2026-10-10T17:14:49.487Z",
+        "currency": "EUR",
+        "unitAmount": 1700,
+        "quantity": 2,
+        "unit": "per-room-night",
+        "participants": 2,
+        "needsConfirmation": true
+      },
+      "additionalFees": 0,
+      "contingencyPercent": 10,
+      "contingencyAmount": 900,
+      "categories": {
+        "accommodation": 3400,
+        "food": 2200.02,
+        "activities": 1999.98,
+        "transportation": 1399.98,
+        "fees": 0,
+        "contingency": 900
+      },
+      "subtotal": 8999.98,
+      "total": 9899.98,
+      "verifiedAmount": 0,
+      "estimatedAmount": 9899.98,
+      "unknownPriceCount": 16,
+      "budgetStatus": "needs-confirmation",
+      "limitations": [
+        "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+        "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+        "Schedules use destination-local calendar dates and wall clocks. Supplied arrival/departure times reserve estimated 90-minute arrival and 120-minute departure buffers; booking and hotel check-in times still need confirmation.",
+        "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates."
+      ]
+    },
+    "budgetOptimization": {
+      "status": "within_budget",
+      "targetSpend": 10000,
+      "amountToTarget": 0,
+      "combinedEstimatedSavings": 0,
+      "projectedSpendIfAllApplied": 9899.98,
+      "remainingGapAfterSuggestions": 0,
+      "suggestions": [],
+      "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary."
+    },
+    "groundingProof": "fixture-only-proof-000000000000000000000000"
+  },
+  "limited": {
+    "destination": "Paris, France",
+    "totalBudget": 10000,
+    "currency": "EUR",
+    "travelers": 2,
+    "partyType": "couple",
+    "source": "catalog",
+    "days": [
+      {
+        "day": 1,
+        "date": "2040-01-25",
+        "planningStatus": "incomplete",
+        "planningReason": "Not enough unused, city/country-verified places fit this day and its available opening-hour references.",
+        "scheduleBlocks": [
+          {
+            "kind": "free-time",
+            "startMinutes": 630,
+            "endMinutes": 720,
+            "label": "Free time / rest — optional"
+          },
+          {
+            "kind": "meal",
+            "startMinutes": 720,
+            "endMinutes": 765,
+            "label": "Meal break — venue not selected; daily meal allowance covers the cost"
+          },
+          {
+            "kind": "unscheduled",
+            "startMinutes": 765,
+            "endMinutes": 1080,
+            "label": "Unplanned time — additional verified places needed"
+          }
+        ],
+        "theme": "Paris: Synthetic museum 1",
+        "imageUrl": "",
+        "travelNote": "Not enough unused, city/country-verified places fit this day and its available opening-hour references. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+        "rideFare": 466.66,
+        "totalCost": 3900,
+        "activities": [
+          {
+            "id": "c1ddcbaa-d82b-591c-bb5d-364bf15d2b90",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 0,
+            "time": "09:00 AM",
+            "title": "Visit Synthetic museum 1",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 1000,
+            "unitCost": 500,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q100",
+              "name": "Synthetic museum 1",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8534,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q100",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.502Z",
+              "currency": "EUR",
+              "unitAmount": 500,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily meals in Paris",
+            "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+            "category": "food",
+            "icon": "food",
+            "estimatedCost": 733.34,
+            "unitCost": 366.67,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.502Z",
+              "currency": "EUR",
+              "unitAmount": 366.67,
+              "quantity": 1,
+              "unit": "daily-per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "94c534fc-963a-5cd5-b1b1-fcf17e48113d"
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily transport in Paris",
+            "description": "Walking. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+            "category": "transport",
+            "icon": "bus",
+            "estimatedCost": 466.66,
+            "unitCost": 233.33,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.502Z",
+              "currency": "EUR",
+              "unitAmount": 233.33,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "109392aa-457a-57ac-a8c9-9a13ef2ffa6d"
+          }
+        ]
+      },
+      {
+        "day": 2,
+        "date": "2040-01-26",
+        "planningStatus": "incomplete",
+        "planningReason": "Not enough unused, city/country-verified places fit this day and its available opening-hour references.",
+        "scheduleBlocks": [
+          {
+            "kind": "free-time",
+            "startMinutes": 630,
+            "endMinutes": 720,
+            "label": "Free time / rest — optional"
+          },
+          {
+            "kind": "meal",
+            "startMinutes": 720,
+            "endMinutes": 765,
+            "label": "Meal break — venue not selected; daily meal allowance covers the cost"
+          },
+          {
+            "kind": "unscheduled",
+            "startMinutes": 765,
+            "endMinutes": 1080,
+            "label": "Unplanned time — additional verified places needed"
+          }
+        ],
+        "theme": "Paris: Synthetic museum 2",
+        "imageUrl": "",
+        "travelNote": "Not enough unused, city/country-verified places fit this day and its available opening-hour references. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+        "rideFare": 466.66,
+        "totalCost": 3900,
+        "activities": [
+          {
+            "id": "2fc761c9-860a-5020-a7a8-5c383be55d8b",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 0,
+            "time": "09:00 AM",
+            "title": "Visit Synthetic museum 2",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 1000,
+            "unitCost": 500,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q101",
+              "name": "Synthetic museum 2",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8536,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q101",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.502Z",
+              "currency": "EUR",
+              "unitAmount": 500,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily meals in Paris",
+            "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+            "category": "food",
+            "icon": "food",
+            "estimatedCost": 733.34,
+            "unitCost": 366.67,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.502Z",
+              "currency": "EUR",
+              "unitAmount": 366.67,
+              "quantity": 1,
+              "unit": "daily-per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "46dd7842-6dc9-5edb-a1cc-7f52f0269e02"
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily transport in Paris",
+            "description": "Walking. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+            "category": "transport",
+            "icon": "bus",
+            "estimatedCost": 466.66,
+            "unitCost": 233.33,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.502Z",
+              "currency": "EUR",
+              "unitAmount": 233.33,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "ab5357cb-c40a-5169-824a-91e9c4d9fc33"
+          }
+        ]
+      },
+      {
+        "day": 3,
+        "date": "2040-01-27",
+        "planningStatus": "incomplete",
+        "planningReason": "Not enough unused, city/country-verified places fit this day and its available opening-hour references.",
+        "scheduleBlocks": [
+          {
+            "kind": "meal",
+            "startMinutes": 720,
+            "endMinutes": 765,
+            "label": "Meal break — venue not selected; daily meal allowance covers the cost"
+          },
+          {
+            "kind": "unscheduled",
+            "startMinutes": 765,
+            "endMinutes": 1080,
+            "label": "Unplanned time — additional verified places needed"
+          }
+        ],
+        "theme": "Paris: details need confirmation",
+        "imageUrl": "",
+        "travelNote": "Not enough unused, city/country-verified places fit this day and its available opening-hour references. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+        "rideFare": 466.66,
+        "totalCost": 1200,
+        "activities": [
+          {
+            "time": "Daily allowance",
+            "title": "Daily meals in Paris",
+            "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+            "category": "food",
+            "icon": "food",
+            "estimatedCost": 733.34,
+            "unitCost": 366.67,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.502Z",
+              "currency": "EUR",
+              "unitAmount": 366.67,
+              "quantity": 1,
+              "unit": "daily-per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "9ef2bbf6-8bb3-57d1-bc6f-362ef368d8fe"
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily transport in Paris",
+            "description": "Walking. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+            "category": "transport",
+            "icon": "bus",
+            "estimatedCost": 466.66,
+            "unitCost": 233.33,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.502Z",
+              "currency": "EUR",
+              "unitAmount": 233.33,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "57c56990-b150-56bf-a9aa-bf3930002b63"
+          }
+        ]
+      }
+    ],
+    "budgetSummary": {
+      "accommodation": 3400,
+      "food": 2200.02,
+      "activities": 2000,
+      "transport": 1399.98,
+      "reserve": 900,
+      "dailyAverage": 3300,
+      "total": 10000,
+      "accommodationActual": 3400,
+      "plannedSpend": 9900,
+      "remainingBudget": 100,
+      "shortfall": 0
+    },
+    "costSharing": {
+      "partyType": "couple",
+      "travelers": 2,
+      "groupBudget": 10000,
+      "plannedGroupSpend": 9900,
+      "budgetShares": [
+        5000,
+        5000
+      ],
+      "plannedSpendShares": [
+        4950,
+        4950
+      ],
+      "accommodationShares": [
+        1700,
+        1700
+      ],
+      "reserveShares": [
+        50,
+        50
+      ]
+    },
+    "grounding": {
+      "version": 1,
+      "destination": {
+        "city": "Paris",
+        "country": "France",
+        "countryCode": "FR",
+        "latitude": 48.8534,
+        "longitude": 2.3488
+      },
+      "startingLocation": "",
+      "startDate": "2040-01-25",
+      "endDate": "2040-01-27",
+      "timeZone": "Europe/Paris",
+      "fetchedAt": "2026-10-10T17:14:49.502Z",
+      "placeDataStatus": "live",
+      "currency": "EUR",
+      "rooms": 1,
+      "nights": 2,
+      "foodDailyPerPerson": 366.67,
+      "accommodation": {
+        "status": "estimate",
+        "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+        "source": "budget-allowance",
+        "fetchedAt": "2026-10-10T17:14:49.502Z",
+        "currency": "EUR",
+        "unitAmount": 1700,
+        "quantity": 2,
+        "unit": "per-room-night",
+        "participants": 2,
+        "needsConfirmation": true
+      },
+      "additionalFees": 0,
+      "contingencyPercent": 10,
+      "contingencyAmount": 900,
+      "categories": {
+        "accommodation": 3400,
+        "food": 2200.02,
+        "activities": 2000,
+        "transportation": 1399.98,
+        "fees": 0,
+        "contingency": 900
+      },
+      "subtotal": 9000,
+      "total": 9900,
+      "verifiedAmount": 0,
+      "estimatedAmount": 9900,
+      "unknownPriceCount": 9,
+      "budgetStatus": "needs-confirmation",
+      "limitations": [
+        "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+        "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+        "Schedules use destination-local calendar dates and wall clocks. Supplied arrival/departure times reserve estimated 90-minute arrival and 120-minute departure buffers; booking and hotel check-in times still need confirmation.",
+        "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates."
+      ]
+    },
+    "budgetOptimization": {
+      "status": "within_budget",
+      "targetSpend": 10000,
+      "amountToTarget": 0,
+      "combinedEstimatedSavings": 0,
+      "projectedSpendIfAllApplied": 9900,
+      "remainingGapAfterSuggestions": 0,
+      "suggestions": [],
+      "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary."
+    },
+    "groundingProof": "fixture-only-proof-000000000000000000000000"
+  },
+  "bounded": {
+    "destination": "Paris, France",
+    "totalBudget": 10000,
+    "currency": "EUR",
+    "travelers": 2,
+    "partyType": "couple",
+    "source": "catalog",
+    "days": [
+      {
+        "day": 1,
+        "date": "2040-01-25",
+        "planningStatus": "suggested",
+        "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+        "scheduleBlocks": [
+          {
+            "kind": "meal",
+            "startMinutes": 1020,
+            "endMinutes": 1065,
+            "label": "Meal break — venue not selected; daily meal allowance covers the cost"
+          }
+        ],
+        "theme": "Paris: Synthetic museum 1",
+        "imageUrl": "",
+        "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+        "rideFare": 466.66,
+        "totalCost": 3900,
+        "activities": [
+          {
+            "id": "fe09e45b-9ff6-596f-ac20-f829b1ea6f65",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 0,
+            "time": "03:30 PM",
+            "title": "Visit Synthetic museum 1",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 1000,
+            "unitCost": 500,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q100",
+              "name": "Synthetic museum 1",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8534,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q100",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.503Z",
+              "currency": "EUR",
+              "unitAmount": 500,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily meals in Paris",
+            "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+            "category": "food",
+            "icon": "food",
+            "estimatedCost": 733.34,
+            "unitCost": 366.67,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.503Z",
+              "currency": "EUR",
+              "unitAmount": 366.67,
+              "quantity": 1,
+              "unit": "daily-per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "124366f3-990d-586d-9efa-a9dfcbaedd08"
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily transport in Paris",
+            "description": "Walking. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+            "category": "transport",
+            "icon": "bus",
+            "estimatedCost": 466.66,
+            "unitCost": 233.33,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.503Z",
+              "currency": "EUR",
+              "unitAmount": 233.33,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "5d885321-9e95-5b14-a450-bf69168bc640"
+          }
+        ]
+      },
+      {
+        "day": 2,
+        "date": "2040-01-26",
+        "planningStatus": "rest",
+        "planningReason": "Rest day selected by you.",
+        "scheduleBlocks": [
+          {
+            "kind": "free-time",
+            "startMinutes": 540,
+            "endMinutes": 1080,
+            "label": "Rest and personal time — selected by you"
+          }
+        ],
+        "theme": "Paris: rest day",
+        "imageUrl": "",
+        "travelNote": "Rest day selected by you. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+        "rideFare": 466.66,
+        "totalCost": 2900,
+        "activities": [
+          {
+            "time": "Daily allowance",
+            "title": "Daily meals in Paris",
+            "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+            "category": "food",
+            "icon": "food",
+            "estimatedCost": 733.34,
+            "unitCost": 366.67,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.503Z",
+              "currency": "EUR",
+              "unitAmount": 366.67,
+              "quantity": 1,
+              "unit": "daily-per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "c3e1fee2-62ac-5d6e-b9ac-d845d6b79f7f"
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily transport in Paris",
+            "description": "Walking. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+            "category": "transport",
+            "icon": "bus",
+            "estimatedCost": 466.66,
+            "unitCost": 233.33,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.503Z",
+              "currency": "EUR",
+              "unitAmount": 233.33,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "43a58c2c-1f35-5359-8901-1030d7f2e7c3"
+          }
+        ]
+      },
+      {
+        "day": 3,
+        "date": "2040-01-27",
+        "planningStatus": "suggested",
+        "planningReason": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access.",
+        "scheduleBlocks": [
+          {
+            "kind": "free-time",
+            "startMinutes": 630,
+            "endMinutes": 660,
+            "label": "Free time / rest — optional"
+          }
+        ],
+        "theme": "Paris: Synthetic museum 2",
+        "imageUrl": "",
+        "travelNote": "Suggested destination-local schedule; visit durations and walking transfers are estimates. Confirm current hours and access. Stops use verified city/country records. Transfers estimate straight-line walking at 4 km/h plus 15 minutes; real routes, hours and traffic need confirmation.",
+        "rideFare": 466.66,
+        "totalCost": 2200,
+        "activities": [
+          {
+            "id": "1f14e8a7-9a0e-553f-8bcc-9146a9eac0c1",
+            "status": "planned",
+            "scheduleLabel": "Suggested",
+            "durationMinutes": 90,
+            "travelMinutes": 0,
+            "time": "09:00 AM",
+            "title": "Visit Synthetic museum 2",
+            "description": "Synthetic art museum used only for automated validation.. Suggested 90-minute visit. Opening hours: Not available; confirm with venue. Address: Not available.",
+            "category": "activity",
+            "icon": "map",
+            "estimatedCost": 1000,
+            "unitCost": 500,
+            "placeVerification": "supporting-source-found",
+            "place": {
+              "provider": "wikidata",
+              "placeId": "Q101",
+              "name": "Synthetic museum 2",
+              "city": "Paris",
+              "country": "France",
+              "countryCode": "FR",
+              "latitude": 48.8536,
+              "longitude": 2.3488,
+              "sourceUrl": "https://www.wikidata.org/wiki/Q101",
+              "fetchedAt": "2026-10-11T00:00:00.000Z",
+              "openingHours": "Not available; confirm with venue",
+              "address": "Not available"
+            },
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.503Z",
+              "currency": "EUR",
+              "unitAmount": 500,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            }
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily meals in Paris",
+            "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+            "category": "food",
+            "icon": "food",
+            "estimatedCost": 733.34,
+            "unitCost": 366.67,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.503Z",
+              "currency": "EUR",
+              "unitAmount": 366.67,
+              "quantity": 1,
+              "unit": "daily-per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "10593f2e-1fde-52b4-8ba5-ce97a6c5159f"
+          },
+          {
+            "time": "Daily allowance",
+            "title": "Daily transport in Paris",
+            "description": "Walking. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+            "category": "transport",
+            "icon": "bus",
+            "estimatedCost": 466.66,
+            "unitCost": 233.33,
+            "priceEvidence": {
+              "status": "estimate",
+              "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+              "source": "budget-allowance",
+              "fetchedAt": "2026-10-10T17:14:49.503Z",
+              "currency": "EUR",
+              "unitAmount": 233.33,
+              "quantity": 1,
+              "unit": "per-person",
+              "participants": 2,
+              "needsConfirmation": true
+            },
+            "id": "944609f3-3ffa-51e2-ac81-63be4eb5def9"
+          }
+        ]
+      }
+    ],
+    "budgetSummary": {
+      "accommodation": 3400,
+      "food": 2200.02,
+      "activities": 2000,
+      "transport": 1399.98,
+      "reserve": 900,
+      "dailyAverage": 3300,
+      "total": 10000,
+      "accommodationActual": 3400,
+      "plannedSpend": 9900,
+      "remainingBudget": 100,
+      "shortfall": 0
+    },
+    "costSharing": {
+      "partyType": "couple",
+      "travelers": 2,
+      "groupBudget": 10000,
+      "plannedGroupSpend": 9900,
+      "budgetShares": [
+        5000,
+        5000
+      ],
+      "plannedSpendShares": [
+        4950,
+        4950
+      ],
+      "accommodationShares": [
+        1700,
+        1700
+      ],
+      "reserveShares": [
+        50,
+        50
+      ]
+    },
+    "grounding": {
+      "version": 1,
+      "destination": {
+        "city": "Paris",
+        "country": "France",
+        "countryCode": "FR",
+        "latitude": 48.8534,
+        "longitude": 2.3488
+      },
+      "startingLocation": "",
+      "startDate": "2040-01-25",
+      "endDate": "2040-01-27",
+      "timeZone": "Europe/Paris",
+      "fetchedAt": "2026-10-10T17:14:49.503Z",
+      "placeDataStatus": "live",
+      "currency": "EUR",
+      "rooms": 1,
+      "nights": 2,
+      "foodDailyPerPerson": 366.67,
+      "accommodation": {
+        "status": "estimate",
+        "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+        "source": "budget-allowance",
+        "fetchedAt": "2026-10-10T17:14:49.503Z",
+        "currency": "EUR",
+        "unitAmount": 1700,
+        "quantity": 2,
+        "unit": "per-room-night",
+        "participants": 2,
+        "needsConfirmation": true
+      },
+      "additionalFees": 0,
+      "contingencyPercent": 10,
+      "contingencyAmount": 900,
+      "categories": {
+        "accommodation": 3400,
+        "food": 2200.02,
+        "activities": 2000,
+        "transportation": 1399.98,
+        "fees": 0,
+        "contingency": 900
+      },
+      "subtotal": 9000,
+      "total": 9900,
+      "verifiedAmount": 0,
+      "estimatedAmount": 9900,
+      "unknownPriceCount": 9,
+      "budgetStatus": "needs-confirmation",
+      "limitations": [
+        "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+        "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+        "Schedules use destination-local calendar dates and wall clocks. Supplied arrival/departure times reserve estimated 90-minute arrival and 120-minute departure buffers; booking and hotel check-in times still need confirmation.",
+        "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates."
+      ]
+    },
+    "budgetOptimization": {
+      "status": "within_budget",
+      "targetSpend": 10000,
+      "amountToTarget": 0,
+      "combinedEstimatedSavings": 0,
+      "projectedSpendIfAllApplied": 9900,
+      "remainingGapAfterSuggestions": 0,
+      "suggestions": [],
+      "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary."
+    },
+    "groundingProof": "fixture-only-proof-000000000000000000000000"
+  }
+}

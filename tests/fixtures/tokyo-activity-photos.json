@@ -1,0 +1,107 @@
+[
+  {
+    "id": "tokyo-photo-0",
+    "title": "Visit Shinjuku Gyoen",
+    "time": "09:00",
+    "durationMinutes": 60,
+    "description": "Opening hours need confirmation. park and garden in Shinjuku and Shibuya, Tokyo, Japan. Suggested 120-minute visit. Opening hours: Opening hours need confirmation. Tuesday to Sunday: 09:00–16:30; Tuesday to Sunday: 09:00–18:00; Tuesday to Sunday: 09:00–19:00; Tuesday to Sunday: 09:00–18:00 (Wikidata reference; seasonal/holiday exceptions and current hours need confirmation). Address: Not available.",
+    "estimatedCost": 2000,
+    "category": "activity",
+    "icon": "map",
+    "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Shinjuku_Gyoen_National_Garden_-_sakura_3.JPG/1280px-Shinjuku_Gyoen_National_Garden_-_sakura_3.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "imageAttribution": {
+      "creator": "Kakidai",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/?curid=19072665"
+    },
+    "place": {
+      "provider": "wikidata",
+      "placeId": "Q776863",
+      "name": "Shinjuku Gyoen",
+      "city": "Tokyo",
+      "country": "Japan",
+      "countryCode": "JP",
+      "latitude": 35.685,
+      "longitude": 139.71,
+      "sourceUrl": "https://www.wikidata.org/wiki/Q776863",
+      "fetchedAt": "2026-10-11T19:14:36.205Z",
+      "openingHours": "Opening hours need confirmation. Tuesday to Sunday: 09:00–16:30; Tuesday to Sunday: 09:00–18:00; Tuesday to Sunday: 09:00–19:00; Tuesday to Sunday: 09:00–18:00 (Wikidata reference; seasonal/holiday exceptions and current hours need confirmation)",
+      "address": "Not available",
+      "locationScope": "city",
+      "selectedCity": "Tokyo",
+      "distanceFromDestinationKm": 1.73,
+      "membershipSourceUrl": "https://www.openstreetmap.org/relation/1543125"
+    }
+  },
+  {
+    "id": "tokyo-photo-1",
+    "title": "Visit Meiji Shrine Outer Garden",
+    "time": "12:00",
+    "durationMinutes": 60,
+    "description": "Opening hours need confirmation. garden in Tokyo, Japan. Suggested 90-minute visit. Allow at least 32 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+    "estimatedCost": 2000,
+    "category": "activity",
+    "icon": "map",
+    "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1d/Jingu_Gaien_Ginkgo_Street_in_Autumn_4.jpg/1280px-Jingu_Gaien_Ginkgo_Street_in_Autumn_4.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "imageAttribution": {
+      "creator": "Kakidai",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/?curid=53417094"
+    },
+    "place": {
+      "provider": "wikidata",
+      "placeId": "Q6631448",
+      "name": "Meiji Shrine Outer Garden",
+      "city": "Tokyo",
+      "country": "Japan",
+      "countryCode": "JP",
+      "latitude": 35.6775,
+      "longitude": 139.71833333,
+      "sourceUrl": "https://www.wikidata.org/wiki/Q6631448",
+      "fetchedAt": "2026-10-11T19:14:36.205Z",
+      "openingHours": "Opening hours need confirmation",
+      "address": "Not available",
+      "locationScope": "city",
+      "selectedCity": "Tokyo",
+      "distanceFromDestinationKm": 2.75,
+      "membershipSourceUrl": "https://www.openstreetmap.org/relation/1543125"
+    }
+  },
+  {
+    "id": "tokyo-photo-2",
+    "title": "Visit Watari Museum of Contemporary Art",
+    "time": "14:00",
+    "durationMinutes": 60,
+    "description": "Opening hours need confirmation. museum in Japan. Suggested 90-minute visit. Allow at least 29 minutes from the previous stop (straight-line walking estimate plus 15-minute buffer; confirm the real route). Address: Not available.",
+    "estimatedCost": 2000,
+    "category": "activity",
+    "icon": "map",
+    "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e4/Watarium.jpg/1280px-Watarium.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "imageAttribution": {
+      "creator": "Wiiii",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/?curid=5043596"
+    },
+    "place": {
+      "provider": "wikidata",
+      "placeId": "Q3915469",
+      "name": "Watari Museum of Contemporary Art",
+      "city": "Tokyo",
+      "country": "Japan",
+      "countryCode": "JP",
+      "latitude": 35.670695,
+      "longitude": 139.713365,
+      "sourceUrl": "https://www.wikidata.org/wiki/Q3915469",
+      "fetchedAt": "2026-10-11T19:14:36.205Z",
+      "openingHours": "Opening hours need confirmation",
+      "address": "Not available",
+      "locationScope": "city",
+      "selectedCity": "Tokyo",
+      "distanceFromDestinationKm": 2.86,
+      "membershipSourceUrl": "https://www.openstreetmap.org/relation/1543125"
+    }
+  }
+]

@@ -1,0 +1,233 @@
+/* Saved-trip cards only. The surrounding dashboard and grid keep their styles. */
+.card {
+  --sc-cream: #FFFEFA;
+  --sc-text: #20352D;
+  --sc-muted: #52645A;
+  --sc-green: #28594C;
+  --sc-sage: #E4EDE1;
+  --sc-border: #D8E1D7;
+  min-width: 0;
+  border: 1px solid var(--sc-border);
+  border-radius: 16px;
+  background: var(--sc-cream);
+  color: var(--sc-text);
+  box-shadow: 0 3px 12px rgb(32 53 45 / 0.04);
+}
+
+.card .image {
+  position: relative;
+  height: 180px;
+  margin: 8px 8px 0;
+  overflow: hidden;
+  border-radius: 11px;
+  background: #EDF1E8;
+}
+
+.card .placeholder {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #EDF1E8;
+  color: var(--sc-muted);
+  font-size: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.card .status {
+  position: absolute;
+  z-index: 1;
+  left: 14px;
+  top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 999px;
+  background: rgb(32 53 45 / 0.94);
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 7px 12px;
+}
+
+.activeDot, .statusDot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+.activeDot { background: #B6D6A8; }
+.statusDot { background: #D9B66F; }
+
+.card .content { padding: 16px 20px 18px; }
+.titleRow { display: flex; align-items: flex-start; gap: 12px; justify-content: space-between; }
+.card .destination {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--sc-text);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+}
+
+.card .details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+  margin-top: 14px;
+  color: var(--sc-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.details > span { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+.details svg, .updated svg, .actions svg { flex-shrink: 0; }
+.card .completed { margin-top: 8px; color: var(--sc-green); font-size: 12px; }
+
+.card .accommodation > div {
+  margin-top: 14px;
+  border: 1px solid var(--sc-border);
+  border-radius: 12px;
+  background: #F0F4EA;
+  padding: 12px;
+}
+.card .accommodation > div > span {
+  background: #D5E5CC;
+  color: var(--sc-green);
+}
+.card .accommodation p { color: var(--sc-muted); }
+.card .accommodation p:nth-child(2) { color: var(--sc-text); }
+.card .accommodation > .emptyAccommodation {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  background: #F2F3EF;
+}
+.card .accommodation > .emptyAccommodation > span {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 10px;
+  background: #E3E7DF;
+}
+.card .emptyAccommodation p:first-child { color: var(--sc-text); font-size: 14px; font-weight: 600; }
+.card .emptyAccommodation p:last-child { margin-top: 3px; color: var(--sc-muted); font-size: 12px; line-height: 1.5; }
+
+.budgetRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--sc-border);
+}
+.card .budgetLabel { color: var(--sc-muted); font-size: 12px; line-height: 1.5; }
+.card .budget { display: block; color: var(--sc-text); font-size: 25px; font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
+.card .updated { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; color: var(--sc-muted); font-size: 11px; line-height: 1.5; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.secondaryActions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.card .secondaryActions button { width: 100%; min-width: 0; font-size: 12px; }
+.card .visitButton { display: inline-flex; min-height: 44px; align-items: center; justify-content: center; gap: 7px; padding: 9px 12px; border: 1px solid #D5A34E; border-radius: 7px; background: #FFFAEE; color: var(--sc-green); font-weight: 700; }
+.card .visitButton:not(:disabled):hover { background: #F8ECCE; }
+.card .visitButton:disabled { opacity: .55; }
+.visitMessage { margin: 0 0 16px; padding: 12px 16px; border: 1px solid #D8E1D7; border-radius: 7px; background: #E5EDDF; color: #24564B; font-size: 13px; }
+
+.card :is(.primaryButton, .editButton, .doneButton, .deleteButton) {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--sc-border);
+  border-radius: 7px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  transition: background-color 160ms, border-color 160ms, color 160ms;
+}
+.card .primaryButton { flex: 1.2 1 140px; border-color: var(--sc-green); background: var(--sc-green); color: #FFFFFF; }
+.card .editButton { flex: 0.7 1 75px; border-color: #809487; background: var(--sc-cream); color: var(--sc-green); }
+.card .doneButton { flex: 1 1 130px; background: var(--sc-sage); color: var(--sc-green); }
+.card .deleteButton { border-color: #B88080; background: var(--sc-cream); color: #A32E2E; }
+.card .primaryButton:not(:disabled):hover { background: #204A3F; border-color: #204A3F; }
+.card .primaryButton:not(:disabled):active { background: #193C33; border-color: #193C33; color: #FFFFFF; }
+.card :is(.editButton, .doneButton):not(:disabled):hover { background: #D8E5D5; border-color: var(--sc-green); }
+.card :is(.editButton, .doneButton):not(:disabled):active { background: #CBDDC7; }
+.card .deleteButton:not(:disabled):hover { background: #F9EBE7; }
+.card :is(.primaryButton, .editButton, .doneButton, .deleteButton):disabled {
+  background: #E3E7DF;
+  border-color: #809487;
+  color: var(--sc-muted);
+  opacity: 1;
+}
+
+.card .source { margin-top: 10px; color: var(--sc-muted); font-size: 10px; line-height: 1.5; }
+.card .attribution { display: block; margin-top: 5px; color: var(--sc-muted); font-size: 9px; overflow-wrap: anywhere; }
+.card .attribution:hover { color: var(--sc-green); text-decoration: underline; }
+
+.menuContainer { position: relative; flex-shrink: 0; }
+.card .menuTrigger {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: var(--sc-cream);
+  color: var(--sc-green);
+}
+.card .menuTrigger:hover, .card .menuTrigger[aria-expanded="true"] { background: var(--sc-sage); border-color: var(--sc-border); }
+.card .menu {
+  position: absolute;
+  z-index: 20;
+  right: 0;
+  top: calc(100% + 6px);
+  width: 202px;
+  max-width: calc(100vw - 64px);
+  padding: 6px;
+  border: 1px solid var(--sc-border);
+  border-radius: 10px;
+  background: var(--sc-cream);
+  box-shadow: 0 8px 24px rgb(32 53 45 / 0.14);
+}
+.card .menu button {
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--sc-text);
+  padding: 9px 10px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.menu button svg { flex-shrink: 0; }
+.card .menu button:not(:disabled):hover, .card .menu button:focus-visible { background: var(--sc-sage); }
+.card .menu button:not(:disabled):active { background: #D8E5D5; }
+.card .menu button:disabled { color: var(--sc-muted); background: #F2F3EF; }
+.card :is(button, a):focus-visible { outline: 2px solid var(--sc-green); outline-offset: 3px; }
+
+@media (max-width: 479px) {
+  .secondaryActions { grid-template-columns: minmax(0, 1fr); }
+  .card .content { padding: 14px 14px 16px; }
+  .card .destination { font-size: 22px; }
+  .card .image { height: 160px; }
+  .card .primaryButton { flex-basis: 100%; }
+  .card .editButton, .card .doneButton { flex: 1 1 100px; }
+}

@@ -209,6 +209,6 @@ test('pagination, price and star filters, and unquoted selection persist through
   expect(JSON.stringify(saved)).not.toContain('selected-panel-fixture');
   await page.reload();
   await page.getByRole('button', { name: 'Saved trips', exact: true }).click();
-  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await page.getByRole('button', { name: 'View itinerary', exact: true }).click();
   await expect(page.getByText('Tokyo Hotel 11', { exact: true }).first()).toBeVisible();
 });

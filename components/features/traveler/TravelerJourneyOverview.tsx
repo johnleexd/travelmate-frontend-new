@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import styles from './TravelerDashboard.module.css';
 import { useState } from 'react';
 import {
   ArrowLeft,
@@ -36,7 +37,7 @@ const JOURNEY_STEPS = [
   },
   {
     title: 'Understand the plan', shortTitle: 'Understand',
-    youDo: 'Review the schedule, estimated budget, travel options, and conditions.',
+    youDo: 'Review the schedule, estimated budget, and conditions.',
     systemDoes: 'TravelMate keeps every estimate and provider source labeled beside the same trip.',
     result: 'You can see why the plan is practical.', action: 'Review trip context', icon: ListChecks,
   },
@@ -63,10 +64,10 @@ const JOURNEY_STEPS = [
 const PLANNING_NOTES = [
   ['You only need four details', 'Destination, dates, travelers, and budget are enough to generate a first draft. Everything else improves personalization.'],
   ['Generated plans save automatically', 'Successful generation keeps the plan in your account. Manual edits remain a draft until you choose Save changes. If automatic saving fails, the plan stays available on this page for you to save.'],
-  ['Options are supporting evidence', 'Budget, flights, stays, weather, and crowd context help you judge one itinerary. They are not separate planning flows.'],
+  ['Budget and conditions support your plan', 'Estimated costs, your selected stay, weather, and crowd context help you review your itinerary.'],
 ] as const;
 
-const HERO_EXPLANATION = 'You provide the trip boundaries. TravelMate builds and saves a reviewable plan. You judge the itinerary, costs, options, and conditions, then edit the plan and save your changes.';
+const HERO_EXPLANATION = 'You provide the trip boundaries. TravelMate builds and saves a reviewable plan. You judge the itinerary, costs, and conditions, then edit the plan and save your changes.';
 
 interface UpcomingTripSummary {
   destination: string;
@@ -89,13 +90,12 @@ interface TravelerJourneyOverviewProps {
   onOpenUpcomingTrip: () => void;
   onOpenSavedTrips: () => void;
   onOpenBudget: () => void;
-  onOpenOptions: () => void;
 }
 
 export function TravelerJourneyOverview({
   userName, savedTripCount, currentPlan, upcomingTrip, referenceCurrency, exchangeQuotes,
   onStartPlanning, onOpenCurrentPlan, onOpenUpcomingTrip, onOpenSavedTrips,
-  onOpenBudget, onOpenOptions,
+  onOpenBudget,
 }: TravelerJourneyOverviewProps) {
   const [activeStep, setActiveStep] = useState(currentPlan ? 2 : savedTripCount > 0 ? 5 : 0);
   const [planningNote, setPlanningNote] = useState(0);
@@ -127,24 +127,24 @@ export function TravelerJourneyOverview({
   return (
     <div className="space-y-10">
       <section aria-labelledby="travel-home-title" className="grid grid-flow-dense gap-px border border-white/10 bg-white/10 lg:grid-cols-12">
-        <article className="group relative min-h-[470px] overflow-hidden bg-[#102824] p-6 text-white sm:p-10 lg:col-span-8 lg:p-12">
-          <Image src="/cordova-nalusuan.png" alt="Island coastline near Cebu" fill loading="eager" fetchPriority="high" sizes="(min-width: 1024px) 65vw, 100vw" className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.03]" />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,27,24,.97)_0%,rgba(8,27,24,.9)_60%,rgba(8,27,24,.62)_100%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(0deg,rgba(8,27,24,.62)_0%,rgba(8,27,24,.2)_52%,transparent_82%)]" />
+        <article className="group relative min-h-[470px] overflow-hidden bg-[#102824] p-5 text-white sm:p-10 lg:col-span-8 lg:p-12">
+          <Image src="/home-mountain-lake.jpg" alt="Mountain lake surrounded by pine forest in the Dolomites" fill loading="eager" fetchPriority="high" sizes="(min-width: 1024px) 65vw, (min-width: 640px) 100vw, 1000px" className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.03]" />
+          <div className={`${styles.heroOverlay} absolute inset-0`} />
+          <div className={`${styles.heroShade} absolute inset-0`} />
           <div className="relative flex min-h-[370px] flex-col justify-between sm:min-h-[390px]">
-            <p className="flex items-center gap-3 text-sm font-semibold text-white/92"><span className="h-px w-8 bg-[#ffcf70]" />Welcome, {firstName}. Your next trip starts here.</p>
+            <p className="flex items-center gap-3 text-sm font-semibold text-white/92"><span className="h-px w-6 shrink-0 bg-[#ffcf70] sm:w-8" /><span className="min-w-0 break-words">Welcome, {firstName}. Your next trip starts here.</span></p>
             <div>
-              <h2 id="travel-home-title" className="max-w-[13ch] text-balance text-5xl font-black leading-[0.94] tracking-[-0.045em] sm:text-6xl lg:text-6xl">Turn one trip into a plan you understand.</h2>
+              <h2 id="travel-home-title" className="max-w-[13ch] break-words text-balance text-[clamp(2rem,10vw,3rem)] font-black leading-[0.98] tracking-[-0.045em] sm:text-6xl sm:leading-[0.94]">Turn one trip into a plan you understand.</h2>
               <p className="mt-6 max-w-[54ch] text-base leading-7 text-white/90">{HERO_EXPLANATION.split(' ').map((word, index) => <span key={`${word}-${index}`} data-lifecycle-word className="inline-block">{word}&nbsp;</span>)}</p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <button type="button" onClick={nextAction.onClick} className="group inline-flex min-h-12 items-center justify-center gap-3 bg-[#ffcf70] px-6 py-3 text-sm font-extrabold text-[#14231f] transition hover:bg-[#ffe1a1]">{nextAction.action}<ArrowRight size={17} className="transition-transform group-hover:translate-x-1" /></button>
-                <button type="button" onClick={onOpenSavedTrips} className="inline-flex min-h-12 items-center justify-center border border-white/45 bg-black/15 px-5 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-[#14231f]">Open saved trips</button>
+                <button type="button" onClick={onOpenSavedTrips} className={`${styles.secondaryButton} inline-flex min-h-12 items-center justify-center border border-white/45 bg-black/15 px-5 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-[#14231f]`}>Open saved trips</button>
               </div>
             </div>
           </div>
         </article>
 
-        <aside className="flex min-h-[470px] flex-col bg-[#ffcf70] p-6 text-[#14231f] sm:p-9 lg:col-span-4">
+        <aside className={`${styles.savedPanel} flex min-h-[470px] flex-col bg-[#ffcf70] p-6 text-[#14231f] sm:p-9 lg:col-span-4`}>
           <div className="flex items-start justify-between gap-6 border-b border-[#14231f]/20 pb-6">
             <div><p className="text-xs font-black uppercase tracking-[.14em] text-[#49635c]">{nextAction.stage}</p><h3 className="mt-3 max-w-md text-3xl font-black leading-tight tracking-[-0.045em]">{nextAction.title}</h3></div>
             <Compass size={24} className="shrink-0 text-[#14231f]/55" />
@@ -188,7 +188,7 @@ export function TravelerJourneyOverview({
       </section>
 
       <section aria-labelledby="planning-note-heading" className="grid border border-white/10 lg:grid-cols-[minmax(0,1fr)_auto]">
-        <div className="min-h-[190px] bg-[#dce7df] p-6 text-[#14231f] sm:p-9"><p className="text-sm font-semibold text-[#547068]">Keep this in mind</p><h2 id="planning-note-heading" className="mt-4 max-w-3xl text-3xl font-black tracking-[-0.045em] sm:text-4xl">{PLANNING_NOTES[planningNote][0]}</h2><p className="mt-4 max-w-3xl text-sm leading-6 text-[#48625c]">{PLANNING_NOTES[planningNote][1]}</p><div className="mt-6 flex flex-wrap gap-3"><button type="button" onClick={onOpenBudget} className="border-b border-[#14231f] pb-1 text-xs font-black">See budget review</button><button type="button" onClick={onOpenOptions} className="border-b border-[#14231f] pb-1 text-xs font-black">See travel options</button></div></div>
+        <div className="min-h-[190px] bg-[#dce7df] p-6 text-[#14231f] sm:p-9"><p className="text-sm font-semibold text-[#547068]">Keep this in mind</p><h2 id="planning-note-heading" className="mt-4 max-w-3xl text-3xl font-black tracking-[-0.045em] sm:text-4xl">{PLANNING_NOTES[planningNote][0]}</h2><p className="mt-4 max-w-3xl text-sm leading-6 text-[#48625c]">{PLANNING_NOTES[planningNote][1]}</p><div className="mt-6 flex flex-wrap gap-3"><button type="button" onClick={onOpenBudget} className="border-b border-[#14231f] pb-1 text-xs font-black">See budget review</button></div></div>
         <div className="flex border-t border-[#14231f]/15 bg-[#cddbd1] lg:w-28 lg:flex-col lg:border-l lg:border-t-0"><button type="button" aria-label="Previous planning guidance" onClick={() => setPlanningNote((planningNote + PLANNING_NOTES.length - 1) % PLANNING_NOTES.length)} className="grid h-16 flex-1 place-items-center border-r border-[#14231f]/15 text-[#14231f] transition hover:bg-amber-300 lg:h-auto lg:border-b lg:border-r-0"><ArrowLeft size={18} /></button><button type="button" aria-label="Next planning guidance" onClick={() => setPlanningNote((planningNote + 1) % PLANNING_NOTES.length)} className="grid h-16 flex-1 place-items-center text-[#14231f] transition hover:bg-amber-300"><ArrowRight size={18} /></button></div>
       </section>
 

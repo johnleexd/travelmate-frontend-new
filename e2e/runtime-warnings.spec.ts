@@ -42,7 +42,7 @@ test('dashboard hero loads eagerly and admin tabs with no cards do not emit GSAP
   await page.route('**/api/platform**', route => route.fulfill({ json: { user, directory: [admin], trips: [], listings: [], bookings: [], moderation: [], audit: [], itineraryGenerations: [], itineraryVersions: [], notifications: [], reviews: [], promotions: [], blockedDates: [], transactions: [], ownerDocuments: [], metrics: {}, integrations: {} } }));
   await page.route('**/api/feedback**', route => route.fulfill({ json: { entries: [], total: 0, page: 1, pageSize: 10 } }));
   await page.goto('/dashboard');
-  const hero = page.getByAltText('Island coastline near Cebu', { exact: true });
+  const hero = page.getByAltText('Mountain lake surrounded by pine forest in the Dolomites', { exact: true });
   await expect(hero).toHaveAttribute('loading', 'eager');
   await expect(hero).toHaveAttribute('fetchpriority', 'high');
   await expect.poll(() => hero.evaluate((image: HTMLImageElement) => image.naturalWidth)).toBeGreaterThan(0);

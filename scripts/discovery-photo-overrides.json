@@ -1,0 +1,74 @@
+{
+  "NL": [
+    {
+      "file": "Leiden-NL-Banner-2.jpg",
+      "evidence": "https://www.wikidata.org/wiki/Q55#P948"
+    }
+  ],
+  "SH": [
+    {
+      "file": "Sainte hélène banner.jpg",
+      "evidence": "https://www.wikidata.org/wiki/Q34497#P948"
+    },
+    {
+      "file": "Saint Helena Island.jpg",
+      "evidence": "https://www.wikidata.org/wiki/Q34497#P18"
+    }
+  ],
+  "SJ": [
+    {
+      "file": "Svalbard banner.jpg",
+      "evidence": "https://www.wikidata.org/wiki/Q25231#P948"
+    },
+    {
+      "file": "Prins-karls-forrland pho.jpg",
+      "evidence": "https://www.wikidata.org/wiki/Q25231#P18"
+    }
+  ],
+  "WD-Q9143535": [
+    {
+      "file": "View of Akrotiri (village) 03.jpg",
+      "evidence": "https://commons.wikimedia.org/wiki/File:View_of_Akrotiri_(village)_03.jpg"
+    },
+    {
+      "file": "Church of Timios Stavros (Holy Cross) in Akrotiri (village).jpg",
+      "evidence": "https://commons.wikimedia.org/wiki/File:Church_of_Timios_Stavros_(Holy_Cross)_in_Akrotiri_(village).jpg"
+    }
+  ],
+  "WD-Q9206745": [
+    {
+      "file": "Britse telefooncel op Cyprus.jpg",
+      "evidence": "https://commons.wikimedia.org/wiki/File:Britse_telefooncel_op_Cyprus.jpg"
+    }
+  ],
+  "WD-Q762570": [
+    {
+      "file": "US Navy 100506-N-8241M-317 An aerial view of the Leeward Airfield at Naval Station Guantanamo Bay, Cuba.jpg",
+      "evidence": "https://commons.wikimedia.org/wiki/File:US_Navy_100506-N-8241M-317_An_aerial_view_of_the_Leeward_Airfield_at_Naval_Station_Guantanamo_Bay%2C_Cuba.jpg"
+    },
+    {
+      "file": "Guantánamo Bay banner.jpg",
+      "evidence": "https://commons.wikimedia.org/wiki/File:Guant%C3%A1namo_Bay_banner.jpg"
+    }
+  ],
+  "WD-Q628716": [
+    {
+      "file": "ISS045-E-77331 - View of Scarborough Shoal.jpg",
+      "evidence": "https://commons.wikimedia.org/wiki/File:ISS045-E-77331_-_View_of_Scarborough_Shoal.jpg"
+    },
+    {
+      "file": "ISS045-E-77330 - View of Scarborough Shoal.jpg",
+      "evidence": "https://commons.wikimedia.org/wiki/File:ISS045-E-77330_-_View_of_Scarborough_Shoal.jpg"
+    }
+  ],
+  "WD-Q116970": [
+    {
+      "file": "United Nations Buffer Zone in Nicosia (8132781183).jpg",
+      "evidence": "https://commons.wikimedia.org/wiki/File:United_Nations_Buffer_Zone_in_Nicosia_(8132781183).jpg"
+    },
+    {
+      "file": "United Nations Buffer Zone in Nicosia (8132781915).jpg",
+      "evidence": "https://commons.wikimedia.org/wiki/File:United_Nations_Buffer_Zone_in_Nicosia_(8132781915).jpg"
+    }
+  ]
+}

@@ -1,0 +1,603 @@
+{
+  "days": [
+    {
+      "day": 1,
+      "date": "2026-10-08",
+      "theme": "Manila: Plaza Miranda",
+      "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Quiapo_Church%2C_Plaza_Miranda_%28Quezon_Boulevard%2C_Quiapo%2C_Manila%3B_01-08-2020%29.jpg/1280px-Quiapo_Church%2C_Plaza_Miranda_%28Quezon_Boulevard%2C_Quiapo%2C_Manila%3B_01-08-2020%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "rideFare": 400,
+      "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+      "totalCost": 6161.9,
+      "activities": [
+        {
+          "icon": "map",
+          "time": "10:00 AM",
+          "place": {
+            "city": "Manila",
+            "name": "Plaza Miranda",
+            "address": "Not available",
+            "country": "Philippines",
+            "placeId": "Q7203623",
+            "latitude": 14.59805556,
+            "provider": "wikidata",
+            "fetchedAt": "2026-10-08T08:59:04.933Z",
+            "longitude": 120.98361111,
+            "sourceUrl": "https://www.wikidata.org/wiki/Q7203623",
+            "countryCode": "PH",
+            "openingHours": "Not available; confirm with the venue"
+          },
+          "title": "Visit Plaza Miranda",
+          "category": "activity",
+          "imageUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Quiapo_Church%2C_Plaza_Miranda_%28Quezon_Boulevard%2C_Quiapo%2C_Manila%3B_01-08-2020%29.jpg/1280px-Quiapo_Church%2C_Plaza_Miranda_%28Quezon_Boulevard%2C_Quiapo%2C_Manila%3B_01-08-2020%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "unitCost": 4000,
+          "description": "public square in Quiapo, Manila. Proposed 60-minute visit. Opening hours: Not available; confirm with the venue. Address: Not available.",
+          "estimatedCost": 4000,
+          "priceEvidence": {
+            "unit": "per-person",
+            "basis": "Planning allowance: 20% of the entered budget divided across catalog visits and participants. Admission prices are unavailable; this does not imply free entry.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 4000,
+            "participants": 1,
+            "needsConfirmation": true
+          },
+          "imageAttribution": {
+            "creator": "patrickroque01",
+            "license": "CC BY-SA 4.0",
+            "sourceUrl": "https://commons.wikimedia.org/?curid=87435525",
+            "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+          },
+          "placeVerification": "supporting-source-found"
+        },
+        {
+          "icon": "food",
+          "time": "Daily allowance",
+          "title": "Daily meals in Manila",
+          "category": "food",
+          "unitCost": 628.57,
+          "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+          "estimatedCost": 628.57,
+          "priceEvidence": {
+            "unit": "daily-per-person",
+            "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 628.57,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        },
+        {
+          "icon": "bus",
+          "time": "Daily allowance",
+          "title": "Daily transport in Manila",
+          "category": "transport",
+          "unitCost": 400,
+          "description": "locally appropriate transportation. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+          "estimatedCost": 400,
+          "priceEvidence": {
+            "unit": "per-person",
+            "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 400,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        }
+      ],
+      "crowdLevel": "low",
+      "travelNote": "Proposed local times. Stops checked against catalog coordinates and city/country hierarchy. Walking estimates use straight-line distance at 4 km/h plus 15 minutes; routes, access, opening hours and traffic need confirmation.",
+      "crowdSource": "estimated",
+      "weatherAlert": "Thunderstorm risk: move water and outdoor activities indoors.",
+      "crowdFetchedAt": "2026-10-08T08:59:17.809Z",
+      "crowdConfidence": "low",
+      "imageAttribution": {
+        "creator": "patrickroque01",
+        "license": "CC BY-SA 4.0",
+        "sourceUrl": "https://commons.wikimedia.org/?curid=87435525",
+        "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0"
+      },
+      "crowdRefreshAfter": "2026-10-09T08:59:17.809Z",
+      "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+    },
+    {
+      "day": 2,
+      "date": "2026-10-09",
+      "theme": "Manila: details need confirmation",
+      "imageUrl": "",
+      "rideFare": 400,
+      "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+      "totalCost": 2161.9,
+      "activities": [
+        {
+          "icon": "food",
+          "time": "Daily allowance",
+          "title": "Daily meals in Manila",
+          "category": "food",
+          "unitCost": 628.57,
+          "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+          "estimatedCost": 628.57,
+          "priceEvidence": {
+            "unit": "daily-per-person",
+            "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 628.57,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        },
+        {
+          "icon": "bus",
+          "time": "Daily allowance",
+          "title": "Daily transport in Manila",
+          "category": "transport",
+          "unitCost": 400,
+          "description": "locally appropriate transportation. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+          "estimatedCost": 400,
+          "priceEvidence": {
+            "unit": "per-person",
+            "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 400,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        }
+      ],
+      "crowdLevel": "low",
+      "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+      "crowdSource": "estimated",
+      "weatherAlert": "High rain chance (71%): bring rain gear and keep a backup activity.",
+      "crowdFetchedAt": "2026-10-08T08:59:17.809Z",
+      "crowdConfidence": "low",
+      "crowdRefreshAfter": "2026-10-09T08:59:17.809Z",
+      "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+    },
+    {
+      "day": 3,
+      "date": "2026-10-10",
+      "theme": "Manila: details need confirmation",
+      "imageUrl": "",
+      "rideFare": 400,
+      "crowdNote": "Low-confidence estimate from weekend timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+      "totalCost": 2161.9,
+      "activities": [
+        {
+          "icon": "food",
+          "time": "Daily allowance",
+          "title": "Daily meals in Manila",
+          "category": "food",
+          "unitCost": 628.57,
+          "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+          "estimatedCost": 628.57,
+          "priceEvidence": {
+            "unit": "daily-per-person",
+            "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 628.57,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        },
+        {
+          "icon": "bus",
+          "time": "Daily allowance",
+          "title": "Daily transport in Manila",
+          "category": "transport",
+          "unitCost": 400,
+          "description": "locally appropriate transportation. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+          "estimatedCost": 400,
+          "priceEvidence": {
+            "unit": "per-person",
+            "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 400,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        }
+      ],
+      "crowdLevel": "moderate",
+      "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+      "crowdSource": "estimated",
+      "weatherAlert": "Thunderstorm risk: move water and outdoor activities indoors.",
+      "crowdFetchedAt": "2026-10-08T08:59:17.809Z",
+      "crowdConfidence": "low",
+      "crowdRefreshAfter": "2026-10-09T08:59:17.809Z",
+      "crowdRecommendation": "Prefer an earlier arrival for major attractions and confirm venue hours. No activity was moved automatically."
+    },
+    {
+      "day": 4,
+      "date": "2026-10-11",
+      "theme": "Manila: details need confirmation",
+      "imageUrl": "",
+      "rideFare": 400,
+      "crowdNote": "Low-confidence estimate from weekend timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+      "totalCost": 2161.9,
+      "activities": [
+        {
+          "icon": "food",
+          "time": "Daily allowance",
+          "title": "Daily meals in Manila",
+          "category": "food",
+          "unitCost": 628.57,
+          "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+          "estimatedCost": 628.57,
+          "priceEvidence": {
+            "unit": "daily-per-person",
+            "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 628.57,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        },
+        {
+          "icon": "bus",
+          "time": "Daily allowance",
+          "title": "Daily transport in Manila",
+          "category": "transport",
+          "unitCost": 400,
+          "description": "locally appropriate transportation. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+          "estimatedCost": 400,
+          "priceEvidence": {
+            "unit": "per-person",
+            "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 400,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        }
+      ],
+      "crowdLevel": "moderate",
+      "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+      "crowdSource": "estimated",
+      "weatherAlert": "Thunderstorm risk: move water and outdoor activities indoors.",
+      "crowdFetchedAt": "2026-10-08T08:59:17.809Z",
+      "crowdConfidence": "low",
+      "crowdRefreshAfter": "2026-10-09T08:59:17.809Z",
+      "crowdRecommendation": "Prefer an earlier arrival for major attractions and confirm venue hours. No activity was moved automatically."
+    },
+    {
+      "day": 5,
+      "date": "2026-10-12",
+      "theme": "Manila: details need confirmation",
+      "imageUrl": "",
+      "rideFare": 400,
+      "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+      "totalCost": 2161.9,
+      "activities": [
+        {
+          "icon": "food",
+          "time": "Daily allowance",
+          "title": "Daily meals in Manila",
+          "category": "food",
+          "unitCost": 628.57,
+          "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+          "estimatedCost": 628.57,
+          "priceEvidence": {
+            "unit": "daily-per-person",
+            "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 628.57,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        },
+        {
+          "icon": "bus",
+          "time": "Daily allowance",
+          "title": "Daily transport in Manila",
+          "category": "transport",
+          "unitCost": 400,
+          "description": "locally appropriate transportation. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+          "estimatedCost": 400,
+          "priceEvidence": {
+            "unit": "per-person",
+            "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 400,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        }
+      ],
+      "crowdLevel": "low",
+      "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+      "crowdSource": "estimated",
+      "weatherAlert": "Thunderstorm risk: move water and outdoor activities indoors.",
+      "crowdFetchedAt": "2026-10-08T08:59:17.809Z",
+      "crowdConfidence": "low",
+      "crowdRefreshAfter": "2026-10-09T08:59:17.809Z",
+      "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+    },
+    {
+      "day": 6,
+      "date": "2026-10-13",
+      "theme": "Manila: details need confirmation",
+      "imageUrl": "",
+      "rideFare": 400,
+      "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+      "totalCost": 2161.9,
+      "activities": [
+        {
+          "icon": "food",
+          "time": "Daily allowance",
+          "title": "Daily meals in Manila",
+          "category": "food",
+          "unitCost": 628.57,
+          "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+          "estimatedCost": 628.57,
+          "priceEvidence": {
+            "unit": "daily-per-person",
+            "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 628.57,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        },
+        {
+          "icon": "bus",
+          "time": "Daily allowance",
+          "title": "Daily transport in Manila",
+          "category": "transport",
+          "unitCost": 400,
+          "description": "locally appropriate transportation. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+          "estimatedCost": 400,
+          "priceEvidence": {
+            "unit": "per-person",
+            "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 400,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        }
+      ],
+      "crowdLevel": "low",
+      "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+      "crowdSource": "estimated",
+      "weatherAlert": "Thunderstorm risk: move water and outdoor activities indoors.",
+      "crowdFetchedAt": "2026-10-08T08:59:17.809Z",
+      "crowdConfidence": "low",
+      "crowdRefreshAfter": "2026-10-09T08:59:17.809Z",
+      "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+    },
+    {
+      "day": 7,
+      "date": "2026-10-14",
+      "theme": "Manila: details need confirmation",
+      "imageUrl": "",
+      "rideFare": 400,
+      "crowdNote": "Low-confidence estimate from weekday timing; this is not live foot-traffic or venue-capacity data. Check the venue before traveling.",
+      "totalCost": 1028.57,
+      "activities": [
+        {
+          "icon": "food",
+          "time": "Daily allowance",
+          "title": "Daily meals in Manila",
+          "category": "food",
+          "unitCost": 628.57,
+          "description": "Daily allowance for all meals, not the price of one restaurant visit. Venue and menu: Not available; choose and confirm locally.",
+          "estimatedCost": 628.57,
+          "priceEvidence": {
+            "unit": "daily-per-person",
+            "basis": "Planning allowance: 22% of the entered budget divided by travelers and days. Restaurant/menu prices and venues are not available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 628.57,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        },
+        {
+          "icon": "bus",
+          "time": "Daily allowance",
+          "title": "Daily transport in Manila",
+          "category": "transport",
+          "unitCost": 400,
+          "description": "locally appropriate transportation. Daily fare per traveler, multiplied by the party size. Route, timetable and capacity require confirmation.",
+          "estimatedCost": 400,
+          "priceEvidence": {
+            "unit": "per-person",
+            "basis": "Planning allowance: 14% of the entered budget divided by days and fare basis. No verified route fare is available.",
+            "source": "budget-allowance",
+            "status": "estimate",
+            "currency": "PHP",
+            "quantity": 1,
+            "fetchedAt": "2026-10-08T08:59:17.789Z",
+            "unitAmount": 400,
+            "participants": 1,
+            "needsConfirmation": true
+          }
+        }
+      ],
+      "crowdLevel": "low",
+      "travelNote": "No additional supported attraction data is available. Leave this day flexible; confirm venues before adding them. No invented attraction is scheduled.",
+      "crowdSource": "estimated",
+      "weatherAlert": "Thunderstorm risk: move water and outdoor activities indoors.",
+      "crowdFetchedAt": "2026-10-08T08:59:17.809Z",
+      "crowdConfidence": "low",
+      "crowdRefreshAfter": "2026-10-09T08:59:17.809Z",
+      "crowdRecommendation": "No crowd-based timing change is suggested, but confirm venue hours before traveling."
+    }
+  ],
+  "source": "gemini",
+  "currency": "PHP",
+  "grounding": {
+    "rooms": 1,
+    "total": 19799.97,
+    "nights": 6,
+    "endDate": "2026-10-14",
+    "version": 1,
+    "currency": "PHP",
+    "subtotal": 17999.97,
+    "fetchedAt": "2026-10-08T08:59:17.789Z",
+    "startDate": "2026-10-08",
+    "categories": {
+      "fees": 0,
+      "food": 4399.99,
+      "activities": 4000,
+      "contingency": 1800,
+      "accommodation": 6799.98,
+      "transportation": 2800
+    },
+    "destination": {
+      "city": "Manila",
+      "country": "Philippines",
+      "latitude": 14.6042,
+      "longitude": 120.9822,
+      "countryCode": "PH"
+    },
+    "limitations": [
+      "Food, local transport and admission allowances are not researched market prices. Missing prices do not mean free entry.",
+      "Opening hours, street routes, venue access, transport capacity and unquoted taxes/fees need confirmation.",
+      "Proposed local visits do not incorporate verified arrival/departure or hotel check-in times; confirm those before following the first and last day schedules.",
+      "Travel from the starting location to the destination is not priced; compare flights or supply pre-trip estimates."
+    ],
+    "budgetStatus": "needs-confirmation",
+    "accommodation": {
+      "unit": "per-room-night",
+      "basis": "Planning allowance: 34% of the entered budget divided by rooms and nights. Not a researched hotel price.",
+      "source": "budget-allowance",
+      "status": "estimate",
+      "currency": "PHP",
+      "quantity": 6,
+      "fetchedAt": "2026-10-08T08:59:17.789Z",
+      "unitAmount": 1133.33,
+      "participants": 1,
+      "needsConfirmation": true
+    },
+    "additionalFees": 0,
+    "verifiedAmount": 0,
+    "estimatedAmount": 19799.97,
+    "placeDataStatus": "live",
+    "startingLocation": "",
+    "contingencyAmount": 1800,
+    "unknownPriceCount": 16,
+    "contingencyPercent": 10,
+    "foodDailyPerPerson": 628.57
+  },
+  "partyType": "solo",
+  "travelers": 1,
+  "costSharing": {
+    "partyType": "solo",
+    "travelers": 1,
+    "groupBudget": 20000,
+    "budgetShares": [
+      20000
+    ],
+    "reserveShares": [
+      200.03
+    ],
+    "plannedGroupSpend": 19799.97,
+    "plannedSpendShares": [
+      19799.97
+    ],
+    "accommodationShares": [
+      6799.98
+    ]
+  },
+  "destination": "Manila, National Capital Region, Philippines",
+  "preferences": {
+    "activities": [
+      "local food",
+      "sightseeing"
+    ],
+    "travelStyle": "balanced",
+    "accommodation": "Conrad Manila, Seaside Boulevard corner Coral Way, Mall of Asia Complex, (price unconfirmed)",
+    "transportation": "locally appropriate transportation"
+  },
+  "totalBudget": 20000,
+  "budgetSummary": {
+    "food": 4400,
+    "total": 20000,
+    "reserve": 2000,
+    "shortfall": 0,
+    "transport": 2800,
+    "activities": 4000,
+    "dailyAverage": 2828.57,
+    "plannedSpend": 19799.97,
+    "accommodation": 6800,
+    "variableBudget": 11200.02,
+    "remainingBudget": 200.03,
+    "accommodationActual": 6799.98,
+    "travelOptionsActual": 0
+  },
+  "budgetOptimization": {
+    "status": "within_budget",
+    "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary.",
+    "suggestions": [],
+    "targetSpend": 20000,
+    "amountToTarget": 0,
+    "combinedEstimatedSavings": 0,
+    "projectedSpendIfAllApplied": 19799.97,
+    "remainingGapAfterSuggestions": 0
+  },
+  "selectedTravelCosts": {
+    "total": 0,
+    "activities": []
+  },
+  "plannedAccommodation": {
+    "name": "Conrad Manila",
+    "type": "Accommodation",
+    "source": "provider",
+    "address": "Seaside Boulevard corner Coral Way, Mall of Asia Complex,",
+    "sourceId": "liteapi:lp867bc"
+  }
+}

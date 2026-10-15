@@ -14,6 +14,20 @@ const plan = (): ItineraryResponse => ({
   ],
 });
 
+test('photo identity survives notes/time/cost edits but changes with the place, including legacy plans', () => {
+  const original = plan();
+  const photo = { imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/a/ab/Museum.jpg', imageAttribution: { creator: 'Author', license: 'CC BY 4.0', sourceUrl: 'https://commons.wikimedia.org/?curid=1' } };
+  original.days[0].activities[0] = { ...original.days[0].activities[0], ...photo };
+  original.days[0].imageUrl = photo.imageUrl;
+  for (const patch of [{ description: 'New notes' }, { time: '10:00' }, { estimatedCost: 400 }]) {
+    const result = upsertActivity(original, 0, 0, { ...original.days[0].activities[0], ...patch });
+    assert.equal(result.days[0].activities[0].imageUrl, photo.imageUrl);
+  }
+  const changed = upsertActivity(original, 0, 0, { ...original.days[0].activities[0], title: 'Another place' });
+  assert.equal(changed.days[0].activities[0].imageUrl, undefined);
+  assert.equal(changed.days[0].imageUrl, '');
+});
+
 test('editing a 31-day trip retains a 30-night quote and counts flight costs once', () => {
   const original = plan();
   const long: ItineraryResponse = { ...original, totalBudget: 100000, days: Array.from({ length: 31 }, (_, i) => ({ ...original.days[0], day: i + 1, date: new Date(Date.parse('2040-01-25') + i * 86400000).toISOString().slice(0, 10) })), accommodation: { ...original.accommodation!, nights: 30, nightlyRate: 100.03, quotedTotal: 3000.99, total: 3000.99 }, selectedTravelCosts: { activities: [], total: 500, flight: { id: 'flight', name: 'Trip flight', total: 500, currency: 'PHP', fetchedAt: new Date().toISOString() } } };

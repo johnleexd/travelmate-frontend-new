@@ -285,7 +285,7 @@
         "suggestions": [],
         "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary."
       },
-      "groundingProof": "DIDq8ykSAi2hTmC1D-ZDQeYe1R31mNQyVFVLp6mZEdI"
+      "groundingProof": "fixture-only-proof-000000000000000000000000"
     }
   },
   {
@@ -578,7 +578,7 @@
         "suggestions": [],
         "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary."
       },
-      "groundingProof": "PFNZDiGEKMWVLHacLuXTw2d3wQGIivVsPbVMJ7kb2es"
+      "groundingProof": "fixture-only-proof-000000000000000000000000"
     }
   },
   {
@@ -883,7 +883,7 @@
         "suggestions": [],
         "disclaimer": "Planning estimates only. Nothing is changed automatically; verify current prices and availability before editing the itinerary."
       },
-      "groundingProof": "YM1Z2jqXQmf70Zd49LF8GHrAajT_KEGv59r7C656eEo"
+      "groundingProof": "fixture-only-proof-000000000000000000000000"
     }
   }
 ]

@@ -1,0 +1,564 @@
+/* Color-only theme, scoped to the traveler dashboard; utility geometry stays intact. */
+.confirmationClose, .toastClose { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; color: var(--tm-primary); cursor: pointer; }
+.confirmationClose { position: absolute; top: 8px; right: 8px; }
+.confirmationClose:hover, .toastClose:hover { background: var(--tm-sage); }
+.warningIcon { display: grid; place-items: center; width: 60px; height: 60px; margin: 0 auto 16px; border-radius: 50%; background: #FAEDCD; color: #A67720; }
+.confirmationActions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.keepEditing, .discardChanges { min-height: 44px; padding: 10px 12px; border-radius: 8px; font-size: 14px; font-weight: 650; cursor: pointer; }
+.keepEditing { border: 1px solid var(--tm-primary); color: var(--tm-primary); }
+.keepEditing:hover { background: var(--tm-sage); }
+.discardChanges { background: #B74148; color: #FFF; }
+.discardChanges:hover { background: #A3353D; }
+.theme :is(.confirmationClose, .toastClose, .keepEditing, .discardChanges):focus-visible { outline: 2px solid var(--tm-primary); outline-offset: 3px; }
+.saveToast { position: fixed; top: 140px; right: 24px; z-index: 90; display: flex; align-items: flex-start; gap: 8px; width: min(350px, calc(100vw - 32px)); padding: 14px 12px 14px 16px; border: 1px solid var(--tm-border); border-radius: 12px; background: var(--tm-surface); color: var(--tm-text); box-shadow: 0 4px 16px rgba(20,35,31,.13); }
+.toastContent { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; padding-top: 5px; }
+.toastContent svg { flex-shrink: 0; }
+.toastSuccessIcon { color: #368647; }
+.toastErrorIcon { color: #B74148; }
+.toastTitle { font-size: 13px; font-weight: 750; line-height: 1.4; }
+.toastMessage { margin-top: 3px; font-size: 12px; line-height: 1.5; color: var(--tm-muted); }
+.toastClose { flex-shrink: 0; width: 28px; height: 28px; }
+@media (max-width: 639px) { .saveToast { top: 96px; right: 16px; } }
+@media (max-width: 359px) { .confirmationActions { grid-template-columns: 1fr; gap: 10px; } }
+
+.savedTripsBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  max-width: 100%;
+  margin-bottom: 16px;
+  padding: 8px 14px;
+  border: 1px solid var(--tm-input-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tm-primary);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: background-color .15s, border-color .15s;
+}
+.savedTripsBack:hover { background: var(--tm-sage); }
+.savedTripsBack:focus-visible { outline: 2px solid var(--tm-primary); outline-offset: 3px; }
+.savedTripsBack:disabled { opacity: .5; cursor: wait; }
+@media (min-width: 640px) { .savedTripsBack { min-height: 40px; } }
+
+.theme {
+  --tm-page: #F7F5EF;
+  --tm-surface: #FFFEFA;
+  --tm-text: #20352D;
+  --tm-muted: #52645A;
+  --tm-primary: #28594C;
+  --tm-primary-hover: #204A3F;
+  --tm-primary-active: #193C33;
+  --tm-on-primary: #FFFFFF;
+  --tm-sage: #E4EDE1;
+  --tm-sage-hover: #D8E5D5;
+  --tm-group: #EDF1E8;
+  --tm-sand: #EFE3C8;
+  --tm-gold: #D9B66F;
+  /* Darker gold keeps small accent text readable on the light surfaces. */
+  --tm-gold-text: #806025;
+  --tm-border: #D8E1D7;
+  --tm-input-border: #809487;
+  --tm-disabled: #E3E7DF;
+  --tm-skeleton: #D8E1D7;
+  --background: var(--tm-page);
+  --foreground: var(--tm-text);
+  --card: var(--tm-surface);
+  --card-foreground: var(--tm-text);
+  --popover: var(--tm-surface);
+  --popover-foreground: var(--tm-text);
+  --primary: var(--tm-primary);
+  --primary-foreground: var(--tm-on-primary);
+  --secondary: var(--tm-sage);
+  --secondary-foreground: var(--tm-primary);
+  --muted: var(--tm-group);
+  --muted-foreground: var(--tm-muted);
+  --accent: var(--tm-sage);
+  --accent-foreground: var(--tm-primary);
+  --border: var(--tm-border);
+  --input: var(--tm-input-border);
+  --ring: var(--tm-primary);
+  background-color: var(--tm-page);
+  color: var(--tm-text);
+}
+
+/* Bridge existing color utilities without changing component markup or behavior. */
+.theme :is(
+  [class~="bg-[#07111f]"],
+  [class~="bg-[#071813]"],
+  [class~="bg-[#071a16]"],
+  [class~="bg-[#071c15]"],
+  [class~="bg-[#081b18]"],
+  [class~="bg-[#081b18]/50"],
+  [class~="bg-[#081b18]/55"],
+  [class~="bg-[#081b18]/60"],
+  [class~="bg-[#081b18]/70"],
+  [class~="bg-[#0b1626]"],
+  [class~="bg-[#0b1d1a]"],
+  [class~="bg-[#0b1d1a]/50"],
+  [class~="bg-[#0b1d1a]/60"],
+  [class~="bg-[#0c241d]"],
+  [class~="bg-[#0d211d]"],
+  [class~="bg-[#102622]"],
+  [class~="bg-[#102822]"],
+  [class~="bg-[#102824]"],
+  [class~="bg-[#102824]/88"],
+  [class~="bg-[#102922]"],
+  [class~="bg-[#112a23]"],
+  [class~="bg-[#112b21]/10"],
+  [class~="bg-[#112d26]"],
+  [class~="bg-[#132d26]"],
+  [class~="bg-[#132f27]"],
+  [class~="bg-[#14231f]"],
+  [class~="bg-[#14302a]"],
+  [class~="bg-[#18352e]"],
+  [class~="bg-[#19362f]"],
+  [class~="bg-[#f2efe5]"],
+  [class~="bg-black/15"],
+  [class~="bg-slate-800"],
+  [class~="bg-slate-900"],
+  [class~="bg-slate-900/45"],
+  [class~="bg-slate-900/50"],
+  [class~="bg-slate-900/60"],
+  [class~="bg-slate-950"],
+  [class~="bg-slate-950/35"],
+  [class~="bg-slate-950/40"],
+  [class~="bg-slate-950/50"],
+  [class~="bg-slate-950/60"],
+  [class~="bg-slate-950/80"],
+  [class~="bg-slate-950/85"],
+  [class~="bg-slate-950/90"],
+  [class~="bg-white"],
+  [class~="bg-white/10"],
+  [class~="bg-white/25"],
+  [class~="bg-white/30"],
+  [class~="bg-white/5"],
+  [class~="bg-white/[.025]"],
+  [class~="bg-white/[.03]"],
+  [class~="bg-white/[0.025]"],
+  [class~="bg-white/[0.04]"],
+  [class~="bg-white/[0.055]"],
+  [class~="bg-white/[0.07]"],
+  [class~="bg-white/[0.09]"]
+) {
+  background-color: var(--tm-surface);
+}
+
+.theme :is(
+  [class~="text-[#14231f]/55"],
+  [class~="text-[#29463f]"],
+  [class~="text-[#334b43]"],
+  [class~="text-[#345047]"],
+  [class~="text-[#446057]"],
+  [class~="text-[#48625c]"],
+  [class~="text-[#49635c]"],
+  [class~="text-[#4a655e]"],
+  [class~="text-[#4f6862]"],
+  [class~="text-[#547068]"],
+  [class~="text-slate-300"],
+  [class~="text-slate-400"],
+  [class~="text-slate-500"],
+  [class~="text-white/28"],
+  [class~="text-white/30"],
+  [class~="text-white/32"],
+  [class~="text-white/35"],
+  [class~="text-white/38"],
+  [class~="text-white/40"],
+  [class~="text-white/42"],
+  [class~="text-white/45"],
+  [class~="text-white/48"],
+  [class~="text-white/50"],
+  [class~="text-white/52"],
+  [class~="text-white/55"],
+  [class~="text-white/58"],
+  [class~="text-white/60"],
+  [class~="text-white/62"],
+  [class~="text-white/65"],
+  [class~="text-white/70"],
+  [class~="text-white/75"],
+  [class~="text-white/78"],
+  [class~="text-white/80"],
+  [class~="text-white/85"],
+  [class~="text-white/90"],
+  [class~="text-white/92"]
+) {
+  color: var(--tm-muted);
+}
+
+.theme :is(
+  [class~="text-[#10241e]"],
+  [class~="text-[#102622]"],
+  [class~="text-[#102824]"],
+  [class~="text-[#112b21]"],
+  [class~="text-[#14231f]"],
+  [class~="text-[#142c22]"],
+  [class~="text-[#f2efe5]"],
+  [class~="text-[#f5edd9]"],
+  [class~="text-slate-100"],
+  [class~="text-slate-200"],
+  [class~="text-slate-800"],
+  [class~="text-slate-950"],
+  [class~="text-white"]
+) {
+  color: var(--tm-text);
+}
+
+.theme :is(
+  [class~="text-[#ffcf70]"],
+  [class~="text-[#ffcf70]/60"],
+  [class~="text-[#ffcf70]/80"],
+  [class~="text-blue-200"],
+  [class~="text-cyan-100"],
+  [class~="text-cyan-200"],
+  [class~="text-cyan-200/70"],
+  [class~="text-cyan-200/75"],
+  [class~="text-cyan-200/80"],
+  [class~="text-cyan-300"],
+  [class~="text-emerald-200"],
+  [class~="text-emerald-300"],
+  [class~="text-sky-200"],
+  [class~="text-violet-200"],
+  [class~="text-violet-300"]
+) {
+  color: var(--tm-primary);
+}
+
+.theme :is(
+  [class~="text-amber-200"],
+  [class~="text-amber-200/70"],
+  [class~="text-amber-300"]
+) {
+  color: var(--tm-gold-text);
+}
+
+.theme :is(
+  [class~="border-[#14231f]"],
+  [class~="border-[#14231f]/15"],
+  [class~="border-[#14231f]/20"],
+  [class~="border-[#14231f]/25"],
+  [class~="border-[#17332c]/20"],
+  [class~="border-[#17332c]/25"],
+  [class~="border-cyan-300"],
+  [class~="border-cyan-300/25"],
+  [class~="border-cyan-300/30"],
+  [class~="border-cyan-300/35"],
+  [class~="border-cyan-400"],
+  [class~="border-cyan-400/60"],
+  [class~="border-cyan-500/50"],
+  [class~="border-cyan-700"],
+  [class~="border-cyan-700/60"],
+  [class~="border-cyan-700/70"],
+  [class~="border-emerald-100/10"],
+  [class~="border-emerald-300"],
+  [class~="border-emerald-300/35"],
+  [class~="border-emerald-300/40"],
+  [class~="border-emerald-400/30"],
+  [class~="border-emerald-400/40"],
+  [class~="border-emerald-500/50"],
+  [class~="border-slate-500"],
+  [class~="border-slate-600"],
+  [class~="border-slate-700"],
+  [class~="border-slate-700/60"],
+  [class~="border-slate-800"],
+  [class~="border-violet-300"],
+  [class~="border-violet-400/50"],
+  [class~="border-violet-400/60"],
+  [class~="border-violet-500/50"],
+  [class~="border-violet-800/50"],
+  [class~="border-violet-900"],
+  [class~="border-white/10"],
+  [class~="border-white/12"],
+  [class~="border-white/15"],
+  [class~="border-white/20"],
+  [class~="border-white/25"],
+  [class~="border-white/30"],
+  [class~="border-white/45"]
+) {
+  border-color: var(--tm-border);
+}
+
+.theme :is(
+  [class~="bg-[#cddbd1]"],
+  [class~="bg-[#dce5db]"],
+  [class~="bg-[#dce7df]"],
+  [class~="bg-[#f1ead8]"],
+  [class~="bg-[#ffcf70]/10"],
+  [class~="bg-[#ffcf70]/15"],
+  [class~="bg-[#ffcf70]/5"],
+  [class~="bg-[#ffcf70]/[0.06]"],
+  [class~="bg-cyan-300/10"],
+  [class~="bg-cyan-300/5"],
+  [class~="bg-cyan-400/10"],
+  [class~="bg-emerald-100/10"],
+  [class~="bg-emerald-300/10"],
+  [class~="bg-emerald-400/10"],
+  [class~="bg-emerald-400/5"],
+  [class~="bg-violet-300/10"],
+  [class~="bg-violet-950/30"]
+) {
+  background-color: var(--tm-sage);
+}
+
+.theme :is(
+  [class~="bg-[#efe8d6]"],
+  [class~="bg-amber-300/10"],
+  [class~="bg-amber-300/5"],
+  [class~="bg-amber-300/[0.045]"],
+  [class~="bg-amber-400/5"]
+) {
+  background-color: var(--tm-sand);
+}
+
+.theme :is(
+  [class~="bg-[#ffcf70]"],
+  [class~="bg-amber-300"],
+  [class~="bg-amber-400"]
+) {
+  background-color: var(--tm-gold);
+}
+
+.theme :is(
+  [class~="border-[#ffcf70]"],
+  [class~="border-[#ffcf70]/20"],
+  [class~="border-[#ffcf70]/30"],
+  [class~="border-[#ffcf70]/35"],
+  [class~="border-[#ffcf70]/40"],
+  [class~="border-[#ffcf70]/50"],
+  [class~="border-amber-200/20"],
+  [class~="border-amber-300"],
+  [class~="border-amber-300/20"],
+  [class~="border-amber-300/25"],
+  [class~="border-amber-300/30"],
+  [class~="border-amber-300/35"],
+  [class~="border-amber-300/40"],
+  [class~="border-amber-300/50"],
+  [class~="border-amber-300/60"],
+  [class~="border-amber-400"],
+  [class~="border-amber-400/40"],
+  [class~="border-amber-500/40"],
+  [class~="border-amber-700"]
+) {
+  border-color: var(--tm-gold);
+}
+
+
+.theme :is(h1, h2, h3) {
+  color: var(--tm-text);
+}
+
+.theme header > div {
+  background-color: var(--tm-surface);
+  box-shadow: 0 18px 50px rgb(32 53 45 / 0.08);
+}
+
+.theme nav[aria-label="Traveler workspace"] {
+  background-color: var(--tm-border);
+}
+
+.theme nav[aria-label="Traveler workspace"] > div {
+  background-color: var(--tm-group);
+  color: var(--tm-muted);
+}
+
+.theme [data-journey-card][class~="bg-[#ffcf70]"] {
+  background-color: var(--tm-sage);
+}
+
+.theme :is(button, a, summary)[class*="hover:bg-"]:where(:not(:disabled)):hover {
+  background-color: var(--tm-sage-hover);
+  color: var(--tm-primary);
+}
+
+.theme :is(button, a, summary)[class*="hover:border-"]:where(:not(:disabled)):hover {
+  border-color: var(--tm-primary);
+}
+
+.theme :is(button, a, summary):where(:not(:disabled)):active {
+  color: var(--tm-primary-active);
+}
+
+.theme :is(button, a)[aria-current="page"] {
+  background-color: var(--tm-sage);
+  color: var(--tm-text);
+}
+
+.theme :is(button, a)[aria-current="page"] > span:first-child {
+  background-color: var(--tm-gold);
+}
+
+.theme :is(button, a):is([class~="bg-[#ffcf70]"], [class~="bg-amber-300"], [class~="bg-amber-400"]) {
+  background-color: var(--tm-primary);
+  border-color: var(--tm-primary);
+  color: var(--tm-on-primary);
+}
+
+.theme :is(button, a):is([class~="bg-[#ffcf70]"], [class~="bg-amber-300"], [class~="bg-amber-400"]):where(:not(:disabled)):hover {
+  background-color: var(--tm-primary-hover);
+  border-color: var(--tm-primary-hover);
+  color: var(--tm-on-primary);
+}
+
+.theme :is(button, a):is([class~="bg-[#ffcf70]"], [class~="bg-amber-300"], [class~="bg-amber-400"]):where(:not(:disabled)):active {
+  background-color: var(--tm-primary-active);
+  border-color: var(--tm-primary-active);
+  color: var(--tm-on-primary);
+}
+
+.theme .secondaryButton {
+  background-color: var(--tm-surface);
+  border-color: var(--tm-primary);
+  color: var(--tm-primary);
+}
+
+.theme .secondaryButton:where(:not(:disabled)):active {
+  background-color: var(--tm-sage);
+  border-color: var(--tm-primary-active);
+  color: var(--tm-primary-active);
+}
+
+.theme .savedPanel {
+  background-color: var(--tm-sand);
+}
+
+.theme .savedPanel svg {
+  color: var(--tm-gold-text);
+}
+
+.heroOverlay {
+  background-image: linear-gradient(90deg, rgb(247 245 239 / 0.98) 0%, rgb(247 245 239 / 0.94) 42%, rgb(247 245 239 / 0.82) 68%, rgb(247 245 239 / 0.36) 100%);
+}
+
+.heroShade {
+  background-image: linear-gradient(0deg, rgb(247 245 239 / 0.85) 0%, rgb(247 245 239 / 0.35) 52%, transparent 82%);
+}
+
+/* Saved-trip covers also need a light overlay for their newly dark text. */
+.theme [class~="bg-[linear-gradient(100deg,rgba(5,24,21,.98)_0%,rgba(5,24,21,.86)_48%,rgba(5,24,21,.42)_100%)]"] {
+  background-image: linear-gradient(100deg, rgb(255 254 250 / 0.98) 0%, rgb(255 254 250 / 0.94) 48%, rgb(255 254 250 / 0.78) 100%);
+}
+
+.theme :is(input, select, textarea)[class] {
+  border-color: var(--tm-input-border);
+  color: var(--tm-text);
+}
+
+.theme :is(input, textarea)::placeholder {
+  color: var(--tm-muted);
+}
+
+.theme :is(input, select, textarea):focus {
+  border-color: var(--tm-primary);
+  box-shadow: 0 0 0 1px var(--tm-primary);
+}
+
+.theme :focus-visible {
+  outline: 2px solid var(--tm-primary) !important;
+  outline-offset: 3px;
+  --tw-ring-color: var(--tm-primary);
+  --tw-ring-offset-color: var(--tm-page);
+}
+
+.theme :is(button, input, select, textarea):disabled {
+  background-color: var(--tm-disabled);
+  border-color: var(--tm-input-border);
+  color: var(--tm-muted);
+  opacity: 1;
+}
+
+.theme [class~="text-red-200"],
+.theme [class~="text-red-300"] {
+  color: #A32E2E;
+}
+
+.theme :global(.traveler-profile-backdrop) {
+  background-color: rgb(32 53 45 / 0.45);
+}
+
+.theme ::selection {
+  color: var(--tm-text);
+  background-color: var(--tm-gold);
+}
+
+/* Keep photo-card labels readable while retaining their existing photographs. */
+.theme button[class~="from-[#051b16]"] {
+  background-image: linear-gradient(0deg, rgb(247 245 239 / 0.98) 0%, rgb(247 245 239 / 0.94) 24%, rgb(247 245 239 / 0.12) 72%, transparent 100%);
+}
+
+.theme label {
+  color: var(--tm-muted);
+}
+
+/* Home-only palette: preserve the existing theme on all other workspace tabs. */
+.theme.homeTheme {
+  --tm-page: #F7F8F2;
+  --tm-surface: #FFFEFA;
+  --tm-text: #193F32;
+  --tm-primary: #193F32;
+  --tm-primary-hover: #244F3F;
+  --tm-primary-active: #123025;
+  --tm-sage: #E4EDE0;
+  --tm-sand: #F1E8D2;
+  --tm-gold: #D78D35;
+}
+
+.homeTheme .heroOverlay {
+  background-image: linear-gradient(90deg, rgb(247 248 242 / 0.96) 0%, rgb(247 248 242 / 0.9) 36%, rgb(247 248 242 / 0.75) 60%, rgb(247 248 242 / 0.4) 78%, transparent 100%);
+}
+
+.homeTheme .heroShade {
+  background-image: none;
+}
+
+/* Keep the hero description readable throughout the existing scroll animation. */
+.homeTheme [data-lifecycle-word] {
+  color: var(--tm-text);
+  opacity: 1 !important;
+}
+.profilePopover {
+  z-index: 80;
+  width: 224px;
+  max-width: calc(100vw - 24px);
+  max-height: var(--radix-popover-content-available-height);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border: 1px solid #D8E1D7;
+  border-radius: 12px;
+  background: #FFFEFA;
+  color: #20352D;
+  box-shadow: 0 8px 28px rgb(32 53 45 / 0.14);
+}
+
+.profileMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.profileMenuItem svg { flex-shrink: 0; }
+.profileMenuItem:hover { background: #E4EDE0; }
+.profileMenuItem:focus-visible {
+  background: #E4EDE0;
+  outline: 2px solid #285D4D;
+  outline-offset: -2px;
+}
+
+
+/* Contours occupy only the empty outer gutters of the itinerary page. */
+.itineraryTheme { position: relative; isolation: isolate; }
+.itineraryTheme::before, .itineraryTheme::after { content: ''; position: fixed; top: 90px; bottom: 0; width: max(12px, calc((100vw - 1600px) / 2)); pointer-events: none; z-index: -1; opacity: .27; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='660' viewBox='0 0 180 660' fill='none' stroke='%23B8CDB7' stroke-width='1'%3E%3Cpath d='M-100 40C220-30 40 220 250 210M-110 65C220 0 15 250 245 238M-90 90C190 30-5 265 240 266M-85 420C220 275 60 610 260 550M-100 450C230 310 35 635 255 585M-90 475C195 345 20 660 245 615'/%3E%3C/svg%3E") center / 180px 660px repeat-y; }
+.itineraryTheme::before { left: 0; }
+.itineraryTheme::after { right: 0; transform: scaleX(-1); }
+.itineraryTheme .savedTripsBack { padding-left: 0; border-color: transparent; margin-bottom: 12px; }
+.itineraryTheme .saveToast { top: auto; bottom: max(24px, env(safe-area-inset-bottom)); }

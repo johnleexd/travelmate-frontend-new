@@ -52,6 +52,21 @@ export interface DestinationAnchor {
   countryCode: string;
   latitude: number;
   longitude: number;
+  administrativeCode?: string;
+  provinceCode?: string;
+  geographicProvinceCode?: string;
+  administrativeLevel?: "Region" | "Province" | "City" | "Municipality" | "Barangay";
+  coordinateSource?: string;
+  id?: number;
+  provider?: "geonames" | "openstreetmap" | "psgc";
+  providerId?: string;
+  region?: string;
+  sourceFeatureCode?: string;
+  scopeType?: "country" | "area" | "locality" | "natural";
+  parentId?: number;
+  canBrowse?: boolean;
+  locationPath?: Array<{ id: number; providerId: string; name: string; type: string; countryCode: string; level?: number; }>;
+  placeType?: string;
 }
 
 export interface PriceEvidence {
@@ -81,11 +96,16 @@ export interface PlaceEvidence {
   fetchedAt: string;
   openingHours: string;
   address: string;
+  locationScope?: "city" | "nearby";
+  selectedCity?: string;
+  distanceFromDestinationKm?: number;
+  membershipSourceUrl?: string;
+  coordinateSourceUrl?: string;
 }
 
 export interface PlanGrounding {
   version: number;
-  destination: { city: string; country: string; countryCode: string; latitude: number; longitude: number; };
+  destination: DestinationAnchor;
   startingLocation: string;
   startDate: string;
   endDate: string;
@@ -107,6 +127,8 @@ export interface PlanGrounding {
   unknownPriceCount: number;
   budgetStatus: "exceeds-budget" | "needs-confirmation" | "within-quoted-budget";
   limitations: Array<string>;
+  timeZone?: string;
+  unpricedExpenseCount?: number;
 }
 
 export type Role = "traveler" | "admin";
@@ -156,6 +178,16 @@ export interface ImageAttribution {
   license: string;
   licenseUrl?: string;
   sourceUrl: string;
+  provider?: "unsplash";
+  photoId?: string;
+  photographerUrl?: string;
+  photographerUsername?: string;
+  illustrative?: boolean;
+  match?: "place" | "destination" | "activity";
+  downloadLocation?: string;
+  downloadTracked?: boolean;
+  selectedAt?: string;
+  photoType?: "place" | "illustrative" | "destination" | "saved";
 }
 
 export interface DayActivity {
@@ -174,6 +206,12 @@ export interface DayActivity {
   durationMinutes?: number;
   travelMinutes?: number;
   location?: string;
+  id?: string;
+  status?: "planned" | "completed" | "skipped" | "rescheduled";
+  statusChangedAt?: string;
+  managementHistory?: Array<{ action: "complete" | "skip" | "plan" | "edit" | "reschedule" | "replan"; status: "planned" | "completed" | "skipped" | "rescheduled"; at: string; fromDate: string; fromTime: string; toDate: string; toTime: string; }>;
+  scheduleLabel?: "Suggested";
+  googlePlaceId?: string;
 }
 
 export interface DayPlan {
@@ -195,6 +233,9 @@ export interface DayPlan {
   crowdRecommendation?: string;
   crowdFetchedAt?: string;
   crowdRefreshAfter?: string;
+  planningStatus?: "suggested" | "incomplete" | "rest" | "travel";
+  planningReason?: string;
+  scheduleBlocks?: Array<{ kind: "meal" | "free-time" | "unscheduled"; startMinutes: number; endMinutes: number; label: string; }>;
 }
 
 export interface AccommodationPlan {
@@ -223,6 +264,11 @@ export interface PlannedAccommodation {
   source: "openstreetmap" | "manual" | "provider";
   sourceId?: string;
   type?: string;
+  latitude?: number;
+  longitude?: number;
+  photos?: Array<PropertyPhoto>;
+  rating?: number;
+  amenities?: Array<string>;
 }
 
 export interface SelectedFlightCost {
@@ -327,13 +373,14 @@ export interface ItineraryPreferences {
   transportation: string;
   activities: Array<string>;
   pace?: "relaxed" | "balanced" | "active";
+  interests?: Array<string>;
 }
 
 export interface ItineraryResponse {
   destination: string;
   totalBudget: number;
   currency: CurrencyCode;
-  source?: "openai" | "gemini" | "mock";
+  source?: "openai" | "gemini" | "mock" | "catalog";
   manuallyEdited?: boolean;
   partyType?: PartyType;
   travelers?: number;
@@ -598,6 +645,9 @@ export interface VisitedPlace {
   latitude?: number;
   longitude?: number;
   createdAt: string;
+  place?: VisitPlaceReference;
+  imageUrl?: string;
+  imageAttribution?: ImageAttribution;
 }
 
 export interface VisitRecordResponse {
@@ -608,6 +658,52 @@ export interface VisitRecordResponse {
 export interface VisitedPlacesResponse {
   visits: Array<VisitedPlace>;
   page: { total: number; hasMore: boolean; nextCursor?: string; };
+}
+
+export interface VisitPlaceReference {
+  provider: string;
+  placeId: string;
+  name: string;
+  city?: string;
+  country?: string;
+  countryCode?: string;
+  latitude?: number;
+  longitude?: number;
+  sourceUrl?: string;
+  fetchedAt?: string;
+  openingHours?: string;
+  address?: string;
+  locationScope?: "city" | "nearby";
+  selectedCity?: string;
+  distanceFromDestinationKm?: number;
+  membershipSourceUrl?: string;
+  coordinateSourceUrl?: string;
+}
+
+export interface TripVisitCandidate {
+  key: string;
+  fingerprint: string;
+  dayIndex: number;
+  activityIndex: number;
+  name: string;
+  destination: string;
+  latitude?: number;
+  longitude?: number;
+  alreadyRecorded: boolean;
+  place?: VisitPlaceReference;
+  imageUrl?: string;
+  imageAttribution?: ImageAttribution;
+}
+
+export interface TripVisitCandidatesResponse {
+  tripId: string;
+  destination: string;
+  places: Array<TripVisitCandidate>;
+}
+
+export interface TripVisitsRecordResponse {
+  recorded: number;
+  alreadyRecorded: number;
 }
 
 export interface PageInfo {
