@@ -49,8 +49,8 @@ test('restores actual draft data without saving, then uses normal save and retry
   await expect(modal).toHaveCount(0);
   await expect(page.getByRole('heading', { name: 'Your trip itinerary', exact: true })).toBeFocused();
   await expect(page.getByText('Unsaved browser draft restored. Review it, then save your changes.', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'View Itinerary', exact: true }).click();
-  await expect(page.getByText('My unsaved temple visit', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'View day itinerary', exact: true }).click();
+  await expect(page.locator('[data-itinerary-day="1"]:visible').getByRole('heading', { name: 'My unsaved temple visit', exact: true })).toBeVisible();
   expect(state.writes).toEqual([]);
   expect(await page.evaluate(key => JSON.parse(localStorage.getItem(key)!).itinerary, key)).toEqual(itinerary);
   state.failSave();
@@ -61,7 +61,8 @@ test('restores actual draft data without saving, then uses normal save and retry
   await page.getByRole('button', { name: 'Update saved trip', exact: true }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Trip updated successfully' })).toBeVisible();
   expect(await page.evaluate(key => localStorage.getItem(key), key)).toBeNull();
-  expect(state.writes).toEqual([{ action: 'update-trip-itinerary', id: trip.id, itinerary }, { action: 'update-trip-itinerary', id: trip.id, itinerary }]);
+  const expectedWrite = { action: 'update-trip-itinerary', id: trip.id, itinerary, expenseAssumptions: {}, planningPreferences: itinerary.preferences };
+  expect(state.writes).toEqual([expectedWrite, expectedWrite]);
   expect(state.errors).toEqual([]);
   expect(state.prompts()).toBe(0);
 });

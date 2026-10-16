@@ -171,7 +171,7 @@ export function SavedTripMapDialog({ tripId, onClose, initialDayIndex = 0, onTri
           </div>
           <details className={styles.panel} open><summary>Day activities · show or hide details</summary>
             <SmartDayManager tripId={tripId} dayIndex={dayIndex} selectedActivityId={activity?.activityId} selectedIndex={selected} mode={mode} onSaved={managedTripSaved}/>
-            <DayActivityTimeline activities={timeline} budget={budget} selected={selected} onSelect={chooseActivity} currency={manifest.currency} timezone={displayedWeather?.timezone} route={dayRoute?.key === routeKey ? dayRoute.value : undefined}/>
+            <DayActivityTimeline estimatedTotal={day?.estimatedTotal} unpricedCount={day?.unpriced} activities={timeline} budget={budget} selected={selected} onSelect={chooseActivity} currency={manifest.currency} timezone={displayedWeather?.timezone} route={dayRoute?.key === routeKey ? dayRoute.value : undefined}/>
             {activity && <section aria-label="Selected activity details" className={styles.detail}>
               <div className={styles.photo}><SavedTripCoverPhoto src={activity.place?.photo?.src} alt={activity.place ? activity.place.name + ' · verified place photograph' : 'Place photograph'} placeholderLabel="Place photo unavailable"/></div>
               {activity.place?.photo && <p className={styles.credits}><a href={activity.place.photo.attribution.sourceUrl} target="_blank" rel="noreferrer">Photo: {activity.place.photo.attribution.creator}</a> · <a href={activity.place.photo.attribution.licenseUrl || activity.place.photo.attribution.sourceUrl} target="_blank" rel="noreferrer">{activity.place.photo.attribution.license}</a> · Cropped to fit</p>}

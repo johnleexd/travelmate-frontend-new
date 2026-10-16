@@ -37,6 +37,7 @@ import { TravelerJourneyOverview } from '@/components/features/traveler/Traveler
 import { TravelerAccountCenter } from '@/components/features/traveler/TravelerAccountCenter';
 import { SavedTripLifecycle } from '@/components/features/traveler/SavedTripLifecycle';
 import { SavedTripItineraryDialog } from './SavedTripItineraryDialog';
+import { GenerationProgress } from './GenerationProgress';
 import { EditTripDialog } from '@/components/features/traveler/EditTripDialog';
 import { TripLocationMap } from '@/components/features/traveler/TripLocationMap';
 import { SavedTripMapDialog } from './SavedTripMapDialog';
@@ -374,7 +375,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
 
   const restoreDraft = (candidate?: ItineraryDraft) => {
     const draft = candidate ?? recoveryDraft;
-    if (!draft || draft.trip.userId !== data?.user.id) return;
+    if (!draft || draft.trip?.userId !== data?.user.id) return;
     setSavedTripOrigin(null); planningBaselineRef.current = null;
     itineraryBaselineRef.current = null; setLastSuccessfulUpdate(null); setSaveToast(null);
     const plan = draft.itinerary;
@@ -382,7 +383,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     setStaySelectionState(null);
     setRestoredStaySelection({ destination: draft.trip.destination, selection: savedStaySelection(plan) });
     setBudget(draft.trip.budget); setStartDate(draft.trip.startDate); setEndDate(draft.trip.endDate);
-    setTravelers(draft.trip.travelers); setPartyType(draft.trip.partyType); setHistoricalInterests(draft.trip.interests ?? []);
+    setTravelers(draft.trip.partyType === 'solo' ? 1 : draft.trip.partyType === 'couple' ? 2 : draft.trip.travelers); setPartyType(draft.trip.partyType); setHistoricalInterests(draft.trip.interests ?? []);
     restoreDestination(draft.trip, plan.preferences?.transportation || '');
     setTravelStyle(plan.preferences?.travelStyle || 'balanced');
     setAccommodationPreference(plan.preferences?.accommodation || 'no preference');
@@ -749,6 +750,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   }
   async function saveCurrentTrip() {
     if (!itinerary || savePendingRef.current) return;
+    if (itinerary.partyType !== partyType || itinerary.travelers !== travelers) { setMessage('Traveling mode or traveler count has changed. Generate an updated plan before saving costs for the new party. Your recorded activities and edits are preserved.'); return; }
     savePendingRef.current = true;
     setBusy(true); setSavingTrip(true); setSaveToast(null); setMessage('');
     try {
@@ -785,6 +787,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
 
   async function saveManualChanges() {
     if (!itinerary || savePendingRef.current) return;
+    if (itinerary.partyType !== partyType || itinerary.travelers !== travelers) { setMessage('Traveling mode or traveler count has changed. Generate an updated plan before saving costs for the new party. Your recorded activities and edits are preserved.'); return; }
     savePendingRef.current = true;
     setBusy(true); setSavingTrip(true); setSaveToast(null); setMessage('');
     try {
@@ -859,7 +862,8 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
 
   function applyLoadedTrip(trip: SavedTrip, keepPlan: boolean, owner: string | null) {
       providerBaseRef.current = null;
-      const plan = savedItinerary(trip.itinerary);
+      const recordedPlan = savedItinerary(trip.itinerary);
+      const plan = recordedPlan && !recordedPlan.grounding ? { ...recordedPlan, partyType: recordedPlan.partyType ?? trip.partyType, travelers: recordedPlan.travelers ?? trip.travelers } : recordedPlan;
       if (!plan) return;
       capturePlanningBaselineRef.current = true;
       itineraryBaselineRef.current = editableItineraryFingerprint(plan);
@@ -868,7 +872,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       setRestoredStaySelection({ destination: trip.destination, selection: savedStaySelection(plan) });
       const draftDates = keepPlan ? { startDate: trip.startDate, endDate: trip.endDate, movedForward: false } : regenerationDraftDates(trip.startDate, trip.endDate);
       setBudget(trip.budget); setStartDate(draftDates.startDate); setEndDate(draftDates.endDate);
-      setTravelers(trip.travelers); setPartyType(trip.partyType);
+      setTravelers(trip.partyType === 'solo' ? 1 : trip.partyType === 'couple' ? 2 : trip.travelers); setPartyType(trip.partyType);
       setHistoricalInterests(trip.interests ?? []); setEditingTripId(trip.status === 'active' ? trip.id : null);
       setRegenerationTargetId(keepPlan ? null : trip.id);
       restoreDestination(trip, plan.preferences?.transportation || '');
@@ -1038,6 +1042,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   };
   const budgetItinerary = navigation.view.tripId && visitTripId !== navigation.view.tripId ? null : itinerary;
   const budgetReviewOptions = {
+    party: { partyType, travelers },
     budget: itinerary && budgetReady && currency === itinerary.currency ? budget : undefined,
     accommodation: staySelection && staySelectionState !== budgetedStaySelection ? {
       selected: staySelection.value !== 'later',
@@ -1069,10 +1074,9 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const editorActivity = activityEditor?.activityIndex !== null && activityEditor?.activityIndex !== undefined ? editorDay?.activities[activityEditor.activityIndex] : undefined;
   const changePartyType = (nextPartyType: PartyType) => {
     setPartyType(nextPartyType);
-    setTravelers(nextPartyType === 'solo' ? 1 : nextPartyType === 'couple' ? 2 : nextPartyType === 'family' ? 4 : 3);
+    setTravelers(nextPartyType === 'solo' ? 1 : nextPartyType === 'couple' ? 2 : (partyType === 'family' || partyType === 'friends') && Number.isInteger(travelers) && travelers >= 2 && travelers <= 20 ? travelers : nextPartyType === 'family' ? 4 : 3);
     setStaySelectionState(null);
-    setItinerary(null);
-    setMessage('');
+    setMessage(itinerary ? 'Party details changed. Your recorded itinerary and edits are preserved. Generate an updated plan before saving costs for the new party.' : '');
   };
   const changeCurrency = (nextCurrency: CurrencyCode) => {
     if (nextCurrency === currency) return;
@@ -1180,6 +1184,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
               savingTrip={savingTrip}
               updated={tripUpdated}
               travelers={travelers}
+              party={{ partyType, travelers }}
               referenceCurrency={referenceCurrency}
               exchangeQuotes={exchangeQuotes}
               onSave={() => void (manualDirty ? saveManualChanges() : saveCurrentTrip())}
@@ -1285,7 +1290,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
                     </li>;
                   })}</ul>
                 </div>}
-                {busy && <p id="generation-progress" role="status" className="text-xs leading-5 text-white/65 md:col-span-2">{generationBusy ? 'Your itinerary is being generated. Please wait for it to finish.' : 'Please wait for the current workspace update to finish before generating a trip.'}</p>}
+                {generationBusy ? <GenerationProgress/> : busy && <p id="generation-progress" role="status" className="text-xs leading-5 text-white/65 md:col-span-2">Please wait for the current workspace update to finish before generating a trip.</p>}
                 {generationFailed && message && <p role="alert" className="rounded-lg border border-amber-300/20 bg-amber-300/5 px-3 py-2 text-sm leading-5 text-amber-200 md:col-span-2">{message}</p>}
                 <div className="flex min-w-0 flex-col gap-1.5 md:col-start-2 md:row-start-1 md:w-52 md:self-center">
                   <button type="button" disabled={busy || Boolean(generationRequirement)} aria-describedby={busy ? 'generation-progress' : generationRequirement ? 'generation-requirements' : undefined} onClick={generate} className="group inline-flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#ffcf70] bg-[#ffcf70] px-4 py-3 text-sm font-bold text-[#102824] transition-colors enabled:hover:bg-[#ffdc91] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ffcf70] disabled:cursor-not-allowed disabled:border-white/15 disabled:bg-white/[.07] disabled:text-white/50">{generationBusy ? 'Building your trip...' : busy ? 'Please wait…' : generationFailed ? 'Retry generation' : 'Generate my trip'}{busy ? <LoaderCircle aria-hidden="true" size={17} className="motion-safe:animate-spin"/> : <ArrowRight aria-hidden="true" size={17} className="transition-transform group-enabled:hover:translate-x-1"/>}</button>

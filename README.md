@@ -1,5 +1,20 @@
 # TravelMate Next.js frontend
 
+Activity allowances show their recorded participant coverage. Solo covers one
+traveler; larger parties show combined totals and per-person planning shares.
+Itinerary summaries and Budget Review share the backend expense ledger, including
+currency rounding, room nights, shared fares, selected costs and daily envelopes.
+The entered trip budget is a limit for the entire party. Family and friends have
+an expandable traveler breakdown; couple shares are visible together.
+
+Historical amounts without a recorded cost basis remain saved but are excluded
+from comparable estimates and request budget clarification. Editing an activity
+explicitly confirms a total for the recorded party. Changing party details leaves
+the recorded plan intact and flags it until an updated plan is generated and
+saved; it never silently multiplies previous party totals. No export feature is
+currently implemented. Optional local browser verification can read an ignored
+`.cache/party-budget-trip.json` copy without changing the saved trip.
+
 This project contains only the TravelMate browser UI. It uses Next.js, React,
 and strict TypeScript. Backend requests to `/api/*` are rewritten to the Express
 service configured by `BACKEND_URL` (default `http://localhost:5000`).
@@ -20,6 +35,13 @@ area requests are cached and shared, and budget/interest edits do not refetch
 geography. The backend owns all geographic validation and provider requests.
 
 Destination defaults to one editable input: **Where do you want to go?**
+
+Verified localities can be selected without any child results. The country
+browser selects a city/town directly; **Browse within** is a separate optional
+action, with **Use [place] as destination** available at the current locality.
+Searches retain the selected country. Empty search results, absent child records,
+and provider failures have distinct messages with Back/retry controls. Unclassified
+administrative areas remain browsing choices; missing towns are never invented.
 Results show their country, parent location and type. The small **Browse by country**
 link opens a cream modal with Close, Back, a current-area breadcrumb, full-source
 search at every level and pagination. Users can browse country → available
@@ -150,6 +172,30 @@ and configure its `.env` with `DATABASE_URL` before the first run.
 For a separately managed backend, `npm.cmd run dev:frontend` starts only Next.js.
 
 ## Automated checks
+
+System Health contains the admin Activity Log with Date & Time, Performed By,
+Action, and Target / Record ID columns. Its existing search now queries all stored
+activity through the admin-only `/api/platform/activity` endpoint, with 10-record
+pages, loading/retry states and stale-request protection. Actor names and roles
+come from the database actor relationship; missing identities stay unavailable.
+Readable labels do not change stored action values. Names and roles reflect the
+current account, and generic historical actions remain generic. The dark green
+table becomes labeled cards on narrow screens without adding a sidebar entry.
+Run `node node_modules/@playwright/test/cli.js test --config playwright.activity-log.config.ts`
+for controlled desktop/mobile checks; backend integration tests separately verify
+actual database relationships, search, pagination and authorization.
+
+Draft recovery restores the validated browser draft without passing the button's
+click event as draft data. During generation, the planner shows elapsed time and
+an advisory message after 30 seconds; it does not invent percentage progress or
+start another request. Completed itineraries and generation errors are displayed
+without waiting for the separate advisory-weather lookup. If weather arrives
+later, use the existing conditions refresh to load it.
+
+Run the controlled desktop/mobile recovery and waiting-state checks with
+`node node_modules/@playwright/test/cli.js test --config playwright.generation-recovery.config.ts`.
+Provider response times still vary; these checks use controlled responses rather
+than asserting a fixed duration for live AI generation.
 
 Run the fast frontend checks with:
 

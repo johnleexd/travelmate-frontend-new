@@ -10,7 +10,7 @@ function validDay(plan: ItineraryResponse, dayIndex: number) {
   if (!Number.isInteger(dayIndex) || dayIndex < 0 || dayIndex >= plan.days.length) throw new Error('Select a valid itinerary day.');
 }
 
-function normalizedActivity(activity: DayActivity, travelers: number, currency: ItineraryResponse['currency']): DayActivity {
+function normalizedActivity(activity: DayActivity, _travelers: number, currency: ItineraryResponse['currency']): DayActivity {
   const cost = Number(activity.estimatedCost);
   if (!activity.title.trim() || activity.title.length > 160) throw new Error('Activity title is required and must not exceed 160 characters.');
   if (!Number.isFinite(cost) || cost < 0 || cost > 10_000_000) throw new Error(`Activity cost must be between ${formatMoney(0, currency)} and ${formatMoney(10_000_000, currency)}.`);
@@ -21,7 +21,7 @@ function normalizedActivity(activity: DayActivity, travelers: number, currency: 
     title: activity.title.trim(),
     description: activity.description.trim(),
     estimatedCost: roundMoney(cost,currency),
-    unitCost: activity.priceEvidence ? activity.unitCost : allocateEqualShares(cost,travelers,currency)[0],
+    unitCost: activity.unitCost,
     icon: activity.category,
   };
 }
@@ -30,7 +30,7 @@ export function recalculateItineraryCosts(plan: ItineraryResponse): ItineraryRes
   const travelers = Math.max(1, plan.travelers || 1);
   const nights = Math.max(0, plan.accommodation?.nights || 0);
   const nightlyRate = Math.max(0, plan.accommodation?.nightlyRate || 0);
-  const accommodationTotal = plan.accommodation?.quotedTotal ?? (plan.grounding?.categories.accommodation ?? roundMoney(nightlyRate * nights,plan.currency));
+  const accommodationTotal = expenseLedger(plan).categories.find(row => row.key === 'accommodation')?.amount ?? 0;
   const lodgingNights = nights || plan.grounding?.nights || 0;
   const lodgingByNight = lodgingNights ? allocateNightlyCosts(accommodationTotal, lodgingNights, plan.currency) : [];
   const days = plan.days.map((day, dayIndex) => {
@@ -57,7 +57,7 @@ export function recalculateItineraryCosts(plan: ItineraryResponse): ItineraryRes
   return {
     ...plan,
     manuallyEdited: true,
-    days,
+    days: days.map((day, index) => ({ ...day, totalCost: ledger.days[index].amount ?? 0 })),
     budgetOptimization,
     budgetSummary: { ...plan.budgetSummary, total: groupBudget, accommodationActual: accommodationTotal, travelOptionsActual: plan.selectedTravelCosts?.total ?? 0, plannedSpend, remainingBudget, shortfall },
     costSharing: plan.costSharing ? {
@@ -81,7 +81,7 @@ export function upsertActivity(plan: ItineraryResponse, dayIndex: number, activi
   if (activityIndex !== null && !existing) throw new Error('Select a valid activity.');
   // Notes, timing and cost do not identify a place. A title/location change does.
   const identityUnchanged = existing && existing.title === draft.title.trim() && (existing.location || '') === (draft.location || '').trim();
-  const priceUnchanged = identityUnchanged && existing.estimatedCost === draft.estimatedCost && existing.category === draft.category;
+  const priceUnchanged = identityUnchanged && existing.priceEvidence && existing.estimatedCost === draft.estimatedCost && existing.category === draft.category;
   const userEvidence: Partial<DayActivity> = !priceUnchanged ? { ...(identityUnchanged ? {} : { place: undefined, imageUrl: undefined, imageAttribution: undefined, placeVerification: 'unverified' }), unitCost: draft.estimatedCost,
     priceEvidence: { status: 'estimate', source: 'user-entered', basis: 'User-entered whole-group estimate after editing; venue and price are unverified.', fetchedAt: new Date().toISOString(), currency: plan.currency, unit: 'group', unitAmount: draft.estimatedCost, quantity: 1, participants: plan.travelers || 1, needsConfirmation: true } } : {};
   const activity: DayActivity = normalizedActivity({ ...existing, ...draft, durationMinutes: draft.durationMinutes ?? existing?.durationMinutes, ...userEvidence, ...(!identityUnchanged ? { place: undefined, googlePlaceId: undefined, imageUrl: undefined, imageAttribution: undefined, placeVerification: 'unverified' as const } : {}), icon: draft.category }, Math.max(1, plan.travelers || 1), plan.currency);

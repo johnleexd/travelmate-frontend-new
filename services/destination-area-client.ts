@@ -5,7 +5,7 @@ import { retryAfterMilliseconds } from './exchange-rate-client.ts';
 type Parent = Pick<LocationSuggestion, 'id' | 'countryCode'>;
 type ResponseData = DestinationAreasResponse | AreaComparisonResponse;
 export function createDestinationAreaClient(fetcher: typeof fetch = (...args) => fetch(...args), now = Date.now) {
-  const cache = new Map<string, { value?: ResponseData; error?: Error; expiresAt: number }>();
+  const cache = new Map<string, { value?: ResponseData; error?: Error; expiresAt: number; retryAt?: number }>();
   const pending = new Map<string, Promise<ResponseData>>();
 
   function validate(value: ResponseData, parent: Parent, ids?: number[]) {
@@ -36,21 +36,28 @@ export function createDestinationAreaClient(fetcher: typeof fetch = (...args) =>
     const shared = pending.get(url); if (shared) return consume(shared as Promise<T>, signal);
     const task = (async () => {
       let failureExpiry = now() + 60_000;
+      let retryAt = 0;
       try {
         const response = await fetcher(url, { signal: AbortSignal.timeout(40_000) });
         failureExpiry = Math.max(failureExpiry, now() + retryAfterMilliseconds(response.headers.get('Retry-After'), now()));
+        if (response.status === 429) retryAt = failureExpiry;
         const value = await handleResponse<T>(response);
         validate(value, parent, ids);
         cache.set(url, { value, expiresAt: Math.min(Date.parse(value.expiresAt), now() + 24 * 60 * 60_000) });
         return value;
       } catch (cause) {
         const error = cause instanceof Error ? cause : new Error('Area suggestions are temporarily unavailable.');
-        cache.set(url, { error, expiresAt: failureExpiry }); throw error;
+        cache.set(url, { error, expiresAt: failureExpiry, retryAt }); throw error;
       }
     })().finally(() => { pending.delete(url); while (cache.size > 300) cache.delete(cache.keys().next().value!); });
     pending.set(url, task); return consume(task, signal);
   }
   return {
+    clearSearchError(parent: Parent, query = '', offset = 0) {
+      const url = `/api/locations/areas?${new URLSearchParams({ parentId: String(parent.id), countryCode: parent.countryCode, query: query.trim(), offset: String(offset), hierarchy: 'true' })}`;
+      const hit = cache.get(url);
+      if (hit?.error && (hit.retryAt ?? 0) <= now()) cache.delete(url);
+    },
     search(parent: Parent, query = '', offset = 0, signal?: AbortSignal) {
       return get<DestinationAreasResponse>(`/api/locations/areas?${new URLSearchParams({ parentId: String(parent.id), countryCode: parent.countryCode, query: query.trim(), offset: String(offset), hierarchy: 'true' })}`, parent, signal);
     },

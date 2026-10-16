@@ -31,6 +31,15 @@ test('wrong-parent, foreign-country and invalid coordinates cannot be displayed 
     const client=createDestinationAreaClient(async ()=>Response.json(bad),()=>START);await assert.rejects(client.search(parent),/validat|invalid/);
   }
 });
+test('explicit retry clears a transient provider failure but respects rate-limit Retry-After', async () => {
+  let calls=0;
+  const client=createDestinationAreaClient(async()=>++calls===1?Response.json({error:'Provider unavailable'},{status:502}):Response.json(data()),()=>START);
+  await assert.rejects(client.search(parent));
+  client.clearSearchError(parent); await client.search(parent); assert.equal(calls,2);
+  let rateCalls=0;
+  const limited=createDestinationAreaClient(async()=>{rateCalls++;return Response.json({error:'Rate limited'},{status:429,headers:{'Retry-After':'120'}});},()=>START);
+  await assert.rejects(limited.search(parent)); limited.clearSearchError(parent); await assert.rejects(limited.search(parent)); assert.equal(rateCalls,1);
+});
 test('comparisons cache city sets independent of order and cannot include unrelated city IDs', async () => {
   let calls=0;
   const payload={parentId:parent.id,countryCode:'JP',profiles:[{cityId:1,foodPlaces:3,culturePlaces:1,naturePlaces:2},{cityId:2,foodPlaces:1,culturePlaces:0,naturePlaces:2}],fetchedAt:new Date(START).toISOString(),expiresAt:new Date(START+6*60*60_000).toISOString(),sourceUrl:'https://www.openstreetmap.org/copyright',radiusKm:1,disclaimer:'Mapped sample; prices unavailable.'};

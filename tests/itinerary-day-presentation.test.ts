@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import type { DayActivity, ItineraryResponse } from '../lib/contracts.ts';
 import { dailyCardEntries, isDailyAllowance } from '../lib/itinerary-day-presentation.ts';
 
-const entry = (overrides: Partial<DayActivity>): DayActivity => ({ title: 'Visit', time: 'Flexible', description: '', category: 'activity', icon: 'map', estimatedCost: 0, ...overrides });
+const entry = (overrides: Partial<DayActivity>): DayActivity => ({ priceEvidence: { status: 'estimate', source: 'user-entered', basis: 'Explicit party total', currency: 'PHP', fetchedAt: '2040-01-01T00:00:00Z', unitAmount: overrides.estimatedCost ?? 0, unit: 'group', quantity: 1, participants: 1, needsConfirmation: true }, title: 'Visit', time: 'Flexible', description: '', category: 'activity', icon: 'map', estimatedCost: 0, ...overrides });
 test('daily cards separate untimed allowances without sorting or changing handler indices', () => {
   const meal = entry({ title: 'Daily meals in Manila', time: 'Daily allowance', category: 'food', estimatedCost: 250 });
   const museum = entry({ title: 'Museum', time: '11:00', estimatedCost: 200 });
@@ -27,9 +27,9 @@ test('actual timed meals and named place visits remain activities, even with bud
 });
 test('missing itemization and legacy mismatched totals remain explicit without changing saved amounts', () => {
   const plan = { currency: 'JPY', days: [{ totalCost: 100, activities: [] }, { totalCost: 50, activities: [entry({ estimatedCost: 100 })] }] } as unknown as ItineraryResponse;
-  assert.equal(dailyCardEntries(plan, 0).remainder, 100);
+  assert.equal(dailyCardEntries(plan, 0).remainder, 0);
   const negative = dailyCardEntries(plan, 1);
-  assert.equal(negative.remainder, -50);
-  assert.match(negative.remainderLabel, /needs confirmation/);
-  assert.equal(negative.entryTotal + negative.remainder, 50);
+  assert.equal(negative.remainder, 0);
+  assert.equal(negative.entryTotal, 0, 'mixed currency is excluded');
+  assert.equal(plan.days[1].totalCost, 50, 'recorded totals remain untouched');
 });

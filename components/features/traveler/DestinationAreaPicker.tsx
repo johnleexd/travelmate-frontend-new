@@ -6,6 +6,7 @@ import { useDestinationAreas } from '@/hooks/use-destination-areas';
 import { destinationAreaClient } from '@/services/destination-area-client';
 import { fetchDestinationContext } from '@/services/destination-planning.service';
 import { formatMoney, type CurrencyCode } from '@/lib/domain';
+import { isDestinationLocality, needsDestinationArea } from '@/lib/generated/location-scope';
 
 function interestScore(profile: AreaInterestProfile | undefined, interests: string) {
   if (!profile) return 0;
@@ -23,7 +24,8 @@ export function DestinationAreaPicker({ location, budget, currency, currencyReso
   const [active, setActive] = useState(-1);
   const [help, setHelp] = useState(false);
   const [comparison, setComparison] = useState<{ key: string; result?: AreaComparisonResponse; error?: string }>({ key: '' });
-  const localities = areas.areas.filter(city => city.scopeType === 'locality' || !city.scopeType && /city|capital|locality|municipality|town|village|hamlet/i.test(city.placeType));
+  const localities = areas.areas.filter(isDestinationLocality);
+  const canSelectParent = isDestinationLocality(parent);
   const ids = localities.slice(0,4).map(city => city.id).join(',');
   const parentId = parent.id, countryCode = parent.countryCode;
   const currencyKey = `${parentId}:${countryCode}`;
@@ -54,7 +56,7 @@ export function DestinationAreaPicker({ location, budget, currency, currencyReso
   const profileFor = (id: number) => comparison.key === comparisonKey ? comparison.result?.profiles.find(profile => profile.cityId === id) : undefined;
   const choices = [...localities.slice(0,4)].sort((a,b) => interestScore(profileFor(b.id), interests) - interestScore(profileFor(a.id), interests));
   function browse(city: LocationCandidate) { areas.search(''); setActive(-1); setOpen(true); setHelp(false); setParents(current => [...current,city]); onBrowse(city); }
-  function choose(city: LocationCandidate) { if (city.scopeType === 'area' || city.scopeType === 'country' || !city.scopeType && ['Country','Region','Province','Administrative area'].includes(city.placeType)) browse(city); else onSelect(city); }
+  function choose(city: LocationCandidate) { if (needsDestinationArea(city)) browse(city); else onSelect(city); }
   function back() {
     if (parents.length === 1) { onClear(); return; }
     const previous = parents.at(-2)!; areas.search(''); setActive(-1); setHelp(false); setOpen(true);
@@ -71,15 +73,22 @@ export function DestinationAreaPicker({ location, budget, currency, currencyReso
   return <div className={inModal?'space-y-2 text-xs text-slate-300':'mt-3 space-y-2 rounded-xl border border-slate-700 p-3 text-xs text-slate-300'} data-area-state={areas.status}>
     {inModal && <><button type="button" aria-label="Back" onClick={back} className="min-h-11 rounded-lg px-2 py-2 font-bold text-cyan-300 focus-visible:outline-2">← Back{parents.length>1?` to ${parents.at(-2)!.name}`:' to countries'}</button><nav aria-label="Current browsing selection" className="flex flex-wrap items-center gap-1 text-[11px] text-slate-400"><span>Countries</span>{(parent.locationPath?.length ? parent.locationPath.map(part=>part.name) : parents.map(part=>part.name)).map((name,index,all)=><span key={`${index}:${name}`} className="min-w-0 break-words"><span aria-hidden="true"> › </span><span aria-current={index===all.length-1?'location':undefined}>{name}</span></span>)}</nav></>}
     <div className="flex flex-wrap items-center justify-between gap-2"><label className="block font-bold" htmlFor="destination-area-search">Places within {parent.label}</label>{!inModal && <button type="button" onClick={onClear} className="min-h-11 px-2 py-2 font-bold text-cyan-300 focus-visible:outline-2">Change or clear area</button>}</div>
+    {canSelectParent && <section aria-label="Use current destination" className="rounded-xl border border-[#D8E1D7] bg-[#E5EDDF] p-3 text-[#20352D]">
+      <p className="font-semibold">{parent.contextLabel}</p>
+      <p className="mt-1 text-[11px]">You can choose this place for your trip. Browsing smaller places is optional.</p>
+      <button type="button" onClick={() => onSelect(parent)} className="mt-2 min-h-11 rounded-lg bg-[#ffcf70] px-3 py-2 font-bold text-white focus-visible:outline-2">Use {parent.name} as destination</button>
+    </section>}
     {!inModal && <p className="text-[11px] text-slate-400">Choose a province, state, or region to browse further, or select a city or town directly. Choosing a city finishes destination selection.</p>}
     {!inModal && parents.length > 1 && <button type="button" onClick={back} className="min-h-11 px-3 py-2 font-bold text-cyan-300">← Back to {parents.at(-2)!.label}</button>}
     {location.countryCode === 'PH' && location.placeType === 'Island' && <p className="text-[11px] text-slate-400">An island is separate from a province. For the complete province list, choose its Province result in Destination.</p>}
-    {areas.total !== undefined && <p className="text-[11px] text-slate-400">{areas.areas.length} of {areas.total} available matches shown.</p>}
+    {areas.status === 'ready' && areas.total !== undefined && <p className="text-[11px] text-slate-400">{areas.areas.length} of {areas.total} available matches shown.</p>}
     <input id="destination-area-search" role="combobox" aria-label="City or town within selected destination" aria-autocomplete="list" aria-expanded={open && areas.areas.length > 0} aria-controls="destination-area-options" aria-activedescendant={active >= 0 && active < areas.areas.length ? `destination-area-${active}` : undefined} aria-describedby="destination-area-status" value={areas.query} maxLength={80} onFocus={() => setOpen(true)} onChange={event => { areas.search(event.target.value); setActive(-1); setOpen(true); }} onKeyDown={keyboard} placeholder="Search all available places within this area" autoComplete="off" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white placeholder:text-slate-500 focus:border-cyan-400" />
     {open && areas.areas.length > 0 && <ul id="destination-area-options" role="listbox" aria-label="Suggested cities in this area" className="max-h-60 overflow-y-auto rounded-xl border border-slate-700 bg-slate-950/80 p-1">
-      {areas.areas.map((city,index) => <li key={city.id} id={`destination-area-${index}`} role="option" aria-selected={active === index}><button type="button" onClick={() => choose(city)} onMouseEnter={() => setActive(index)} className={`min-h-11 w-full rounded-lg px-3 py-2 text-left hover:bg-slate-800 focus:bg-slate-800 focus-visible:outline-2 ${active === index ? 'bg-slate-800' : ''}`} aria-label={`Choose ${city.name}`}><span className="flex items-start gap-3"><MapPin aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-cyan-300"/><span className="min-w-0"><strong className="block text-white">{city.name}</strong><span className="block text-[11px] text-slate-400">{city.contextLabel}</span></span></span>{city.coordinateStatus === 'unresolved' && <span className="block text-[11px] text-amber-200">Select to verify this location.</span>}</button>{!inModal && city.canBrowse && city.scopeType === 'locality' && <button type="button" onClick={() => browse(city)} className="min-h-11 px-3 py-2 font-bold text-cyan-300">Browse within {city.name}</button>}</li>)}
+      {areas.areas.map((city,index) => <li key={city.id} id={`destination-area-${index}`} role="option" aria-selected={active === index}><button type="button" onClick={() => choose(city)} onMouseEnter={() => setActive(index)} className={`min-h-11 w-full rounded-lg px-3 py-2 text-left hover:bg-slate-800 focus:bg-slate-800 focus-visible:outline-2 ${active === index ? 'bg-slate-800' : ''}`} aria-label={`Choose ${city.name}`}><span className="flex items-start gap-3"><MapPin aria-hidden="true" size={18} className="mt-0.5 shrink-0 text-cyan-300"/><span className="min-w-0"><strong className="block text-white">{city.name}</strong><span className="block text-[11px] text-slate-400">{city.contextLabel}</span></span></span>{city.coordinateStatus === 'unresolved' && <span className="block text-[11px] text-amber-200">Select to verify this location.</span>}</button>{city.canBrowse && isDestinationLocality(city) && <button type="button" onClick={() => browse(city)} className="min-h-11 px-3 py-2 font-bold text-cyan-300">Browse within {city.name}</button>}</li>)}
     </ul>}
-    <p id="destination-area-status" role="status" className="text-[11px] text-slate-400">{areas.status === 'loading' ? 'Loading suggested cities and towns...' : inModal && areas.status === 'ready' ? 'Search checks all available records within this area.' : areas.message}</p>
+    <p id="destination-area-status" role="status" className="text-[11px] text-slate-400">{areas.status === 'loading' ? 'Loading suggested cities and towns...' : areas.status === 'error' ? 'Places could not be loaded. This is a provider error, not an empty list. Use Back or retry.' : areas.status === 'empty' ? areas.query.trim() ? `No search matches for "${areas.query.trim()}" within ${parent.name}. Clear the search or go back.` : `No child places are recorded within ${parent.name}. ${canSelectParent ? 'Select this place above, or go back.' : 'Go back to choose another place; lower-level coverage may be unavailable.'}` : inModal ? 'Search checks all available records within this area.' : areas.message}</p>
+    {areas.status === 'empty' && <div className="flex flex-wrap gap-2">{areas.query.trim() && <button type="button" onClick={() => { areas.search(''); setActive(-1); }} className="min-h-11 rounded-lg border border-current/30 px-3 py-2 font-bold">Clear place search</button>}<button type="button" onClick={back} className="min-h-11 rounded-lg border border-current/30 px-3 py-2 font-bold">{parents.length > 1 ? `Back to ${parents.at(-2)!.name}` : 'Back to countries'}</button></div>}
+    {(areas.status === 'error' || areas.status === 'empty' && areas.coverage === 'partial-geographic') && <p className="text-[11px] text-slate-400">{areas.message}</p>}
     {areas.status === 'error' && <button type="button" onClick={areas.retry} className="border border-amber-300/40 px-3 py-2 font-bold text-amber-200">Retry area suggestions</button>}
     {areas.query.trim().length >= 2 && areas.status !== 'loading' && <button type="button" onClick={() => onVerify(`${areas.query.trim()}, ${parent.label}`)} className="min-h-11 px-3 py-2 font-bold text-cyan-300">Verify “{areas.query.trim()}” within {parent.label} with OpenStreetMap</button>}
     <div className="flex flex-wrap gap-2">

@@ -1,5 +1,7 @@
 'use client';
 
+import { needsDestinationArea } from '@/lib/generated/location-scope';
+
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ProviderAccommodation, FreshnessMetadata, LiveAccommodation, NearbyAccommodation, LocationSuggestion, LocationCandidate, TransportationOption } from '@/lib/contracts';
 import { SUPPORTED_CURRENCIES, type CurrencyCode, type SavedTrip } from '@/lib/domain';
@@ -41,7 +43,7 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
   const contextIdentity = JSON.stringify([selectedDestination?.id, selectedDestination?.countryCode, selectedDestination?.latitude, selectedDestination?.longitude]);
   const manualCurrency = useRef<{ identity: string; currency: CurrencyCode } | null>(null);
   const [resolvedContextIdentity, setResolvedContextIdentity] = useState('');
-  const accommodationNeedsArea = Boolean(selectedDestination && (['country','area'].includes(selectedDestination.scopeType || '') || ['Country','Region','Province','Island','Administrative area'].includes(selectedDestination.placeType)));
+  const accommodationNeedsArea = Boolean(selectedDestination && needsDestinationArea(selectedDestination));
   const accommodationDatesValid = /^\d{4}-\d{2}-\d{2}$/.test(startDate) && /^\d{4}-\d{2}-\d{2}$/.test(endDate) && Number.isFinite(Date.parse(startDate)) && Number.isFinite(Date.parse(endDate)) && endDate >= startDate && (Date.parse(endDate) - Date.parse(startDate)) / 86_400_000 < 31;
   const accommodationQueryKey = JSON.stringify([selectedDestination?.label, selectedDestination?.countryCode, selectedDestination?.placeType, selectedDestination?.providerId, selectedDestination?.latitude, selectedDestination?.longitude, startDate, endDate, travelers, currency, currencyResolved]);
   const [staysBusy, setStaysBusy] = useState(false);
@@ -210,7 +212,7 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
     setDestination(location.label);
     manualCurrency.current = null;
     setSelectedDestination(location);
-    if (!preserveBrowsing) setBrowsingDestination(location.canBrowse || ['country','area'].includes(location.scopeType || '') || ['Country','Region','Province','Island','Administrative area'].includes(location.placeType) ? location : null);
+    if (!preserveBrowsing) setBrowsingDestination(needsDestinationArea(location) ? location : null);
     setLocationsBusy(false);
     setSuggestions([]);
     setLocationMessage('');
@@ -266,7 +268,7 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
     setDestination(trip.destination);
     manualCurrency.current = { identity: JSON.stringify([restored.id,restored.countryCode,restored.latitude,restored.longitude]), currency: trip.currency };
     setSelectedDestination(restored);
-    setBrowsingDestination(restored.canBrowse || ['country','area'].includes(restored.scopeType || '') ? restored : null);
+    setBrowsingDestination(needsDestinationArea(restored) ? restored : null);
     setSuggestions([]);
     setCurrencyState(trip.currency);
     setCurrencyResolved(true);

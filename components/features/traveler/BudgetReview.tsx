@@ -1,4 +1,5 @@
 'use client';
+import { PartyCostBreakdown } from './PartyCostBreakdown';
 
 import type { Ref } from 'react';
 import { ArrowLeft, ArrowRight, BarChart3, BedDouble, BusFront, Check, CircleAlert, Coins, Info, LoaderCircle, ReceiptText, ShieldCheck, Ticket, Utensils, WalletCards } from 'lucide-react';
@@ -35,6 +36,7 @@ export function BudgetReview({ itinerary, options, loading, headingRef, onBack, 
         <article className={styles.summaryCard}><span className={styles.goldIcon}><BarChart3 size={27} aria-hidden="true"/></span><div><h2>{review.incomplete ? 'Total estimated cost (partial)' : 'Total estimated cost'}</h2><strong data-budget-amount="cost">{money(review.total)}</strong><small>{`Includes ${formatMoney(review.allowanceTotal, review.currency)} in suggested allowances${review.incomplete ? '; some expenses remain unpriced' : ''}`}</small></div></article>
         <article className={`${styles.summaryCard} ${over ? styles.overBudget : review.incomplete ? styles.provisional : styles.remaining}`}><span className={over || review.incomplete ? styles.statusIcon : styles.greenIcon}>{over ? <CircleAlert size={27} aria-hidden="true"/> : <Coins size={27} aria-hidden="true"/>}</span><div><h2>{over ? 'Amount over budget' : 'Remaining budget'}</h2><strong data-budget-amount="remaining">{money(review.remaining === null ? null : Math.abs(review.remaining))}</strong><small>{over ? <><CircleAlert size={14} aria-hidden="true"/>Known estimates exceed your budget</> : review.incomplete ? <><Info size={14} aria-hidden="true"/>Provisional · affordability needs confirmation</> : <><Check size={15} aria-hidden="true"/>Within your estimated budget</>}</small></div></article>
       </section>
+      <PartyCostBreakdown itinerary={itinerary} review={review}/>
       <div className={styles.columns}>
         <section className={styles.panel} aria-labelledby="budget-breakdown-heading">
           <h2 id="budget-breakdown-heading">Estimated cost breakdown</h2>

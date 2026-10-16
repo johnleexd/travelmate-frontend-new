@@ -1,4 +1,5 @@
 'use client';
+import { expenseLedger } from '@/lib/generated/expense-ledger';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -124,7 +125,7 @@ export function EditTripDialog({ trip: summary, onClose, onSave, onChangeDetails
   const day = plan?.days[dayIndex];
   const editingDay = editor ? plan?.days[editor.dayIndex] : undefined;
   const displayedTrip = trip || initialTrip;
-  const spend = plan?.budgetSummary.plannedSpend ?? plan?.days.reduce((sum, current) => sum + current.totalCost, 0) ?? 0;
+  const spend = plan ? expenseLedger(plan).total : null;
   const controlClass = 'grid size-9 shrink-0 place-items-center rounded-lg border border-white/15 text-white/65 hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-[#ffcf70] disabled:opacity-30';
 
   return createPortal(<>
@@ -156,7 +157,7 @@ export function EditTripDialog({ trip: summary, onClose, onSave, onChangeDetails
               </div></div>
               {removing === index && <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-white/10 pt-3"><p className="mr-auto text-xs text-white/65">Remove this activity from the draft?</p><button type="button" onClick={() => setRemoving(null)} className="min-h-9 px-3 text-xs font-semibold">Keep activity</button><button type="button" onClick={() => changePlan(current => removeActivity(current, dayIndex, index))} className="min-h-9 rounded-lg border border-red-300/25 px-3 text-xs font-semibold text-red-200">Remove activity</button></div>}
             </li>)}</ol>{day.activities.length === 0 && <p className="mt-3 rounded-xl border border-dashed border-white/15 p-4 text-sm text-white/55">No activities for this day. Add one to start planning.</p>}</>}
-            <div className="mt-5 flex flex-wrap justify-between gap-2 rounded-lg border border-white/10 bg-white/[.03] p-3 text-xs"><span className="text-white/55">Estimated spending</span><strong className="text-[#ffcf70]">{formatMoney(spend, plan.currency)}</strong></div>
+            <div className="mt-5 flex flex-wrap justify-between gap-2 rounded-lg border border-white/10 bg-white/[.03] p-3 text-xs"><span className="text-white/55">Estimated spending</span><strong className="text-[#ffcf70]">{spend === null ? 'Budget refresh needed' : formatMoney(spend, plan.currency)}</strong></div>
             <div className="mt-4 flex flex-wrap items-start justify-between gap-3"><p className="max-w-sm text-xs leading-5 text-white/45">Changing the destination, dates, travelers, or hotel requires an updated plan. Save or discard activity edits before changing trip details.</p><button type="button" disabled={sending || dirty} onClick={() => { if (trip) onChangeDetails(trip); }} className="min-h-10 rounded-lg border border-white/15 px-3 text-xs font-semibold text-white/70 hover:bg-white/5 disabled:opacity-35">Change trip details</button></div>
             {error && <p role="alert" className="mt-4 rounded-lg border border-red-300/25 bg-red-300/10 p-3 text-sm leading-5 text-red-200">{error}</p>}
           </>}

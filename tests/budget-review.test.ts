@@ -23,7 +23,7 @@ test('counts extended group expenses once, including rooms/nights, shared fares,
 test('uses expense estimates rather than budget allocation percentages or a stale summary', () => {
   const plan = fixture(); plan.budgetSummary.food = 900000; plan.budgetSummary.plannedSpend = 900000;
   assert.equal(budgetReview(plan).total, 4750);
-  plan.days[0].activities[0].estimatedCost = 300; plan.days[0].totalCost += 100;
+  plan.days[0].activities[0].estimatedCost = 300; plan.days[0].activities[0].priceEvidence!.unitAmount = 150; plan.days[0].totalCost += 100;
   assert.equal(budgetReview(plan).total, 4850);
   plan.totalBudget = 4000;
   assert.equal(budgetReview(plan).remaining, -850); assert.equal(budgetReview(plan).status, 'over-budget');
@@ -86,7 +86,7 @@ test('recomputes recorded contingency and fees over current estimates, rather th
   const plan = fixture();
   plan.grounding = { currency: 'PHP', nights: 2, accommodation: price(1200, 'per-room-night'), categories: { accommodation: 2400 }, additionalFees: 50, contingencyPercent: 10, unpricedExpenseCount: 0, total: 5280 } as ItineraryResponse['grounding'];
   assert.equal(budgetReview(plan).total, 5280);
-  plan.days[0].activities[2].estimatedCost += 400;
+  plan.days[0].activities[2].estimatedCost += 400; plan.days[0].activities[2].priceEvidence!.unitAmount += 200;
   const review = budgetReview(plan);
   assert.equal(review.total, 5720); assert.equal(category(review, 'contingency').amount, 520);
   plan.grounding!.unpricedExpenseCount = 1;

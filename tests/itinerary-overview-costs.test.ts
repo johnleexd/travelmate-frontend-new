@@ -3,9 +3,10 @@ import test from 'node:test';
 import { itineraryCostPresentation } from '../lib/itinerary-day-presentation.ts';
 import { savedDayTheme } from '../lib/stored-trip-photos.ts';
 import type { ItineraryResponse, DayPlan } from '../lib/contracts.ts';
-const plan = (cost: number, status?: string) => ({ currency: 'PHP', totalBudget: 30000, budgetSummary: { plannedSpend: cost }, days: [{ totalCost: cost, activities: [{ title: 'Named museum', estimatedCost: cost, ...(status ? { priceEvidence: { status } } : {}) }] }] } as ItineraryResponse);
+const plan = (cost: number, status?: string) => ({ currency: 'PHP', totalBudget: 30000, budgetSummary: { plannedSpend: cost }, days: [{ totalCost: cost, activities: [{ title: 'Named museum', estimatedCost: cost, priceEvidence: { status: status || 'estimate', unit: 'group', quantity: 1, participants: 1, unitAmount: cost, currency: 'PHP' } }] }] } as ItineraryResponse);
 test('all unpriced or legacy zero amounts never imply a zero-cost trip; the user budget is untouched', () => {
-  for (const input of [plan(0), plan(0, 'unavailable')]) {
+  const legacy = plan(0); delete legacy.days[0].activities[0].priceEvidence;
+  for (const input of [legacy, plan(0, 'unavailable')]) {
     const before = JSON.stringify(input), result = itineraryCostPresentation(input);
     assert.equal(result.status, 'Partial estimate'); assert.equal(result.amount, undefined); assert.equal(input.totalBudget, 30000);
     assert.equal(JSON.stringify(input), before);

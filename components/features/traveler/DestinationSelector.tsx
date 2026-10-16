@@ -9,6 +9,7 @@ import { DestinationAreaPicker } from './DestinationAreaPicker';
 import { Dialog } from 'radix-ui';
 import styles from './TravelerDashboard.module.css';
 import { MapPin, Check, X } from 'lucide-react';
+import { needsDestinationArea } from '@/lib/generated/location-scope';
 import { CountryFlag } from './CountryFlag';
 
 type Props = {
@@ -18,7 +19,7 @@ type Props = {
   budget: number; currency: CurrencyCode; currencyResolved: boolean;
   travelers: number; days: number; interests: string;
 };
-const area = (place: LocationCandidate) => ['country','area'].includes(place.scopeType || '') || ['Country','Province','Region','Administrative area','Island'].includes(place.placeType);
+const area = needsDestinationArea;
 
 /** Search and browsing are drafts. Only a verified final choice changes trip state. */
 export function DestinationSelector({ selected, onSelect, onClear, ...planning }: Props) {

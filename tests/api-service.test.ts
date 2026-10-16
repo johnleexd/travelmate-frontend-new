@@ -113,6 +113,23 @@ test('trip generation still fails when the itinerary service fails', async () =>
   ), /AI provider unavailable/);
 });
 
+test('a ready itinerary does not wait for optional weather and accepts a late weather failure', async () => {
+  let failWeather!: (error: Error) => void;
+  const weather = new Promise<never>((_resolve, reject) => { failWeather = reject; });
+  const itinerary = { destination: 'Tokyo', days: [{ day: 1 }] };
+  const result = await fetchTripWithOptionalWeather(async () => itinerary, () => weather);
+  assert.deepEqual(result, { itinerary, weather: null });
+  failWeather(new Error('Weather timed out after the itinerary was ready.'));
+  await new Promise(resolve => setImmediate(resolve));
+});
+
+test('generation errors surface immediately while optional weather is still pending', async () => {
+  await assert.rejects(fetchTripWithOptionalWeather(
+    async () => { throw new Error('Generation failed immediately'); },
+    () => new Promise(() => {}),
+  ), /Generation failed immediately/);
+});
+
 test('travel comparison parsing requires normalized provider freshness', () => {
   const freshness = (source: 'flights' | 'activities') => ({
     source,

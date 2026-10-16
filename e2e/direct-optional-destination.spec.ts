@@ -6,6 +6,13 @@ import { validateDestinationAnchor } from '../../travelmate-backend-api/src/serv
 import { globalCatalogueAvailable, catalogueLocation, catalogueCountry, searchCatalogueCountries } from '../../travelmate-backend-api/src/services/destination/global-catalogue.ts';
 import { administrativeCandidate, administrativeRecord } from '../../travelmate-backend-api/src/services/destination/philippine-catalogue.ts';
 const offline:typeof fetch=async()=>{throw Error('This test uses actual imported location records, without private accounts or external hotel/photo providers.');};
+async function openCountry(page:Page,code:string) {
+ await page.goto('/dashboard?tab=planner'); await page.getByRole('button',{name:'Browse by country',exact:true}).click();
+ const modal=page.getByRole('dialog',{name:'Browse destinations by country'}),country=catalogueCountry(code)!;
+ await modal.getByRole('combobox',{name:'Country',exact:true}).fill(country.name);
+ await modal.getByRole('listbox',{name:'Countries',exact:true}).getByRole('button').filter({hasText:country.contextLabel}).click();
+ return modal;
+}
 async function setup(page:Page,context:BrowserContext) {
   expect(globalCatalogueAvailable(),'Provision the actual imported global catalogue before source-backed browser verification.').toBeTruthy();
   await context.addCookies([{name:'travelmate_session',value:'worldwide-browser-fixture',domain:'localhost',path:'/'}]);
@@ -34,6 +41,59 @@ async function checkSelection(page:Page,place:NonNullable<ReturnType<typeof cata
   await page.getByRole('button',{name:'Generate my trip',exact:true}).click(); await expect.poll(()=>evidence.generations.length).toBe(1);
   expect(evidence.generations[0]).toMatchObject({providerId:place.providerId,countryCode:place.countryCode,latitude:place.latitude,longitude:place.longitude});
 }
+test('Caohai Zhen is selectable from Yunnan without requiring any child settlement',async({page,context},info)=>{
+ const evidence=await setup(page,context),town=catalogueLocation(10260117,'CN')!;
+ expect(town.scopeType).toBe('locality'); expect(town.canBrowse).toBe(false);
+ const modal=await openCountry(page,'CN');
+ await modal.locator('#destination-area-search').fill('Yunnan');
+ await modal.locator('#destination-area-options').getByRole('button').filter({hasText:catalogueLocation(1785694,'CN')!.contextLabel}).click();
+ await modal.locator('#destination-area-search').fill('Caohai');
+ await modal.getByRole('button',{name:'Choose Caohai Zhen',exact:true}).click();
+ await checkSelection(page,town,evidence);
+ await page.screenshot({path:info.outputPath('caohai-selected.png'),fullPage:true});
+});
+test('browsing within a verified city remains optional and the current city is selectable with no search matches',async({page,context},info)=>{
+ const evidence=await setup(page,context),city=catalogueLocation(1864514,'JP')!;
+ expect(city.canBrowse).toBe(true);const modal=await openCountry(page,'JP');
+ await modal.locator('#destination-area-search').fill('Chofu');
+ await modal.getByRole('button',{name:`Browse within ${city.name}`,exact:true}).click();
+ await expect(modal.getByRole('region',{name:'Use current destination'})).toContainText(city.contextLabel);
+ await modal.locator('#destination-area-search').fill('no-such-settlement-9x7');
+ await expect(modal.locator('#destination-area-status')).toContainText('No search matches');
+ await expect(modal.getByText('0 of 0 available matches shown.')).toHaveCount(0);
+ await expect(modal.getByRole('button',{name:'Clear place search',exact:true})).toBeVisible();
+ await modal.screenshot({path:info.outputPath('city-no-search-matches.png')});
+ await modal.getByRole('button',{name:`Use ${city.name} as destination`,exact:true}).click();
+ await checkSelection(page,city,evidence);
+ await expect(page.locator('[data-country-filter]')).toHaveAttribute('data-country-filter','JP');
+ await page.locator('#destination-search').fill('Caohai');
+ await expect(page.locator('#destination-suggestions')).toHaveCount(0);
+ await expect(page.locator('[data-country-filter]')).toHaveAttribute('data-country-filter','JP');
+});
+test('an unclassified empty area has a no-child state and a working Back action without being invented as a town',async({page,context},info)=>{
+ await setup(page,context);const area=catalogueLocation(8729891,'CN')!;expect(area.scopeType).toBe('area');expect(area.canBrowse).toBe(false);
+ const modal=await openCountry(page,'CN');await modal.locator('#destination-area-search').fill('Chuansi');
+ await modal.getByRole('button',{name:'Choose Chuansi',exact:true}).click();
+ await expect(modal.locator('#destination-area-status')).toContainText('No child places are recorded');
+ await expect(modal.getByRole('region',{name:'Use current destination'})).toHaveCount(0);
+ await expect(modal.getByRole('button',{name:'Retry area suggestions',exact:true})).toHaveCount(0);
+ await modal.screenshot({path:info.outputPath('no-recorded-child-places.png')});
+ await modal.getByRole('button',{name:'Back to China',exact:true}).click();
+ await expect(modal.getByRole('navigation',{name:'Current browsing selection'})).not.toContainText('Chuansi');
+ await modal.locator('#destination-area-search').fill('Caohai');await modal.getByRole('button',{name:'Choose Caohai Zhen',exact:true}).click();
+ await expect(modal).toHaveCount(0);await expect(page.locator('#destination-search')).toHaveValue(catalogueLocation(10260117,'CN')!.label);
+});
+test('provider failures are separate from empty results and explicit retry fetches again',async({page,context})=>{
+ await setup(page,context);let failures=0;
+ await page.route('**/api/locations/areas?**',async route=>{const p=new URL(route.request().url()).searchParams;if(p.get('parentId')==='1785694'&&failures++===0)return route.fulfill({status:502,json:{error:'Location provider temporarily unavailable.'}});return route.fallback();});
+ const modal=await openCountry(page,'CN');await modal.locator('#destination-area-search').fill('Yunnan');
+ await modal.locator('#destination-area-options').getByRole('button').filter({hasText:catalogueLocation(1785694,'CN')!.contextLabel}).click();
+ await expect(modal.locator('#destination-area-status')).toContainText('provider error');
+ await expect(modal.locator('#destination-area-status')).not.toContainText('No child places');
+ await expect(modal.getByRole('button',{name:'Back',exact:true})).toBeVisible();
+ await modal.getByRole('button',{name:'Retry area suggestions',exact:true}).click();
+ await expect(modal.locator('[data-area-state]')).toHaveAttribute('data-area-state','ready');expect(failures).toBeGreaterThan(1);
+});
 for(const [query,id,code] of [['Tokyo',1850147,'JP'],['Cordova',1000702220000,'PH']] as const) test(`direct ${query} confirms immediately without choosing parents`,async({page,context})=>{
  const evidence=await setup(page,context); await page.goto('/dashboard?tab=planner'); const place=code==='PH'?administrativeCandidate(administrativeRecord(id)!):catalogueLocation(id,code)!;
  await page.getByRole('combobox',{name:'Destination',exact:true}).fill(query); await page.locator('#destination-suggestions').getByRole('button').filter({hasText:place.contextLabel}).click();

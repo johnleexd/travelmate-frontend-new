@@ -594,6 +594,30 @@ export interface AuditEvent {
   createdAt: string;
 }
 
+export interface ActivityActor {
+  id: string;
+  name: string;
+  role: Role;
+}
+
+export interface ActivityLogEntry {
+  id: string;
+  createdAt: string;
+  actor: ActivityActor | null;
+  actorUnavailableReason: "account-unavailable" | "not-recorded" | null;
+  actionLabel: string;
+  targetType: string;
+  targetId: string;
+  tone: "neutral" | "success" | "danger" | "info";
+}
+
+export interface ActivityLogResponse {
+  entries: Array<ActivityLogEntry>;
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface PlatformMetrics {
   held: number;
   released: number;

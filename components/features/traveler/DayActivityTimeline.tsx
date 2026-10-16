@@ -4,13 +4,13 @@ import type { DayMapRoute, TripMapActivity } from '@/lib/trip-navigation';
 import { timelineCost, timelineDuration, timelineSchedule, timelineTravel } from '@/lib/trip-map-timeline';
 import styles from './SavedTripMap.module.css';
 
-export function DayActivityTimeline({ activities, budget, selected, onSelect, currency, timezone, route }: {
+export function DayActivityTimeline({ activities, budget, selected, onSelect, currency, timezone, route, estimatedTotal, unpricedCount }: {
   activities: TripMapActivity[]; budget: TripMapActivity[]; selected: number; onSelect: (index: number) => void;
-  currency?: string; timezone?: string; route?: DayMapRoute;
+  currency?: string; timezone?: string; route?: DayMapRoute; estimatedTotal?: number | null; unpricedCount?: number;
 }) {
   const priced = [...activities, ...budget].filter(item => typeof item.estimatedCost === 'number' && Number.isFinite(item.estimatedCost) && item.estimatedCost >= 0);
-  const unpriced = activities.length + budget.length - priced.length;
-  const recordedTotal = priced.reduce((sum, item) => sum + item.estimatedCost!, 0);
+  const unpriced = unpricedCount ?? activities.length + budget.length - priced.length;
+  const recordedTotal = estimatedTotal;
   return <div className={styles.timelineScroll} tabIndex={0} role="region" aria-label="Daily timeline and budget">
     <p className={styles.timelineCaption}>Destination local time{timezone ? ' · ' + timezone : ''}. End times use saved ranges or saved durations.</p>
     {!activities.length && <p className={styles.timelineCaption}>No scheduled activities for this day.</p>}
@@ -31,8 +31,8 @@ export function DayActivityTimeline({ activities, budget, selected, onSelect, cu
     })}</ol>
     <section aria-label="Recorded daily estimate" className={styles.dailyBudget}>
       <h4>Recorded daily estimate</h4>
-      <p>{priced.length ? timelineCost(recordedTotal, currency) : 'Estimate unavailable'}{unpriced ? ` · partial (${unpriced} ${unpriced === 1 ? 'item' : 'items'} unpriced)` : ' · activities and allowances'}</p>
-      <small>Saved planning estimate. Route choice does not change recorded costs.</small>
+      <p>{recordedTotal != null ? timelineCost(recordedTotal, currency) : 'Budget refresh needed'}{unpriced ? ` · partial (${unpriced} ${unpriced === 1 ? 'item' : 'items'} unpriced)` : ' · activities and allowances'}</p>
+      <small>Uses the itinerary daily total, including recorded lodging allocation. Allowances cover itemized expenses once. Route choice does not change costs.</small>
     </section>
     {budget.length > 0 && <section aria-label="Daily budget" className={styles.dailyBudget}>
       <h4>Daily budget</h4><p>Allowances · not map stops</p>

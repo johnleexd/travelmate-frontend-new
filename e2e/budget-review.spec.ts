@@ -76,7 +76,7 @@ test('saved review, responsive layout, navigation, reload and budget preview pre
   await page.getByRole('button', { name: 'Choose accommodation later', exact: true }).click();
   await budgetNav(page).click();
   await expect(amount(page, 'cost')).toHaveText(/2,350/);
-  await expect(page.locator('[data-budget-category="accommodation"]')).toContainText('No accommodation selected; costs excluded');
+  await expect(page.locator('[data-budget-category="accommodation"]')).toContainText('No supported accommodation estimate recorded');
   await expect(page.getByText('Within your estimated budget', { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Edit trip budget', exact: true }).click();
   await page.getByRole('button', { name: 'Enter accommodation manually', exact: true }).click();
@@ -134,7 +134,7 @@ test('partial and over-budget estimates remain honest', async ({ page, context }
   await setup(page, context, plan);
   await expect(page.getByRole('heading', { name: 'Amount over budget', exact: true })).toBeVisible();
   await expect(amount(page, 'remaining')).toHaveText(/750/);
-  await expect(page.getByRole('region', { name: 'Budget summary' }).getByRole('heading', { name: 'Known estimated costs', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Budget summary' }).getByRole('heading', { name: 'Total estimated cost (partial)', exact: true })).toBeVisible();
   await expect(page.getByText('Within your estimated budget', { exact: true })).toHaveCount(0);
   await expect(page.locator('[data-budget-category="activities"]')).toContainText('Additional estimates unavailable');
 });
@@ -145,7 +145,7 @@ test('missing estimates and unselected accommodation are explicit', async ({ pag
   await setup(page, context, plan);
   await expect(amount(page, 'cost')).toHaveText('Estimate unavailable');
   await expect(amount(page, 'remaining')).toHaveText('Estimate unavailable');
-  await expect(page.locator('[data-budget-category="accommodation"]')).toContainText('No accommodation selected; costs excluded');
+  await expect(page.locator('[data-budget-category="accommodation"]')).toContainText('No supported accommodation estimate recorded');
   await expect(page.getByText('Provisional · affordability needs confirmation', { exact: true })).toBeVisible();
 });
 

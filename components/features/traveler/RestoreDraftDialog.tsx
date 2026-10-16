@@ -45,7 +45,7 @@ export function RestoreDraftDialog({ destination, savedAt, returnFocusRef, onClo
       <p className="mt-4 text-xs leading-5 text-[var(--tm-muted)] max-[359px]:mt-3">Restore your draft to review it before saving.</p>
       <div className="mt-5 grid grid-cols-1 gap-3 max-[359px]:mt-4 min-[360px]:grid-cols-2">
         <button ref={cancelRef} type="button" onClick={onClose} className="min-h-12 rounded-lg border border-[var(--tm-input-border)] px-4 text-sm font-semibold text-[var(--tm-primary)] hover:bg-[var(--tm-group)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tm-primary)]">Not now</button>
-        <button type="button" onClick={onRestore} className="min-h-12 rounded-lg bg-[var(--tm-primary)] px-4 text-sm font-semibold text-[var(--tm-on-primary)] hover:bg-[var(--tm-primary-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tm-primary)]">Restore draft</button>
+        <button type="button" onClick={() => onRestore()} className="min-h-12 rounded-lg bg-[var(--tm-primary)] px-4 text-sm font-semibold text-[var(--tm-on-primary)] hover:bg-[var(--tm-primary-hover)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--tm-primary)]">Restore draft</button>
       </div>
     </DialogContent>
   </Dialog>;

@@ -38,6 +38,6 @@ export function useDestinationAreas(parent: Pick<LocationSuggestion,'id' | 'coun
     ...(state.key === key ? state : EMPTY), query,
     search(value: string) { setSearch({ parentKey, query: value, offset: 0 }); },
     showMore() { if (state.key === key && !state.loadingMore && state.nextOffset !== null) setSearch({ parentKey, query, offset: state.nextOffset }); },
-    retry() { setRetry(value => value + 1); },
+    retry() { destinationAreaClient.clearSearchError(parent, query, offset); setRetry(value => value + 1); },
   };
 }

@@ -102,7 +102,7 @@ const coreSchemaNames = [
   'BudgetSummary', 'ItineraryPreferences', 'ItineraryResponse',
   'PublicUser', 'CurrentUserResponse', 'AuthActionResponse', 'ProfileResponse',
   'Listing', 'Booking', 'ListingBlockedDate', 'Promotion', 'Review', 'Notification', 'PaymentTransaction', 'OwnerDocument', 'ModerationItem', 'SavedTrip', 'ItineraryVersion',
-  'ItineraryGenerationSummary', 'AuditEvent', 'PlatformMetrics',
+  'ItineraryGenerationSummary', 'AuditEvent', 'ActivityActor', 'ActivityLogEntry', 'ActivityLogResponse', 'PlatformMetrics',
   'PlatformIntegrations', 'PlatformResponse', 'PlatformActionResponse',
   'VisitedPlace', 'VisitRecordResponse', 'VisitedPlacesResponse', 'VisitPlaceReference', 'TripVisitCandidate', 'TripVisitCandidatesResponse', 'TripVisitsRecordResponse', 'PageInfo', 'TripDetailResponse', 'TripVersionsResponse', 'NotificationsResponse',
   'ItineraryDayResponse',
@@ -122,7 +122,7 @@ const routeTarget = resolve(process.cwd(), 'lib/generated/transport-planning.ts'
 const routeContent = '// Generated from backend transport-planning.ts. Do not edit by hand.\n' + routeSource;
 const outputs = [
   [resolve(process.cwd(), 'lib/generated/plan-contracts.ts'), '// Generated from backend contracts/plan.ts. Do not edit by hand.\n' + await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/contracts/plan.ts'), 'utf8')],
-  ...await Promise.all(['currency','currency-data'].map(async name=>[resolve(process.cwd(), 'lib/generated/'+name+'.ts'), '// Generated from backend '+name+'.ts. Do not edit by hand.\n' + await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/lib/'+name+'.ts'),'utf8')])),
+  ...await Promise.all(['currency','currency-data','location-scope'].map(async name=>[resolve(process.cwd(), 'lib/generated/'+name+'.ts'), '// Generated from backend '+name+'.ts. Do not edit by hand.\n' + await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/lib/'+name+'.ts'),'utf8')])),
   [resolve(process.cwd(), 'lib/generated/expense-ledger.ts'), '// Generated from backend expense-ledger.ts. Do not edit by hand.\n' + (await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/lib/expense-ledger.ts'), 'utf8')).replace("'../controllers/itinerary-controller.ts'", "'../contracts.ts'").replace("'../schemas/domain.ts'", "'../domain.ts'")],
   [errorOutputPath, generatedError],
   [plannerOutputPath, generatedDestination],

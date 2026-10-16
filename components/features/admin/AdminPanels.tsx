@@ -1,5 +1,7 @@
 'use client';
 
+import { ActivityLog } from './ActivityLog';
+
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { TriangleAlert, X } from 'lucide-react';
@@ -124,11 +126,10 @@ export function HealthView({ data, search, onSearch }: { data: PlatformResponse;
     ['Travel comparison', data.integrations?.amadeus, 'Configured'],
   ] as const;
   const failures = data.itineraryGenerations.filter(item => item.status === 'failed');
-  const events = data.audit.filter(item => `${item.action} ${item.targetId}`.toLowerCase().includes(search.toLowerCase()));
   return <div className="space-y-5">
     <section data-admin-card className={panel}><h2 className="text-xl font-bold">API Monitoring</h2><p className="mt-2 text-sm leading-6 text-white/55">Configuration is shown below. A configured external service is not a guarantee of live availability.</p><div className="mt-4 divide-y divide-white/10">{services.map(([label, ready, status]) => <div key={label} className="flex flex-wrap justify-between gap-3 py-4 text-sm"><span>{label}</span><span className={ready ? 'text-emerald-200' : 'text-amber-200'}>{ready ? status : 'Not configured'}</span></div>)}</div></section>
     <section data-admin-card className={panel}><h2 className="text-xl font-bold">Recent generation failures</h2><p className="mt-2 text-sm text-white/55">From the latest 25 generation attempts.</p>{failures.length === 0 ? <p className="mt-5 text-sm">No failures in recent attempts.</p> : failures.map(item => <div key={item.id} className="mt-4 flex flex-wrap justify-between gap-3 border-t border-white/10 pt-4 text-sm"><span>{item.errorCode || 'Generation failed'}</span><time>{new Date(item.updatedAt).toLocaleString()}</time></div>)}</section>
-    <section data-admin-card className={panel}><h2 className="text-xl font-bold">Activity log</h2><label className="mt-4 block text-sm">Search activity<input value={search} onChange={event => onSearch(event.target.value)} className="mt-2 min-h-12 w-full border border-white/20 bg-[#071a16] px-4 text-base" placeholder="Action or record ID"/></label><div className="mt-4 divide-y divide-white/10">{events.map(item => <div key={item.id} className="grid gap-2 py-4 text-xs sm:grid-cols-[1fr_1fr_1fr]"><time className="text-white/50">{new Date(item.createdAt).toLocaleString()}</time><span className="break-all text-cyan-200">{item.action}</span><span className="break-all">{item.targetId}</span></div>)}</div>{events.length === 0 && <p className="mt-4 text-sm text-white/55">No matching activity.</p>}</section>
+    <ActivityLog search={search} onSearch={onSearch} refreshKey={data.audit[0]?.id || ''}/>
   </div>;
 }
 

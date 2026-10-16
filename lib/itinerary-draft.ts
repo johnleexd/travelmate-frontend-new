@@ -19,7 +19,7 @@ export function parseItineraryDraft(stored: string, owner: string): ItineraryDra
     if (trip.userId !== owner || typeof trip.id !== 'string' || !text(trip.destination)
       || !amount(trip.budget) || trip.budget === 0 || !isCurrencyCode(trip.currency)
       || !date(trip.startDate) || !date(trip.endDate) || trip.endDate < trip.startDate
-      || !Number.isInteger(trip.travelers) || Number(trip.travelers) < 1
+      || !Number.isInteger(trip.travelers) || Number(trip.travelers) < 1 || Number(trip.travelers) > 20
       || !['solo', 'couple', 'family', 'friends'].includes(String(trip.partyType))
       || !Array.isArray(trip.interests) || !trip.interests.every(item => typeof item === 'string')
       || !text(draft.savedAt) || !Number.isFinite(Date.parse(draft.savedAt))) return null;

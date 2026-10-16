@@ -9,8 +9,8 @@ const plan = (): ItineraryResponse => ({
   budgetSummary: { accommodation: 3_400, food: 2_200, activities: 2_000, transport: 1_400, reserve: 1_000, dailyAverage: 5_000, total: 10_000 },
   costSharing: { partyType: 'couple', travelers: 2, groupBudget: 10_000, plannedGroupSpend: 1_600, budgetShares: [5_000, 5_000], plannedSpendShares: [800, 800], accommodationShares: [500, 500], reserveShares: [4_200, 4_200] },
   days: [
-    { day: 1, date: '2026-10-01', theme: 'Arrival', imageUrl: '/beach-bg.png', totalCost: 1_300, activities: [{ time: '09:00', title: 'Museum', description: 'Visit', estimatedCost: 300, category: 'activity', icon: 'activity' }] },
-    { day: 2, date: '2026-10-02', theme: 'Food', imageUrl: '/beach-bg.png', totalCost: 300, activities: [{ time: '12:00', title: 'Lunch', description: 'Eat', estimatedCost: 300, category: 'food', icon: 'food' }] },
+    { day: 1, date: '2026-10-01', theme: 'Arrival', imageUrl: '/beach-bg.png', totalCost: 1_300, activities: [{ time: '09:00', title: 'Museum', description: 'Visit', estimatedCost: 300, category: 'activity', icon: 'activity', priceEvidence: { status: 'estimate', source: 'user-entered', basis: 'Explicit party total', fetchedAt: '2040-01-01T00:00:00Z', currency: 'PHP', unit: 'group', unitAmount: 300, quantity: 1, participants: 2, needsConfirmation: true } }] },
+    { day: 2, date: '2026-10-02', theme: 'Food', imageUrl: '/beach-bg.png', totalCost: 300, activities: [{ time: '12:00', title: 'Lunch', description: 'Eat', estimatedCost: 300, category: 'food', icon: 'food', priceEvidence: { status: 'estimate', source: 'user-entered', basis: 'Explicit party total', fetchedAt: '2040-01-01T00:00:00Z', currency: 'PHP', unit: 'group', unitAmount: 300, quantity: 1, participants: 2, needsConfirmation: true } }] },
   ],
 });
 
