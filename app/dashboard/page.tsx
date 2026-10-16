@@ -8,5 +8,5 @@ export default async function TravelerDashboardPage({ searchParams }: {
   const params = await searchParams;
   const tab = firstQueryValue(params.tab);
   if (tab === 'gps') redirect(legacyNavigationRedirect(params));
-  return <TravelerDashboard initialTab={tab === 'planner' || tab === 'bookings' || tab === 'budget' || tab === 'help' ? tab : undefined} />;
+  return <TravelerDashboard initialTab={tab === 'planner' || tab === 'bookings' || tab === 'budget' || tab === 'help' || tab === 'plan' ? tab : undefined} />;
 }

@@ -9,6 +9,7 @@ import test, { type TestContext } from 'node:test';
 const frontendRoot = fileURLToPath(new URL('../', import.meta.url));
 const scriptPath = join(frontendRoot, 'scripts/sync-api-contracts.mjs');
 const sourceFiles = [
+  'src/contracts/plan.ts',
   'openapi/travelmate-api.json',
   'src/lib/stored-trip-media.ts',
   'src/lib/trip-preferences.ts',
@@ -43,7 +44,7 @@ test('contract sync repairs null-filled modules and check detects corruption wit
   const initial = run();
   assert.equal(initial.status, 0, initial.stderr);
   const files = await readdir(generated);
-  assert.equal(files.length, 11);
+  assert.equal(files.length, 12);
   const expected = await Promise.all(files.map(file => readFile(join(generated, file), 'utf8')));
   for (const file of files) await writeFile(join(generated, file), Buffer.alloc(100));
   assert.equal(run('--check').status, 1);

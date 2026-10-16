@@ -12,6 +12,9 @@ import { DestinationSpotCarousel } from './DestinationSpotCarousel';
 import { restoredExpenseAssumptions, type ExpenseAssumptions } from '@/lib/expense-assumptions';
 import { BudgetReview } from './BudgetReview';
 import { HelpUserGuide } from './HelpUserGuide';
+import { MyPlan, MonthlyLimitDialog } from './MyPlan';
+import { announcePlanLimit, fetchPlan, forgetGenerationKey, persistentGenerationKey, type PlanUsage } from '@/services/plan.service';
+import { ApiError } from '@/services/api-response';
 import type { HelpGuideId } from '@/lib/help-guides';
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
@@ -76,6 +79,7 @@ const GENERATION_REQUIREMENT_ICONS = {
   'trip-accommodation': BedDouble,
 };
 const TAB_COPY: Record<Tab, { title: string; description: string }> = {
+  plan: { title: 'My Plan', description: 'Manage your AI itinerary allowance.' },
   help: { title: 'How can we help you?', description: 'Simple steps for planning and managing your trips.' },
   visited: { title: 'Visited places', description: 'Keep a personal history of the places you have visited.' },
   feedback: { title: 'Feedback and support', description: 'Rate a saved trip or report a problem to the TravelMate team.' },
@@ -132,6 +136,16 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const [versionPages, setVersionPages] = useState<Record<string, PageInfo>>({});
   const [savedTripsVisited, setSavedTripsVisited] = useState(false);
   const [message, setMessage] = useState('');
+  const [planLimit, setPlanLimit] = useState<PlanUsage | null>(null);
+  useEffect(() => {
+    const show = (event: Event) => {
+      const value = (event as CustomEvent<PlanUsage>).detail;
+      if (value && Number.isFinite(value.allowance) && typeof value.resetsAt === 'string') setPlanLimit(value);
+      else void fetchPlan().then(setPlanLimit).catch(() => undefined);
+    };
+    window.addEventListener('travelmate-plan-limit', show);
+    return () => window.removeEventListener('travelmate-plan-limit', show);
+  }, []);
   const sectionVersionRef = useRef(0);
   const workspaceOwnerRef = useRef<string | null>(null);
   const [budgetInput, setBudgetInput] = useState('');
@@ -193,6 +207,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const [savingTrip, setSavingTrip] = useState(false);
   const [lastSuccessfulUpdate, setLastSuccessfulUpdate] = useState<{ planning: string; itinerary: string } | null>(null);
   const [saveToast, setSaveToast] = useState<TripSaveFeedback | null>(null);
+  const saveToastSequenceRef = useRef(0);
   const dismissSaveToast = useCallback(() => setSaveToast(null), []);
   const startingLocation = useStartingLocation(data?.user.id);
   const { value: flightOrigin, change: setFlightOrigin } = startingLocation;
@@ -309,7 +324,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     }
     workspaceOwnerRef.current = workspace.user.id;
     setData(workspace);
-  }, [setIncludePreTripCosts, setVisitTripId, setItinerary, setWeather, setEditingTripId, setRegenerationTargetId, setSelectedDay, setLeaveDialogOpen]);
+  }, [setIncludePreTripCosts, setVisitTripId, setItinerary, setWeather, setEditingTripId, setRegenerationTargetId, setSelectedDay, setLeaveDialogOpen, setManualDirty, setStaySelectionState]);
   const refresh = () => api().then(acceptWorkspace);
   const loadInitial = async () => {
     try { acceptWorkspace(await api()); }
@@ -355,8 +370,8 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     return () => window.clearTimeout(timer);
   }, [data]);
 
-  const restoreDraft = () => {
-    const draft = recoveryDraft;
+  const restoreDraft = (candidate?: ItineraryDraft) => {
+    const draft = candidate ?? recoveryDraft;
     if (!draft || draft.trip.userId !== data?.user.id) return;
     setSavedTripOrigin(null); planningBaselineRef.current = null;
     itineraryBaselineRef.current = null; setLastSuccessfulUpdate(null); setSaveToast(null);
@@ -541,19 +556,22 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       }
       return;
     }
-    savePendingRef.current = true; setBusy(true); setGenerationBusy(true); setMessage('');
+    if (regenerationTargetId && !window.confirm('AI regeneration uses 1 generation when the validated result is saved by TravelMate. Internal retries count as the same operation. Continue?')) return;
+    const generationOwner = data!.user.id;
+    savePendingRef.current = true; setBusy(true); setGenerationBusy(true); setMessage('Generating an AI itinerary uses 1 monthly generation when its validated result is saved.');
     try {
       const selectedStay = data?.listings.find((listing) => listing.id === selectedStayId);
       const selectedLiveStay = staySelection?.liveOffer || liveAccommodations.find((stay) => stay.id === selectedLiveStayId);
       if ((selectedStayId && !selectedStay) || (selectedLiveStayId && !selectedLiveStay)) {
         throw new Error('Your selected accommodation is no longer in the current results. Browse accommodations and select a stay again, or choose accommodation later.');
       }
-      const requestDetails = { destination: destination.trim(), budget, currency, partyType, travelers, startDate, endDate, travelStyle, accommodationPreference, accommodationListingId: selectedStay?.id, externalAccommodationId: selectedLiveStay?.id, selectedAccommodationQuote: staySelection?.quoteToken, plannedAccommodation: staySelection?.planned, flightOrigin, includePreTripCosts, preTripCosts, expenseAssumptions };
-      const fingerprint = JSON.stringify(requestDetails);
-      const idempotencyKey = generationRequestRef.current?.fingerprint === fingerprint ? generationRequestRef.current.key : crypto.randomUUID();
+      const options = { ...expenseAssumptions, currency, partyType, travelers, startDate, endDate, startingLocation: flightOrigin.trim() || undefined, destinationDetails, latitude: selectedDestination.latitude, longitude: selectedDestination.longitude, travelStyle, accommodationPreference, accommodationListingId: selectedStay?.id, plannedAccommodation: staySelection?.planned, selectedAccommodationQuote: staySelection?.quoteToken, externalAccommodation: selectedLiveStay ? { fetchedAt: selectedLiveStay.fetchedAt, total: selectedLiveStay.total, hotelId: selectedLiveStay.hotelId, offerId: selectedLiveStay.offerId, name: selectedLiveStay.name, address: selectedLiveStay.address, nightlyRate: selectedLiveStay.nightlyRate, currency: selectedLiveStay.currency, isLive: selectedLiveStay.isLive, selectionToken: selectedLiveStay.selectionToken } : undefined, preTripCosts: includePreTripCosts ? { airportTransferOutbound: preTripCosts.airportTransfers, airportTransferReturn: 0, passport: preTripCosts.passport, visaOrAuthorization: preTripCosts.visaOrAuthorization, departureTaxes: preTripCosts.departureTaxes, insurance: preTripCosts.insurance, other: preTripCosts.other } : undefined };
+      const fingerprint = JSON.stringify({ destination: destination.trim(), budget, ...options, regenerationTargetId, regenerationRevision: regenerationTargetId ? savedTripOrigin?.updatedAt || itineraryBaselineRef.current : undefined });
+      const idempotencyKey = await persistentGenerationKey(generationOwner, fingerprint);
       generationRequestRef.current = { fingerprint, key: idempotencyKey };
-      const result = await fetchTripData(destination.trim(), budget, { ...expenseAssumptions, idempotencyKey, currency, partyType, travelers, startDate, endDate, startingLocation: flightOrigin.trim() || undefined, destinationDetails, latitude: selectedDestination.latitude, longitude: selectedDestination.longitude, travelStyle, accommodationPreference, accommodationListingId: selectedStay?.id, plannedAccommodation: staySelection?.planned, selectedAccommodationQuote: staySelection?.quoteToken, externalAccommodation: selectedLiveStay ? { fetchedAt: selectedLiveStay.fetchedAt, total: selectedLiveStay.total, hotelId: selectedLiveStay.hotelId, offerId: selectedLiveStay.offerId, name: selectedLiveStay.name, address: selectedLiveStay.address, nightlyRate: selectedLiveStay.nightlyRate, currency: selectedLiveStay.currency, isLive: selectedLiveStay.isLive, selectionToken: selectedLiveStay.selectionToken } : undefined, preTripCosts: includePreTripCosts ? { airportTransferOutbound: preTripCosts.airportTransfers, airportTransferReturn: 0, passport: preTripCosts.passport, visaOrAuthorization: preTripCosts.visaOrAuthorization, departureTaxes: preTripCosts.departureTaxes, insurance: preTripCosts.insurance, other: preTripCosts.other } : undefined });
-      generationRequestRef.current = null;
+      const result = await fetchTripData(destination.trim(), budget, { ...options, idempotencyKey });
+      if (generationOwner !== workspaceOwnerRef.current) return;
+
       setBudgetedStaySelection(staySelectionState);
       providerBaseRef.current = null;
       setItinerary(result.itinerary); setWeather(result.weather); setManualDirty(false); setActivityEditor(null); setGenerationFailed(false);
@@ -564,6 +582,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
           ...(!regenerationTargetId ? { interests: historicalInterests } : {}), itinerary: result.itinerary, weather: result.weather,
         });
         const saved = response.result as SavedTrip | undefined;
+        if (generationOwner !== workspaceOwnerRef.current) return;
         if (saved?.id) {
           setEditingTripId(saved.status && saved.status !== 'active' ? null : saved.id); setVisitTripId(saved.id);
           navigation.replace({ tab: 'planner', tripId: saved.id, fromSavedTrips: !!savedTripOrigin });
@@ -578,11 +597,17 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
         const providerMessage = result.itinerary.days.some(day => day.planningStatus === 'incomplete') ? 'Some days need more activities.' : result.itinerary.source === 'mock' ? 'Demo plan with sample activities and estimates.' : 'Your plan is ready.';
         setMessage(`${providerMessage} ${regenerationTargetId ? 'Saved as a new version.' : 'Saved to your trips.'}`);
       } catch (saveError) {
+        if (generationOwner !== workspaceOwnerRef.current) return;
         setManualDirty(true);
         await refresh().catch(() => undefined);
         setMessage(`The itinerary was generated, but automatic saving failed: ${saveError instanceof Error ? saveError.message : 'unknown save error'}. A browser draft will be kept until you save it.`);
       }
-    } catch (error) { setGenerationFailed(true); setMessage(error instanceof Error ? error.message : 'Generation failed. Your current plan is unchanged; please retry.'); }
+    } catch (error) {
+      if (generationOwner !== workspaceOwnerRef.current) return;
+      announcePlanLimit(error);
+      if (error instanceof ApiError && error.code === 'GENERATION_ENDED' && generationRequestRef.current && data) await forgetGenerationKey(data.user.id, generationRequestRef.current.fingerprint);
+      setGenerationFailed(true); setMessage(error instanceof Error ? error.message : 'Generation failed. Your current plan is unchanged; please retry.');
+    }
     finally { savePendingRef.current = false; setBusy(false); setGenerationBusy(false); }
   }
 
@@ -708,7 +733,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     itineraryBaselineRef.current = editableItineraryFingerprint(canonical);
     if (editingTripId) {
       setLastSuccessfulUpdate({ planning: planningBaselineRef.current || planningFingerprint, itinerary: itineraryBaselineRef.current });
-      setSaveToast({ id: Date.now(), kind: 'success' });
+      setSaveToast({ id: ++saveToastSequenceRef.current, kind: 'success' });
     }
   }
 
@@ -727,7 +752,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       await refresh().catch(() => undefined);
       if (!editingTripId) setMessage('Trip saved. Open Saved trips to view or edit it.');
     } catch (error) {
-      if (editingTripId) { setLastSuccessfulUpdate(null); setSaveToast({ id: Date.now(), kind: 'error' }); }
+      if (editingTripId) { setLastSuccessfulUpdate(null); setSaveToast({ id: ++saveToastSequenceRef.current, kind: 'error' }); }
       else setMessage(error instanceof Error ? error.message : 'Trip could not be saved.');
     }
     finally { savePendingRef.current = false; setSavingTrip(false); setBusy(false); }
@@ -766,7 +791,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       await refresh().catch(() => undefined);
       if (!editingTripId) setMessage('Edited itinerary saved to your trips.');
     } catch (error) {
-      if (editingTripId) { setLastSuccessfulUpdate(null); setSaveToast({ id: Date.now(), kind: 'error' }); }
+      if (editingTripId) { setLastSuccessfulUpdate(null); setSaveToast({ id: ++saveToastSequenceRef.current, kind: 'error' }); }
       else setMessage(error instanceof Error ? error.message : 'Manual changes could not be saved.');
     }
     finally { savePendingRef.current = false; setSavingTrip(false); setBusy(false); }
@@ -812,6 +837,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
 
   function startNewTrip() {
     if (manualDirty && !window.confirm('Start a new trip? Your current unsaved edits remain available in browser draft recovery.')) return;
+    if (data && generationRequestRef.current && !generationBusy) { void forgetGenerationKey(data.user.id, generationRequestRef.current.fingerprint); generationRequestRef.current = null; }
     providerBaseRef.current = null;
     const today = localDateInputValue();
     setSavedTripOrigin(null); planningBaselineRef.current = null;
@@ -1095,14 +1121,14 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
             <nav aria-label="Traveler workspace" className="traveler-mobile-nav flex max-w-full snap-x gap-px overflow-x-auto border border-white/10 bg-white/10 p-px lg:flex-col lg:overflow-visible">
               {([['overview','Home',Home],['planner','Plan a trip',MapPin],['bookings','Saved trips',CalendarDays],['visited','Visited places',MapPin],['feedback','Feedback',MessageSquare],['notifications','Notifications',Bell]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => { if (id === 'planner') startNewTrip(); else { setTab(id); } }} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}{id === 'notifications' && data.notifications.filter((item) => !item.readAt).length > 0 && <span className="ml-auto bg-amber-300 px-1.5 text-[10px] font-black text-[#14231f]">{data.notifications.filter((item) => !item.readAt).length}</span>}</button>)}
               <div className="hidden px-4 pb-2 pt-6 text-[10px] font-bold uppercase tracking-[0.16em] text-white/28 lg:block">Use with a plan</div>
-              {([['budget','Budget review',WalletCards],['help','Help / User Guide',CircleHelp]] as const).map(([id,label,Icon]) => <button key={id} type="button" aria-current={tab===id?'page':undefined} onClick={() => setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}</button>)}
+              {([['budget','Budget review',WalletCards],['help','Help / User Guide',CircleHelp],['plan','My Plan',WalletCards]] as const).map(([id,label,Icon]) => <button key={id} type="button" aria-current={tab===id?'page':undefined} onClick={() => setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}</button>)}
             </nav>
             <div className="mt-8 hidden border-t border-white/10 pt-5 lg:block"><p className="max-w-[23ch] text-xs leading-5 text-white/38">Start with Plan a trip. Budget review becomes useful after TravelMate creates your itinerary.</p></div>
           </div>
         </aside>
 
         <main id="traveler-main-content" tabIndex={-1} className="min-w-0 w-full max-w-[calc(100vw-2rem)] overflow-x-hidden pb-20 pt-5 outline-none lg:max-w-none lg:pt-10">
-          {tab !== 'budget' && tab !== 'help' && <div style={tab === 'planner' && itinerary ? { display: 'none' } : undefined} className="mb-7 flex flex-col items-start gap-3 border-b border-white/10 pb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+          {tab !== 'budget' && tab !== 'help' && tab !== 'plan' && <div style={tab === 'planner' && itinerary ? { display: 'none' } : undefined} className="mb-7 flex flex-col items-start gap-3 border-b border-white/10 pb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
             <div className="min-w-0 max-w-4xl"><h1 ref={workspaceHeadingRef} tabIndex={-1} className="break-words text-[clamp(2rem,4vw,3.75rem)] font-black leading-[0.96] tracking-[-0.05em] outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1d1a]">{currentTabCopy.title}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-white/52">{currentTabCopy.description}</p></div>
             <span className={`w-fit shrink-0 border px-3 py-2 text-[11px] font-bold tracking-wide ${data.user.emailVerified?'border-emerald-400/40 bg-emerald-400/10 text-emerald-200':'border-amber-300/40 bg-amber-300/10 text-amber-200'}`}>{data.user.emailVerified?'Email verified':'Email not verified'}</span>
           </div>}
@@ -1292,6 +1318,11 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
             />
           </div>}
           {tab === 'help' && <HelpUserGuide selectedGuide={selectedHelpGuide} onSelectGuide={setSelectedHelpGuide} headingRef={workspaceHeadingRef} onNavigate={destination => { if (destination === 'planner') startNewTrip(); else setTab(destination); }} onFeedback={() => setTab('feedback')}/>}
+          {tab === 'plan' && <MyPlan key={data.user.id} headingRef={workspaceHeadingRef} onHelp={() => setTab('help')} onSavedTrips={() => setTab('bookings')} onRecover={plan => {
+            if (manualDirty && !window.confirm('Open this recovered result? Your current unsaved draft will be replaced only after you confirm.')) return;
+            const trip: SavedTrip = { id: '', userId: data.user.id, destination: plan.destination, budget: plan.totalBudget, currency: plan.currency, travelers: plan.travelers ?? 1, partyType: plan.partyType ?? 'solo', startDate: plan.days[0].date, endDate: plan.days.at(-1)!.date, interests: plan.preferences?.interests ?? [], itinerary: plan, weather: null, status: 'active', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+            restoreDraft({ trip, itinerary: plan, weather: null, savedAt: new Date().toISOString() });
+          }}/>}
           {tab === 'visited' && <VisitedPlaces key={`visited-places:${data.user.id}`} onOpenTrip={id => { const summary = data.trips.find(trip => trip.id === id); void loadTrip(summary || { id } as SavedTrip); }}/> }
           {tab === 'feedback' && <section className="space-y-5"><div className="rounded-xl border border-white/15 p-5"><h2 className="font-bold">Feedback about a trip</h2><p className="mt-2 text-sm text-white/55">Open a saved itinerary and use Rate this trip to share feedback about its budget, weather, route or recommendations.</p><button onClick={() => setTab('bookings')} className="mt-4 min-h-11 border border-white/20 px-4 text-sm">View saved trips</button></div><ReportProblem busy={busy} onSubmit={sendReport}/></section>}
           {tab === 'notifications' && <TravelerNotifications data={data} busy={busy} action={action}/>}
@@ -1309,6 +1340,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       />}
       {leaveDialogOpen && <UnsavedTripDialog returnFocusRef={backToSavedTripsRef} onClose={() => { navigation.cancelPending(); setLeaveDialogOpen(false); }} onDiscard={() => returnToSavedTrips(true)}/>}
       {saveToast && <TripSaveToast key={saveToast.id} toast={saveToast} onDismiss={dismissSaveToast}/>}
+      <MonthlyLimitDialog usage={planLimit} onClose={() => setPlanLimit(null)} onPlans={() => { setPlanLimit(null); setTab('plan'); }} onSavedTrips={() => { setPlanLimit(null); setTab('bookings'); }}/>
       {activityEditor && editorDay && <ActivityEditorDialog editor={activityEditor} day={editorDay} activity={editorActivity} currency={itinerary?.currency || currency} modalRef={activityModalRef} titleRef={activityTitleRef} onClose={() => setActivityEditor(null)} onSubmit={submitActivity} />}
       {selectedDay && itinerary && <DayDetailsDialog weather={weather} visitTripId={visitTripId} draft={manualDirty} day={selectedDay} itinerary={itinerary} travelers={travelers} referenceCurrency={referenceCurrency} exchangeQuotes={exchangeQuotes} photoRefreshDay={photoRefreshDay} retryingDay={retryingDay} busy={busy} modalRef={dayModalRef} closeRef={dayCloseRef} onClose={() => setSelectedDay(null)} onRefreshPhotos={(day) => void refreshDayPhotos(day, true)} onFindActivities={dayIndex => void retryDay(dayIndex, false)} />}
     </div></ConversionLoading.Provider></ConversionPreference.Provider>

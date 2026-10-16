@@ -15,6 +15,7 @@
 
 // ─── Re-export shared types for convenience ───────────────────────────────────
 import type { DestinationAnchor } from '@/lib/contracts';
+import { requestGeneration } from './plan.service';
 export type {
   DayActivity,
   DayPlan,
@@ -66,19 +67,7 @@ export async function fetchItineraryFromAI(
   // Pacing remains automatic; travel style is a selectable recommendation focus.
   const payload: Record<string, unknown> = { destination: destination.trim(), budget, ...options };
   delete payload.pace;
-  let res: Response;
-  try {
-    res = await fetch('/api/itinerary', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(options?.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : {}) },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(570_000),
-    });
-  } catch (error) {
-    throw new Error(error instanceof DOMException && error.name === 'TimeoutError' ? 'Itinerary generation timed out. Please try again.' : 'Cannot connect to TravelMate services. Check that the backend is running.');
-  }
-
-  return handleResponse<ItineraryResponse>(res);
+  return requestGeneration<ItineraryResponse>('/api/itinerary', payload, options.idempotencyKey || crypto.randomUUID());
 }
 
 export async function refreshItineraryDayImages(destination: string, day: DayPlan, itinerary?: ItineraryResponse): Promise<ItineraryDayResponse & { groundingProof?: string }> {
