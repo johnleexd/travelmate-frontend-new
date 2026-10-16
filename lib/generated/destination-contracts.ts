@@ -1,6 +1,7 @@
 // Generated from travelmate-backend-api/openapi/travelmate-api.json. Do not edit by hand.
 
-export type CurrencyCode = "PHP" | "USD" | "EUR" | "JPY" | "KRW" | "THB" | "GBP" | "AUD" | "CAD" | "SGD" | "CNY" | "HKD" | "TWD" | "MYR" | "IDR" | "VND" | "INR" | "NZD" | "CHF" | "AED";
+import type { CurrencyCode } from './currency';
+export type { CurrencyCode } from './currency';
 
 export interface FreshnessMetadata {
   source: "flights" | "hotels" | "activities" | "weather" | "exchange-rates";
@@ -136,11 +137,12 @@ export interface TransportationOption {
 
 export interface DestinationContext {
   currency: CurrencyCode | null;
-  currencySource: "country-code" | "unsupported";
+  currencySource: "country-code" | "multiple" | "unsupported";
   transportation: Array<TransportationOption>;
   transportationSource: "curated-country-city-guidance" | "unavailable";
   transportationMessage: string;
   currencyMessage?: string;
+  currencies?: Array<CurrencyCode>;
 }
 
 export interface ExchangeRateQuote {
@@ -165,7 +167,7 @@ export interface AccommodationQuote {
   checkInDate: string;
   checkOutDate: string;
   occupancy: Array<{ adults: number; childAges: Array<number>; }>;
-  currency: "PHP" | "USD" | "EUR" | "JPY" | "KRW" | "THB" | "GBP" | "AUD" | "CAD" | "SGD" | "CNY" | "HKD" | "TWD" | "MYR" | "IDR" | "VND" | "INR" | "NZD" | "CHF" | "AED";
+  currency: CurrencyCode;
   total: number;
   nightlyAverage: number;
   taxesAndFeesIncluded?: boolean;

@@ -187,7 +187,7 @@ test('matches placement, keyboard focus and mobile widths; stays hidden for trip
     await backButton(page).scrollIntoViewIfNeeded();
     await expect(page.getByRole('button', { name: 'Update saved trip', exact: true })).toBeVisible();
     const button = (await backButton(page).boundingBox())!, heading = (await page.getByRole('heading', { name: 'Your trip itinerary', exact: true }).boundingBox())!;
-    const notice = (await page.getByRole('status').filter({ hasText: 'Saved trip loaded.' }).boundingBox())!;
+    const notice = (await page.getByRole('region', { name: 'Trip summary', exact: true }).boundingBox())!;
     expect(button.x).toBeCloseTo(heading.x, 0);
     expect(notice.y).toBeGreaterThan(heading.y + heading.height);
     expect(button.y + button.height).toBeLessThan(heading.y);

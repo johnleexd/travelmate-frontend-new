@@ -9,6 +9,8 @@
 .tripSummary > div { display: grid; grid-template-columns: auto 1fr; gap: 2px 7px; padding-left: 12px; border-left: 1px solid #DDD4BC; }
 .tripSummary small { grid-column: 2; color: var(--tm-muted, #52645A); font-size: 10px; }
 .tripSummary svg { color: var(--tm-gold-text, #806025); }
+.planningNote { margin: 7px 0 14px; color: var(--tm-muted, #52645A); font-size: 11px; }
+.tripSummary .costWarning { color: #A32E2E; font-weight: 700; }
 .tripSources { margin: 12px 0; font-size: 12px; }
 .tripSources > summary { cursor: pointer; width: fit-content; padding: 6px 0; color: var(--tm-muted, #52645A); }
 .hotelStrip { display: grid; grid-template-columns: 160px minmax(0, 1fr) auto; align-items: center; gap: 14px; margin-bottom: 14px; border: 1px solid var(--tm-border, #D8E1D7); border-radius: 10px; padding: 10px; background: #FBFAF4; }
@@ -59,8 +61,23 @@
 .activityMain h4 { font-size: 15px; font-weight: 750; line-height: 1.35; }
 .location { display: flex; align-items: center; gap: 4px; margin-top: 4px; color: var(--tm-muted, #52645A); font-size: 11px; }
 .location svg { flex-shrink: 0; }
-.meta, .description { margin-top: 5px; font-size: 11px; line-height: 1.5; color: var(--tm-muted, #52645A); }
-.description { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.meta, .description { margin-top: 5px; font-size: 12px; line-height: 1.55; color: var(--tm-muted, #52645A); }
+.description { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.qualifications { display: flex; flex-wrap: wrap; gap: 5px; padding: 0; margin-top: 6px; list-style: none; }
+.qualifications li { padding: 2px 7px; border: 1px solid #dec78d; border-radius: 5px; background: #fbf0d8; color: #735326; font-size: 10px; line-height: 1.5; }
+.fullDescription { white-space: pre-wrap; }
+.overviewControls { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 10px; margin-top: 7px; }
+.overviewActivity [data-activity-text] { margin-top: 9px; }
+.overviewActivity [data-activity-text] h4 { font-size: 16px; font-weight: 750; line-height: 1.4; }
+.overviewActivity .description { font-size: 12px; }
+.overviewActivity > [data-expense-estimate] { margin-top: 9px; }
+.detailsBody section { min-width: 0; }
+.detailsBody p { margin-top: 5px; }
+.modalContent { color: #f6f2e8; --tm-muted: #c0cbbf; --tm-primary: #e7d5a7; }
+.modalContent h4 { font-weight: 700; font-size: 15px; }
+.modalContent [data-activity-text] { min-width: 0; }
+.budget > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; cursor: pointer; font-size: 13px; font-weight: 700; }
+.budget > summary span { text-align: right; font-weight: 500; font-size: 11px; }
 .priceLabel { margin-top: 4px; color: var(--tm-gold-text, #806025); font-size: 10px; line-height: 1.5; }
 .priceBadge { padding: 8px; border-radius: 8px; text-align: center; background: #FFF0CD; color: var(--tm-gold-text, #806025); font-size: 13px; }
 .priceBadge small { display: block; margin-top: 3px; font-size: 9px; }
@@ -134,9 +151,13 @@
 .tripHeading { gap: 18px; margin-bottom: 18px; align-items: center; }
 .tripTitle h1 { font-size: clamp(30px, 3.3vw, 44px); scroll-margin-top: 110px; outline: none; }
 .tripTitle p { margin-top: 10px; font-size: 16px; font-weight: 500; }
-.saveButton { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 12px 20px; border: 1px solid #28594C; border-radius: 10px; background: #28594C; color: #FFF; font-size: 14px; font-weight: 700; }
+.tripActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; max-width: 100%; margin-left: auto; }
+.saveButton, .reviewBudgetButton { display: inline-flex; flex-shrink: 0; align-items: center; justify-content: center; gap: 10px; min-height: 48px; padding: 12px 20px; border: 1px solid #28594C; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+.saveButton { background: #28594C; color: #FFF; }
+.reviewBudgetButton { background: #FFFEFA; color: #28594C; }
+.reviewBudgetButton:hover:enabled { background: #E4EDE1; }
 .saveButton:hover:enabled { background: #204A3F; }
-.saveButton:disabled { opacity: .6; }
+.saveButton:disabled, .reviewBudgetButton:disabled { opacity: .6; cursor: wait; }
 .tripSummary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; width: 100%; margin-bottom: 16px; border: 1px solid #D8E1D7; border-radius: 12px; padding: 16px 0; background: #FFFEFA; box-shadow: 0 3px 10px rgb(32 53 45 / 4%); }
 .tripSummary > div { display: flex; align-items: center; gap: 14px; min-width: 0; padding: 0 22px; border-left: 1px solid #D8E1D7; }
 .tripSummary > div:first-child { border-left: 0; }
@@ -186,7 +207,9 @@
 @media (max-width: 639px) {
   .tripHeading { align-items: stretch; }
   .tripTitle { flex-basis: 100%; }
-  .saveButton { align-self: flex-end; margin-left: auto; min-height: 44px; }
+  .tripActions { flex-basis: 100%; }
+  .tripHeading > .saveButton { align-self: flex-end; margin-left: auto; }
+  .saveButton, .reviewBudgetButton { min-height: 44px; }
   .tripSummary { grid-template-columns: minmax(0, 1fr); padding: 0 16px; }
   .tripSummary > div { border-left: 0; border-top: 1px solid #D8E1D7; padding: 14px 0; }
   .tripSummary > div:first-child { border-top: 0; }
@@ -201,4 +224,8 @@
   .overviewFooter, .detailPage .overviewFooter { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .localTime, .total { border-left: 0; padding-left: 0; }
   .viewButton { grid-column: 1; justify-self: stretch; width: 100%; }
+}
+@media (max-width: 479px) {
+  .tripActions { flex-direction: column; width: 100%; }
+  .tripActions > button { width: 100%; }
 }

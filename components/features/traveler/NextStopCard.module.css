@@ -1,0 +1,16 @@
+.card { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; margin: 3px 0; border: 1px solid #cdd8c9; border-left: 3px solid #b99a50; border-radius: 10px; color: #244536; background: #edf1e8; }
+.icon { flex-shrink: 0; margin-top: 3px; color: #806025; }
+.body { min-width: 0; flex: 1; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.body h4 { margin: 0 0 3px; font-size: 13px; font-weight: 750; }
+.endpoints { font-weight: 600; }
+.options { margin: 6px 0; padding: 0; list-style: none; }
+.details { margin: 4px 0; color: #52645a; font-size: 11px; }
+.details summary { cursor: pointer; width: fit-content; padding: 3px 0; }
+.details p { margin: 4px 0; }
+.details summary:focus-visible { outline: 2px solid #a78029; outline-offset: 2px; }
+.body small, .fare { color: #52645a; font-size: 11px; }
+.body small a { text-decoration: underline; }
+.directions { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; gap: 5px; min-height: 40px; padding: 8px 12px; border: 1px solid #718b72; border-radius: 7px; color: #193f32; background: #fffefa; font-size: 12px; font-weight: 700; }
+.directions:hover { background: #f1e8d2; }
+.directions:focus-visible { outline: 3px solid #a78029; outline-offset: 3px; }
+@media (max-width: 600px) { .card { flex-wrap: wrap; gap: 10px; padding: 12px; } .body { flex-basis: calc(100% - 36px); } .directions { width: 100%; } }

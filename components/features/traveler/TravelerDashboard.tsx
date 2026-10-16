@@ -1,12 +1,18 @@
 'use client';
+import { ConversionPreference, ConversionLoading } from '@/components/common/ConversionPreference';
+import { ConversionDetails } from '@/components/common/ConversionDetails';
+
 import styles from './TravelerDashboard.module.css';
 import { PlacesPhotoMapBoundary, PlacesAwareTripMap } from '@/components/common/PlacesPhotoMapBoundary';
 import { VisitedPlaces } from './VisitedPlaces';
 import { ReportProblem } from './ReportProblem';
 import { ExpenseAssumptionsFields } from './ExpenseAssumptions';
+import { TripPreferenceFields } from './TripPreferenceFields';
 import { DestinationSpotCarousel } from './DestinationSpotCarousel';
 import { restoredExpenseAssumptions, type ExpenseAssumptions } from '@/lib/expense-assumptions';
 import { BudgetReview } from './BudgetReview';
+import { HelpUserGuide } from './HelpUserGuide';
+import type { HelpGuideId } from '@/lib/help-guides';
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -16,15 +22,14 @@ import { Popover } from 'radix-ui';
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ArrowLeft, ArrowRight, BedDouble, Bell, CalendarDays, ChevronRight, CloudSun, Compass, Home, LoaderCircle, LogOut, MapPin, MessageSquare, UserRound, WalletCards } from 'lucide-react';
-import { fetchTripData, fetchWeather, handleResponse, isAuthenticationError, refreshItineraryDayImages, type DayActivity, type ItineraryResponse, type WeatherData } from '@/services/api.service';
-import { CURRENCY_NAMES, formatMoney, hasValidCurrencyPrecision, partyBudgetExplanation, partyBudgetLabel, PARTY_TYPE_LABELS, SUPPORTED_CURRENCIES, ZERO_DECIMAL_CURRENCIES, type CurrencyCode, type PartyType } from '@/lib/domain';
+import { ArrowLeft, ArrowRight, BedDouble, Bell, CalendarDays, ChevronRight, CircleHelp, CloudSun, Compass, Home, LoaderCircle, LogOut, MapPin, MessageSquare, UserRound, WalletCards } from 'lucide-react';
+import { fetchTripData, fetchWeather, handleResponse, isAuthenticationError, refreshItineraryDayImages, retryItineraryDays, type DayActivity, type ItineraryResponse, type WeatherData } from '@/services/api.service';
+import { CURRENCY_NAMES, formatMoney, hasValidCurrencyPrecision, partyBudgetExplanation, partyBudgetLabel, PARTY_TYPE_LABELS, SUPPORTED_CURRENCIES, currencyStep, currencyFractionDigits, type CurrencyCode, type PartyType } from '@/lib/domain';
 import type { NotificationsResponse, PageInfo, PlatformActionResponse, PlatformResponse, ProfileResponse, SavedTrip, TripDetailResponse, TripVersionsResponse } from '@/lib/contracts';
 import { moveActivity, removeActivity, upsertActivity } from '@/lib/itinerary-editor';
 import { applyConditionSnapshot } from '@/lib/conditions';
 import { DashboardLoadState } from '@/components/common/DashboardLoadState';
 import { ItinerarySkeleton } from '@/components/common/ContentSkeletons';
-import { Skeleton } from '@/components/common/Skeleton';
 import { TravelerJourneyOverview } from '@/components/features/traveler/TravelerJourneyOverview';
 import { TravelerAccountCenter } from '@/components/features/traveler/TravelerAccountCenter';
 import { SavedTripLifecycle } from '@/components/features/traveler/SavedTripLifecycle';
@@ -71,6 +76,7 @@ const GENERATION_REQUIREMENT_ICONS = {
   'trip-accommodation': BedDouble,
 };
 const TAB_COPY: Record<Tab, { title: string; description: string }> = {
+  help: { title: 'How can we help you?', description: 'Simple steps for planning and managing your trips.' },
   visited: { title: 'Visited places', description: 'Keep a personal history of the places you have visited.' },
   feedback: { title: 'Feedback and support', description: 'Rate a saved trip or report a problem to the TravelMate team.' },
   overview: { title: 'Your travel home', description: 'See what TravelMate does, where your plans are, and the single best action to take next.' },
@@ -87,6 +93,16 @@ function savedItinerary(value: unknown): ItineraryResponse | null {
   if (!value || typeof value !== 'object') return null;
   const itinerary = value as Partial<ItineraryResponse>;
   return typeof itinerary.destination === 'string' && Array.isArray(itinerary.days) && itinerary.days.length > 0 ? itinerary as ItineraryResponse : null;
+}
+
+function savedStaySelection(plan: ItineraryResponse): StaySelection | null {
+  const planned = plan.plannedAccommodation;
+  if (!planned) return null;
+  return {
+    value: planned.source === 'manual' ? 'manual' : `provider:${planned.sourceId}`,
+    planned,
+    preview: { ...planned, type: planned.type || 'Accommodation', source: 'Saved accommodation' },
+  };
 }
 
 function editableItineraryFingerprint(plan: ItineraryResponse | null): string {
@@ -122,6 +138,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const budget = Number(budgetInput);
   const setBudget = useCallback((value: number) => setBudgetInput(String(value)), []);
   const [referenceCurrency, setReferenceCurrency] = useState<CurrencyCode>('PHP');
+  const [conversionEnabled,setConversionEnabled] = useState(true);
   const [referencePreferenceReady, setReferencePreferenceReady] = useState(false);
   const [partyType, setPartyType] = useState<PartyType>('solo');
   const [travelers, setTravelers] = useState(1);
@@ -129,21 +146,25 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const [endDate, setEndDate] = useState(() => addCalendarDays(localDateInputValue(), 6));
   const {
     destination, selectedDestination,
-    currency, currencyResolved, currencyWasDetected, currencyFallbackMessage, currencyNeedsFallback, contextBusy, contextMessage, transportationOptions,
-    transportationPreference, providerAccommodations, providerStatus, providerMessage, providerEnvironment, liveAccommodations, nearbyAccommodations, accommodationNeedsArea, accommodationQueryKey, staysBusy, stayMessage, stayStatus,
+    currency, currencyResolved, currencyFallbackMessage, currencyNeedsFallback, contextBusy,
+    providerAccommodations, providerStatus, providerMessage, providerEnvironment, liveAccommodations, nearbyAccommodations, accommodationNeedsArea, accommodationQueryKey, staysBusy, stayMessage, stayStatus,
     changeDestinationInput, selectDestination, restoreDestination, setManualCurrency,
-    setTransportationPreference, retryContext, retryAccommodations,
+    retryAccommodations,
   } = useDestinationPlanning(startDate, endDate, travelers);
   const destinationDetails = selectedDestinationAnchor(selectedDestination);
-  const [interests, setInterests] = useState('food, culture, nature');
-  const [preferredActivities, setPreferredActivities] = useState('local food, sightseeing');
-  const [accommodationPreference, setAccommodationPreference] = useState('budget-friendly');
+  const [historicalInterests, setHistoricalInterests] = useState<string[]>([]);
+  const [travelStyle, setTravelStyle] = useState('balanced');
+  const [accommodationPreference, setAccommodationPreference] = useState('no preference');
   const [staySelectionState, setStaySelectionState] = useState<{ key: string; selection: StaySelection } | null>(null);
+  const [restoredStaySelection, setRestoredStaySelection] = useState<{ destination: string; selection: StaySelection | null } | null>(null);
   const [budgetedStaySelection, setBudgetedStaySelection] = useState<typeof staySelectionState>(null);
-  const staySelection = staySelectionState?.key === accommodationQueryKey ? staySelectionState.selection : null;
+  const staySelection = staySelectionState?.key === accommodationQueryKey ? staySelectionState.selection
+    : restoredStaySelection?.destination === destination ? restoredStaySelection.selection : null;
   const selectedStayId = !staySelection?.planned && staySelection?.value.startsWith('local:') ? staySelection.value.slice(6) : '';
   const selectedLiveStayId = !staySelection?.planned && staySelection?.value.startsWith('live:') ? staySelection.value.slice(5) : '';
   const [itinerary, setItinerary] = useState<ItineraryResponse | null>(null);
+  const providerBaseRef = useRef<ItineraryResponse | null>(null);
+  const [retryingDay, setRetryingDay] = useState<number | null>(null);
   const [selectedDay, setSelectedDay] = useState<ItineraryResponse['days'][number] | null>(null);
   const [photoRefreshDay, setPhotoRefreshDay] = useState<number | null>(null);
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -176,6 +197,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const startingLocation = useStartingLocation(data?.user.id);
   const { value: flightOrigin, change: setFlightOrigin } = startingLocation;
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [selectedHelpGuide, setSelectedHelpGuide] = useState<HelpGuideId>('create-trip');
   const [expenseAssumptions, setExpenseAssumptions] = useState<ExpenseAssumptions>({});
   const [preTripCosts, setPreTripCosts] = useState<PreTripCostDraft>(EMPTY_PRE_TRIP_COSTS);
   const [includePreTripCosts, setIncludePreTripCosts] = useState(false);
@@ -195,11 +217,20 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   // Compare editable values, excluding provider refreshes and photo metadata.
   const planningFingerprint = JSON.stringify({
     destination, selectedDestination, budgetInput, currency, startDate, endDate,
-    partyType, travelers, interests, preferredActivities,
-    accommodationPreference, transportationPreference, staySelection,
+    partyType, travelers, travelStyle,
+    accommodationPreference, staySelection,
     flightOrigin, expenseAssumptions, preTripCosts, includePreTripCosts,
   });
   const itineraryFingerprint = editableItineraryFingerprint(itinerary);
+  const withPlanningPreferences = useCallback((plan: ItineraryResponse): ItineraryResponse => ({
+    ...plan,
+    preferences: {
+      ...plan.preferences, travelStyle,
+      accommodation: plan.preferences?.accommodation ?? accommodationPreference,
+      transportation: plan.preferences?.transportation ?? '',
+      activities: plan.preferences?.activities ?? [],
+    },
+  }), [travelStyle, accommodationPreference]);
   const hasUnsavedTripChanges = () => (itineraryBaselineRef.current !== null ? itineraryBaselineRef.current !== itineraryFingerprint : manualDirty) || (planningBaselineRef.current !== null && planningBaselineRef.current !== planningFingerprint);
   const navigation = useItineraryNavigation(initialTab || 'overview', (target, current) => (current.tab === 'planner' || current.tab === 'budget') && !!savedTripOrigin && hasUnsavedTripChanges() && (!['planner', 'budget'].includes(target.tab) || target.tripId !== visitTripId), () => setLeaveDialogOpen(true));
   const tab = navigation.view.tab;
@@ -232,7 +263,11 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const setTab = (nextTab: Tab, view?: ItineraryView) => {
     sectionVersionRef.current += 1;
     setMessage('');
-    navigation.navigate(view || (nextTab === 'planner' || nextTab === 'budget' ? { tab: nextTab, tripId: visitTripId || editingTripId || undefined, fromSavedTrips: !!savedTripOrigin } : { tab: nextTab }));
+    navigation.navigate(view || (nextTab === 'planner' || nextTab === 'budget' ? {
+      tab: nextTab,
+      tripId: navigation.view.tripId || visitTripId || editingTripId || undefined,
+      fromSavedTrips: navigation.view.fromSavedTrips ?? !!savedTripOrigin,
+    } : { tab: nextTab }));
     if (nextTab === 'bookings') setSavedTripsVisited(true);
   };
   const latestDraftRef = useRef({ planning: planningFingerprint, itinerary: itineraryFingerprint });
@@ -250,9 +285,9 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     values.push(...(data?.trips.map((trip) => trip.currency) || []));
     return [...new Set(values.filter(isCurrencyCode))];
   }, [currency, itinerary?.currency, liveAccommodations, data?.trips]);
-  const { exchangeQuotes, exchangeBusy, exchangeMessage } = useExchangeRates(
+  const { exchangeQuotes, exchangeBusy } = useExchangeRates(
     exchangeSourceCurrencies, referenceCurrency,
-    referencePreferenceReady && !!data?.user.id && data.user.role === 'traveler' && data.user.accountStatus === 'active',
+    conversionEnabled && referencePreferenceReady && !!data?.user.id && data.user.role === 'traveler' && data.user.accountStatus === 'active',
   );
 
   const acceptWorkspace = useCallback((workspace: PlatformResponse) => {
@@ -269,11 +304,12 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       setSavedTripOrigin(null); setSavedTripsVisited(false);
       savedTripsReturnRef.current = null; planningBaselineRef.current = null;
       itineraryBaselineRef.current = null;
+      providerBaseRef.current = null;
       setLastSuccessfulUpdate(null); setSaveToast(null); setLeaveDialogOpen(false);
     }
     workspaceOwnerRef.current = workspace.user.id;
     setData(workspace);
-  }, [setIncludePreTripCosts]);
+  }, [setIncludePreTripCosts, setVisitTripId, setItinerary, setWeather, setEditingTripId, setRegenerationTargetId, setSelectedDay, setLeaveDialogOpen]);
   const refresh = () => api().then(acceptWorkspace);
   const loadInitial = async () => {
     try { acceptWorkspace(await api()); }
@@ -293,6 +329,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     const timer = window.setTimeout(() => {
       const stored = readBrowserStorage('travelmate-reference-currency');
       if (isCurrencyCode(stored)) setReferenceCurrency(stored);
+      setConversionEnabled(readBrowserStorage('travelmate-conversion-enabled') !== 'false');
       setReferencePreferenceReady(true);
     }, 0);
     return () => window.clearTimeout(timer);
@@ -324,10 +361,14 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     setSavedTripOrigin(null); planningBaselineRef.current = null;
     itineraryBaselineRef.current = null; setLastSuccessfulUpdate(null); setSaveToast(null);
     const plan = draft.itinerary;
+    providerBaseRef.current = draft.providerBase ?? null;
+    setStaySelectionState(null);
+    setRestoredStaySelection({ destination: draft.trip.destination, selection: savedStaySelection(plan) });
     setBudget(draft.trip.budget); setStartDate(draft.trip.startDate); setEndDate(draft.trip.endDate);
-    setTravelers(draft.trip.travelers); setPartyType(draft.trip.partyType); setInterests(draft.trip.interests.join(', '));
+    setTravelers(draft.trip.travelers); setPartyType(draft.trip.partyType); setHistoricalInterests(draft.trip.interests ?? []);
     restoreDestination(draft.trip, plan.preferences?.transportation || '');
-    if (plan.preferences) { setAccommodationPreference(['budget-friendly','central location','hostel','condo','resort','family-friendly','luxury','no preference'].includes(plan.preferences.accommodation) ? plan.preferences.accommodation : 'no preference'); if (plan.preferences.interests) setInterests(plan.preferences.interests.join(', ')); setPreferredActivities(plan.preferences.activities.join(', ')); }
+    setTravelStyle(plan.preferences?.travelStyle || 'balanced');
+    setAccommodationPreference(plan.preferences?.accommodation || 'no preference');
     const restoredPreTrip = plan.selectedTravelCosts?.preTrip;
     setFlightOrigin(plan.grounding?.startingLocation || restoredPreTrip?.startingLocation || '');
     setExpenseAssumptions(restoredExpenseAssumptions(plan));
@@ -347,14 +388,14 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       destinationRegion: selectedDestination?.region, destinationCountry: selectedDestination?.country,
       destinationCountryCode: selectedDestination?.countryCode, latitude: selectedDestination?.latitude,
       longitude: selectedDestination?.longitude, budget, currency, startDate, endDate, travelers, partyType,
-      interests: interests.split(',').map((item) => item.trim()).filter(Boolean), itinerary, weather,
+      interests: historicalInterests, itinerary: withPlanningPreferences(itinerary), weather,
       status: 'active', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
     };
-    if (!writeBrowserStorage(key, JSON.stringify({ trip, itinerary, weather, savedAt: new Date().toISOString() }))) {
+    if (!writeBrowserStorage(key, JSON.stringify({ trip, itinerary: trip.itinerary, providerBase: providerBaseRef.current ?? undefined, weather, savedAt: new Date().toISOString() }))) {
       const timer = window.setTimeout(() => setMessage('Your browser could not keep an unsaved draft. Keep this page open and save your trip to keep these changes.'), 0);
       return () => window.clearTimeout(timer);
     }
-  }, [data, itinerary, weather, manualDirty, editingTripId, destination, selectedDestination, budget, currency, startDate, endDate, travelers, partyType, interests]);
+  }, [data, itinerary, weather, manualDirty, editingTripId, destination, selectedDestination, budget, currency, startDate, endDate, travelers, partyType, historicalInterests, withPlanningPreferences]);
 
   useEffect(() => {
     if (!manualDirty) return;
@@ -507,19 +548,20 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       if ((selectedStayId && !selectedStay) || (selectedLiveStayId && !selectedLiveStay)) {
         throw new Error('Your selected accommodation is no longer in the current results. Browse accommodations and select a stay again, or choose accommodation later.');
       }
-      const requestDetails = { destination: destination.trim(), budget, currency, partyType, travelers, startDate, endDate, interests, preferredActivities, accommodationPreference, transportationPreference, accommodationListingId: selectedStay?.id, externalAccommodationId: selectedLiveStay?.id, selectedAccommodationQuote: staySelection?.quoteToken, plannedAccommodation: staySelection?.planned, flightOrigin, includePreTripCosts, preTripCosts, expenseAssumptions };
+      const requestDetails = { destination: destination.trim(), budget, currency, partyType, travelers, startDate, endDate, travelStyle, accommodationPreference, accommodationListingId: selectedStay?.id, externalAccommodationId: selectedLiveStay?.id, selectedAccommodationQuote: staySelection?.quoteToken, plannedAccommodation: staySelection?.planned, flightOrigin, includePreTripCosts, preTripCosts, expenseAssumptions };
       const fingerprint = JSON.stringify(requestDetails);
       const idempotencyKey = generationRequestRef.current?.fingerprint === fingerprint ? generationRequestRef.current.key : crypto.randomUUID();
       generationRequestRef.current = { fingerprint, key: idempotencyKey };
-      const result = await fetchTripData(destination.trim(), budget, { ...expenseAssumptions, idempotencyKey, currency, partyType, travelers, startDate, endDate, startingLocation: flightOrigin.trim() || undefined, destinationDetails, latitude: selectedDestination.latitude, longitude: selectedDestination.longitude, interests: interests.split(',').map((x) => x.trim()).filter(Boolean), preferredActivities: preferredActivities.split(',').map((x) => x.trim()).filter(Boolean), accommodationPreference, transportationPreference: transportationPreference || 'locally appropriate transportation', accommodationListingId: selectedStay?.id, plannedAccommodation: staySelection?.planned, selectedAccommodationQuote: staySelection?.quoteToken, externalAccommodation: selectedLiveStay ? { fetchedAt: selectedLiveStay.fetchedAt, total: selectedLiveStay.total, hotelId: selectedLiveStay.hotelId, offerId: selectedLiveStay.offerId, name: selectedLiveStay.name, address: selectedLiveStay.address, nightlyRate: selectedLiveStay.nightlyRate, currency: selectedLiveStay.currency, isLive: selectedLiveStay.isLive, selectionToken: selectedLiveStay.selectionToken } : undefined, preTripCosts: includePreTripCosts ? { airportTransferOutbound: preTripCosts.airportTransfers, airportTransferReturn: 0, passport: preTripCosts.passport, visaOrAuthorization: preTripCosts.visaOrAuthorization, departureTaxes: preTripCosts.departureTaxes, insurance: preTripCosts.insurance, other: preTripCosts.other } : undefined });
+      const result = await fetchTripData(destination.trim(), budget, { ...expenseAssumptions, idempotencyKey, currency, partyType, travelers, startDate, endDate, startingLocation: flightOrigin.trim() || undefined, destinationDetails, latitude: selectedDestination.latitude, longitude: selectedDestination.longitude, travelStyle, accommodationPreference, accommodationListingId: selectedStay?.id, plannedAccommodation: staySelection?.planned, selectedAccommodationQuote: staySelection?.quoteToken, externalAccommodation: selectedLiveStay ? { fetchedAt: selectedLiveStay.fetchedAt, total: selectedLiveStay.total, hotelId: selectedLiveStay.hotelId, offerId: selectedLiveStay.offerId, name: selectedLiveStay.name, address: selectedLiveStay.address, nightlyRate: selectedLiveStay.nightlyRate, currency: selectedLiveStay.currency, isLive: selectedLiveStay.isLive, selectionToken: selectedLiveStay.selectionToken } : undefined, preTripCosts: includePreTripCosts ? { airportTransferOutbound: preTripCosts.airportTransfers, airportTransferReturn: 0, passport: preTripCosts.passport, visaOrAuthorization: preTripCosts.visaOrAuthorization, departureTaxes: preTripCosts.departureTaxes, insurance: preTripCosts.insurance, other: preTripCosts.other } : undefined });
       generationRequestRef.current = null;
       setBudgetedStaySelection(staySelectionState);
+      providerBaseRef.current = null;
       setItinerary(result.itinerary); setWeather(result.weather); setManualDirty(false); setActivityEditor(null); setGenerationFailed(false);
       try {
         const response = await api({
           action: regenerationTargetId ? 'update-trip' : 'save-trip', id: regenerationTargetId || undefined,
           destination: destination.trim(), destinationDetails, budget, currency, startDate, endDate, partyType, travelers,
-          interests: interests.split(',').map((item) => item.trim()).filter(Boolean), itinerary: result.itinerary, weather: result.weather,
+          ...(!regenerationTargetId ? { interests: historicalInterests } : {}), itinerary: result.itinerary, weather: result.weather,
         });
         const saved = response.result as SavedTrip | undefined;
         if (saved?.id) {
@@ -533,8 +575,8 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
         planningBaselineRef.current = planningFingerprint;
         itineraryBaselineRef.current = editableItineraryFingerprint(canonical || result.itinerary);
         await refresh().catch(() => setMessage('Trip saved. The saved-trip list could not refresh; reopen Saved trips to retry.'));
-        const providerMessage = result.itinerary.days.some(day => day.planningStatus === 'incomplete') ? 'Incomplete itinerary — more places needed. Available verified visits and budget allowances were retained; review the reason on each incomplete day.' : result.itinerary.source === 'catalog' ? 'Your verified-place plan is ready. AI scheduling was unavailable; local schedules and costs are labeled estimates.' : result.itinerary.source === 'mock' ? 'Demo fallback plan ready; recommendations and prices are estimates.' : `Your ${result.itinerary.days.length}-day ${result.itinerary.source === 'gemini' ? 'Gemini' : 'OpenAI'} plan is ready.`;
-        setMessage(`${providerMessage} It was saved automatically${regenerationTargetId ? ' as a new version of the selected trip' : ' to Saved trips'}.`);
+        const providerMessage = result.itinerary.days.some(day => day.planningStatus === 'incomplete') ? 'Some days need more activities.' : result.itinerary.source === 'mock' ? 'Demo plan with sample activities and estimates.' : 'Your plan is ready.';
+        setMessage(`${providerMessage} ${regenerationTargetId ? 'Saved as a new version.' : 'Saved to your trips.'}`);
       } catch (saveError) {
         setManualDirty(true);
         await refresh().catch(() => undefined);
@@ -667,12 +709,16 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     }
   }
 
+  function changedExpenseEstimates(plan: ItineraryResponse) {
+    const restored = restoredExpenseAssumptions(plan);
+    return Object.fromEntries(Object.entries(expenseAssumptions).filter(([key,value]) => value !== undefined && value !== restored[key as keyof ExpenseAssumptions]));
+  }
   async function saveCurrentTrip() {
     if (!itinerary || savePendingRef.current) return;
     savePendingRef.current = true;
     setBusy(true); setSavingTrip(true); setSaveToast(null); setMessage('');
     try {
-      const response = await api({ action: editingTripId ? 'update-trip' : 'save-trip', id: editingTripId || undefined, destination, destinationDetails, budget, currency, startDate, endDate, partyType, travelers, interests: interests.split(',').map((item) => item.trim()).filter(Boolean), itinerary, weather });
+      const response = await api({ action: editingTripId ? 'update-trip' : 'save-trip', id: editingTripId || undefined, destination, destinationDetails, budget, currency, startDate, endDate, partyType, travelers, ...(!editingTripId ? { interests: historicalInterests } : {}), itinerary: withPlanningPreferences(itinerary), expenseAssumptions: changedExpenseEstimates(itinerary), weather });
       const saved = response.result as SavedTrip | undefined;
       acceptTripSave(saved, true);
       await refresh().catch(() => undefined);
@@ -684,14 +730,30 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     finally { savePendingRef.current = false; setSavingTrip(false); setBusy(false); }
   }
 
+  async function retryDay(dayIndex: number, includeNearby: boolean) {
+    if (!itinerary || busy || savePendingRef.current) return;
+    const owner = data?.user.id;
+    const retryFingerprint = itineraryFingerprint;
+    setBusy(true); setRetryingDay(dayIndex); setMessage('Checking for additional verified places…');
+    try {
+      const result = await retryItineraryDays(itinerary, [dayIndex], includeNearby, providerBaseRef.current);
+      if (owner !== workspaceOwnerRef.current || latestDraftRef.current.itinerary !== retryFingerprint) return;
+      providerBaseRef.current = result.itinerary;
+      setItinerary(result.itinerary); setManualDirty(true);
+      setMessage(result.added ? `Added ${result.added} verified ${result.added === 1 ? 'stop' : 'stops'}. Existing activities are preserved. Save your changes when ready.` : 'No additional places fit this day within the selected scope. Your existing activities and draft are preserved.');
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Could not refresh this day. Your draft is preserved; please retry.');
+    } finally { setBusy(false); setRetryingDay(null); }
+  }
+
   async function saveManualChanges() {
     if (!itinerary || savePendingRef.current) return;
     savePendingRef.current = true;
     setBusy(true); setSavingTrip(true); setSaveToast(null); setMessage('');
     try {
       const response = editingTripId
-        ? await api({ action: 'update-trip-itinerary', id: editingTripId, itinerary })
-        : await api({ action: 'save-trip', destination, destinationDetails, budget, currency, startDate, endDate, partyType, travelers, interests: interests.split(',').map((item) => item.trim()).filter(Boolean), itinerary, weather });
+        ? await api({ action: 'update-trip-itinerary', id: editingTripId, itinerary, providerBase: providerBaseRef.current ?? undefined, planningPreferences: withPlanningPreferences(itinerary).preferences, expenseAssumptions: changedExpenseEstimates(itinerary) })
+        : await api({ action: 'save-trip', destination, destinationDetails, budget, currency, startDate, endDate, partyType, travelers, ...(!editingTripId ? { interests: historicalInterests } : {}), itinerary: withPlanningPreferences(itinerary), providerBase: providerBaseRef.current ?? undefined, weather });
       const saved = response.result as SavedTrip | undefined;
       acceptTripSave(saved, !editingTripId);
       setSelectedDay(null);
@@ -744,27 +806,32 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
 
   function startNewTrip() {
     if (manualDirty && !window.confirm('Start a new trip? Your current unsaved edits remain available in browser draft recovery.')) return;
+    providerBaseRef.current = null;
     const today = localDateInputValue();
     setSavedTripOrigin(null); planningBaselineRef.current = null;
     itineraryBaselineRef.current = null; setLastSuccessfulUpdate(null); setSaveToast(null);
     setEditingTripId(null); setVisitTripId(null); setRegenerationTargetId(null); setVisitTripId(null); setItinerary(null); setWeather(null); setManualDirty(false);
     setStaySelectionState(null); setGenerationFailed(false);
+    setRestoredStaySelection(null);
+    setHistoricalInterests([]); setTravelStyle('balanced'); setAccommodationPreference('no preference');
     setFlightOrigin(''); setPreTripCosts(EMPTY_PRE_TRIP_COSTS); setIncludePreTripCosts(false);
     changeDestinationInput(''); setStartDate(today); setEndDate(addCalendarDays(today, 6)); setPartyType('solo'); setTravelers(1);
     setTab('planner', { tab: 'planner' }); setMessage('');
   }
 
   function applyLoadedTrip(trip: SavedTrip, keepPlan: boolean, owner: string | null) {
+      providerBaseRef.current = null;
       const plan = savedItinerary(trip.itinerary);
       if (!plan) return;
       capturePlanningBaselineRef.current = true;
       itineraryBaselineRef.current = editableItineraryFingerprint(plan);
       setLastSuccessfulUpdate(null); setSaveToast(null);
       setStaySelectionState(null);
+      setRestoredStaySelection({ destination: trip.destination, selection: savedStaySelection(plan) });
       const draftDates = keepPlan ? { startDate: trip.startDate, endDate: trip.endDate, movedForward: false } : regenerationDraftDates(trip.startDate, trip.endDate);
       setBudget(trip.budget); setStartDate(draftDates.startDate); setEndDate(draftDates.endDate);
       setTravelers(trip.travelers); setPartyType(trip.partyType);
-      setInterests(trip.interests.join(', ')); setEditingTripId(trip.status === 'active' ? trip.id : null);
+      setHistoricalInterests(trip.interests ?? []); setEditingTripId(trip.status === 'active' ? trip.id : null);
       setRegenerationTargetId(keepPlan ? null : trip.id);
       restoreDestination(trip, plan.preferences?.transportation || '');
       const restoredPreTrip = plan.selectedTravelCosts?.preTrip;
@@ -772,7 +839,8 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       setExpenseAssumptions(restoredExpenseAssumptions(plan));
       setPreTripCosts(restoredPreTrip ? { airportTransfers: restoredPreTrip.airportTransferOutbound + restoredPreTrip.airportTransferReturn, passport: restoredPreTrip.passport, visaOrAuthorization: restoredPreTrip.visaOrAuthorization, departureTaxes: restoredPreTrip.departureTaxes, insurance: restoredPreTrip.insurance, other: restoredPreTrip.other } : EMPTY_PRE_TRIP_COSTS);
       setIncludePreTripCosts(Boolean(restoredPreTrip?.total));
-      if (plan.preferences) { setAccommodationPreference(['budget-friendly','central location','hostel','condo','resort','family-friendly','luxury','no preference'].includes(plan.preferences.accommodation) ? plan.preferences.accommodation : 'no preference'); if (plan.preferences.interests) setInterests(plan.preferences.interests.join(', ')); setPreferredActivities(plan.preferences.activities.join(', ')); }
+      setTravelStyle(plan.preferences?.travelStyle || 'balanced');
+      setAccommodationPreference(plan.preferences?.accommodation || 'no preference');
       setVisitTripId(keepPlan ? trip.id : null); setItinerary(keepPlan ? plan : null); setWeather(keepPlan && trip.weather && typeof trip.weather === 'object' ? trip.weather as WeatherData : null); setManualDirty(false); setActivityEditor(null); setSelectedDay(null); setGenerationFailed(false);
       setViewedTripMap(keepPlan && owner ? { owner, tripId: trip.id, destination: trip.destination, point: tripMapDestination(trip, plan.grounding?.destination) } : null);
       generationRequestRef.current = null;
@@ -818,7 +886,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       if (!routeView) savedTripsReturnRef.current = returnState;
       const draftDates = regenerationDraftDates(trip.startDate, trip.endDate);
       if (!routeView) setTab('planner', { tab: 'planner', tripId: keepPlan ? trip.id : undefined, fromSavedTrips });
-      setMessage(trip.status === 'completed' ? 'Completed trip loaded. Changes can be saved as a new trip; your completed travel stays saved.' : keepPlan ? 'Saved trip loaded. Change the form, regenerate if needed, then update it.' : draftDates.movedForward ? `The saved dates have passed. Draft dates moved to ${draftDates.startDate}–${draftDates.endDate} for regeneration; your saved plan is unchanged until the new plan succeeds.` : 'Trip details loaded. Generate a fresh itinerary, then update the saved trip.');
+      setMessage(trip.status === 'completed' ? 'Completed trip. Changes save as a new trip.' : keepPlan ? '' : draftDates.movedForward ? `Past travel dates. Review the new draft dates: ${draftDates.startDate}–${draftDates.endDate}. Your saved plan is unchanged.` : 'No itinerary yet. Generate a plan to continue.');
     } catch (error) {
       if (owner !== workspaceOwnerRef.current) return;
       if (isAuthenticationError(error)) router.replace('/account/appeal');
@@ -910,7 +978,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     else if (startDate < localDateInputValue()) requirements.push({ message: 'Choose a start date today or later.', field: 'trip-start-date', action: 'Review dates' });
     if (!budgetReady) {
       const message = budget > 1_000_000_000 ? 'Enter a total trip budget of 1,000,000,000 or less.'
-        : budget > 0 && !hasValidCurrencyPrecision(budget, currency) ? `${currency} budgets must use ${ZERO_DECIMAL_CURRENCIES.includes(currency) ? 'whole currency units' : 'no more than two decimal places'}.`
+        : budget > 0 && !hasValidCurrencyPrecision(budget, currency) ? `${currency} budgets must use ${currencyFractionDigits(currency) === 0 ? 'whole currency units' : `no more than ${currencyFractionDigits(currency)} decimal places`}.`
           : 'Enter a total trip budget greater than zero to continue.';
       requirements.push({ message, field: 'trip-budget', action: budget > 0 ? 'Review budget' : 'Add budget' });
     }
@@ -962,22 +1030,33 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     setMessage('');
   };
   const changeCurrency = (nextCurrency: CurrencyCode) => {
+    if (nextCurrency === currency) return;
+    setBudgetInput('');
+    setExpenseAssumptions({});
+    setPreTripCosts(EMPTY_PRE_TRIP_COSTS); setIncludePreTripCosts(false);
     setManualCurrency(nextCurrency);
     setStaySelectionState(null);
     setItinerary(null);
     setManualDirty(false);
-    setMessage(`Budget currency changed to ${nextCurrency}. Generate a new plan so every estimate uses one currency.`);
+    setMessage(`Enter a new budget and any expense estimates in ${nextCurrency}.`);
   };
   const confirmDestination = async (location: NonNullable<typeof selectedDestination>, preserveBrowsing = false) => {
+    const changed = selectedDestination?.id !== location.id;
     if (!await selectDestination(location, preserveBrowsing)) return false;
+    if (changed) {
+    setBudgetInput('');
+    setExpenseAssumptions({});
+    setPreTripCosts(EMPTY_PRE_TRIP_COSTS); setIncludePreTripCosts(false);
+    }
     setStaySelectionState(null);
+    setRestoredStaySelection(null);
     setItinerary(null);
     setWeather(null);
     setMessage('');
     return true;
   };
   return (
-    <div ref={pageRef} className={`${styles.theme} ${tab === 'overview' ? styles.homeTheme : ''} ${tab === 'planner' && itinerary ? styles.itineraryTheme : ''} traveler-dashboard min-h-screen w-full max-w-full overflow-x-clip bg-[#0b1d1a] pt-[calc(3.5rem+max(0.5rem,env(safe-area-inset-top)))] sm:pt-[calc(4rem+max(1rem,env(safe-area-inset-top)))] text-slate-100`}>
+    <ConversionPreference.Provider value={conversionEnabled}><ConversionLoading.Provider value={exchangeBusy}><div ref={pageRef} className={`${styles.theme} ${tab === 'overview' ? styles.homeTheme : ''} ${tab === 'planner' && itinerary ? styles.itineraryTheme : ''} traveler-dashboard min-h-screen w-full max-w-full overflow-x-clip bg-[#0b1d1a] pt-[calc(3.5rem+max(0.5rem,env(safe-area-inset-top)))] sm:pt-[calc(4rem+max(1rem,env(safe-area-inset-top)))] text-slate-100`}>
       <a href="#traveler-main-content" className="sr-only z-[100] bg-[#f1ead8] px-4 py-2 font-bold text-[#14231f] focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to trip workspace</a>
       {recoveryDraft && recoveryDraft.trip.userId === data.user.id && <RestoreDraftDialog destination={recoveryDraft.trip.destination} savedAt={recoveryDraft.savedAt} returnFocusRef={workspaceHeadingRef} onClose={() => setRecoveryDraft(null)} onRestore={restoreDraft}/>}
       <header className="fixed inset-x-0 top-0 z-40 px-3 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-6 sm:pt-[max(1rem,env(safe-area-inset-top))]">
@@ -1004,32 +1083,20 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
         </div>
       </header>
 
-      {tab !== 'overview' && !(tab === 'planner' && itinerary) && <div className="border-b border-white/10 bg-[#102622] px-4 py-3 sm:px-6">
-        <div className="mx-auto flex w-full max-w-[1600px] flex-wrap items-center gap-x-6 gap-y-1 text-xs text-white/52">
-          <strong className="text-white/78">Current trip context</strong>
-          {tab === 'budget' && navigation.view.tripId && !budgetItinerary ? <span>{busy ? 'Loading selected trip?' : 'Selected trip details unavailable'}</span> : <>
-            <span>{tab === 'budget' && budgetItinerary ? budgetItinerary.destination : selectedDestination ? destination : 'Choose and confirm a destination'}</span>
-            <span>{tab === 'budget' && budgetItinerary ? budgetItinerary.days[0].date + ' to ' + budgetItinerary.days.at(-1)!.date : startDate + ' to ' + endDate}</span>
-            {tab === 'budget' && budgetItinerary ? <span>{budgetItinerary.currency}</span> : <span>{currencyResolved && Number.isFinite(budget) ? formatMoney(budget, currency) : 'Currency auto-detected after destination'}{currencyResolved&&<ReferenceAmount amount={budget} currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes}/>}</span>}
-            {itinerary && <span className="text-emerald-200">Generated plan available</span>}
-          </>}
-        </div>
-      </div>}
-
       <div className="mx-auto grid w-full max-w-[1600px] grid-cols-[minmax(0,1fr)] gap-0 px-4 lg:grid-cols-[248px_minmax(0,1fr)] lg:gap-10 lg:px-6 xl:gap-14">
         <aside className="min-w-0 max-w-[calc(100vw-2rem)] py-4 lg:sticky lg:top-24 lg:max-w-none lg:self-start lg:py-8">
           <div data-traveler-rail className="lg:flex lg:h-[calc(100vh-144px)] lg:w-[248px] lg:flex-col">
             <nav aria-label="Traveler workspace" className="traveler-mobile-nav flex max-w-full snap-x gap-px overflow-x-auto border border-white/10 bg-white/10 p-px lg:flex-col lg:overflow-visible">
               {([['overview','Home',Home],['planner','Plan a trip',MapPin],['bookings','Saved trips',CalendarDays],['visited','Visited places',MapPin],['feedback','Feedback',MessageSquare],['notifications','Notifications',Bell]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => { if (id === 'planner') startNewTrip(); else { setTab(id); } }} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}{id === 'notifications' && data.notifications.filter((item) => !item.readAt).length > 0 && <span className="ml-auto bg-amber-300 px-1.5 text-[10px] font-black text-[#14231f]">{data.notifications.filter((item) => !item.readAt).length}</span>}</button>)}
               <div className="hidden px-4 pb-2 pt-6 text-[10px] font-bold uppercase tracking-[0.16em] text-white/28 lg:block">Use with a plan</div>
-              {([['budget','Budget review',WalletCards]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}</button>)}
+              {([['budget','Budget review',WalletCards],['help','Help / User Guide',CircleHelp]] as const).map(([id,label,Icon]) => <button key={id} type="button" aria-current={tab===id?'page':undefined} onClick={() => setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}</button>)}
             </nav>
             <div className="mt-8 hidden border-t border-white/10 pt-5 lg:block"><p className="max-w-[23ch] text-xs leading-5 text-white/38">Start with Plan a trip. Budget review becomes useful after TravelMate creates your itinerary.</p></div>
           </div>
         </aside>
 
         <main id="traveler-main-content" tabIndex={-1} className="min-w-0 w-full max-w-[calc(100vw-2rem)] overflow-x-hidden pb-20 pt-5 outline-none lg:max-w-none lg:pt-10">
-          {tab !== 'budget' && <div style={tab === 'planner' && itinerary ? { display: 'none' } : undefined} className="mb-7 flex flex-col items-start gap-3 border-b border-white/10 pb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
+          {tab !== 'budget' && tab !== 'help' && <div style={tab === 'planner' && itinerary ? { display: 'none' } : undefined} className="mb-7 flex flex-col items-start gap-3 border-b border-white/10 pb-6 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between">
             <div className="min-w-0 max-w-4xl"><h1 ref={workspaceHeadingRef} tabIndex={-1} className="break-words text-[clamp(2rem,4vw,3.75rem)] font-black leading-[0.96] tracking-[-0.05em] outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1d1a]">{currentTabCopy.title}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-white/52">{currentTabCopy.description}</p></div>
             <span className={`w-fit shrink-0 border px-3 py-2 text-[11px] font-bold tracking-wide ${data.user.emailVerified?'border-emerald-400/40 bg-emerald-400/10 text-emerald-200':'border-amber-300/40 bg-amber-300/10 text-amber-200'}`}>{data.user.emailVerified?'Email verified':'Email not verified'}</span>
           </div>}
@@ -1068,6 +1135,9 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
               referenceCurrency={referenceCurrency}
               exchangeQuotes={exchangeQuotes}
               onSave={() => void (manualDirty ? saveManualChanges() : saveCurrentTrip())}
+              onReviewBudget={() => setTab('budget')}
+              onRetryDay={(dayIndex, includeNearby) => void retryDay(dayIndex, includeNearby)}
+              retryingDay={retryingDay}
               visitTripId={manualDirty ? null : visitTripId}
               onReorderActivity={reorderActivity}
               onEditActivity={(dayIndex, activityIndex) => setActivityEditor({ dayIndex, activityIndex })}
@@ -1103,9 +1173,9 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
                 <article className="bg-[#14302a] p-5 sm:p-7 xl:col-span-7">
                   <div className="mb-7 flex items-start gap-4 border-b border-white/12 pb-5"><span className="grid h-11 w-11 shrink-0 place-items-center border border-cyan-300/35 bg-cyan-300/5 text-cyan-200"><MapPin size={19}/></span><div><p className="text-[10px] font-black uppercase tracking-[.16em] text-cyan-200/70">01 · Start with the essentials</p><h2 className="mt-1 text-xl font-black tracking-[-0.03em]">Required trip details</h2><p className="mt-1 text-xs text-white/50">These fields give TravelMate enough information to build a plan.</p></div></div>
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <DestinationSelector selected={selectedDestination} onSelect={confirmDestination} onClear={()=>{changeDestinationInput('');setStaySelectionState(null);setItinerary(null);setWeather(null);setMessage('');}} budget={budget} currency={currency} currencyResolved={currencyResolved} travelers={travelers} days={tripDays} interests={`${interests}, ${preferredActivities}`} />
-                    <label className="text-xs font-medium text-slate-300">{partyBudgetLabel(partyType, travelers)}<input id="trip-budget" type="number" min={ZERO_DECIMAL_CURRENCIES.includes(currency) ? 1 : 0.01} max="1000000000" step={ZERO_DECIMAL_CURRENCIES.includes(currency)?'1':'0.01'} value={budgetInput} placeholder="Enter total budget" onChange={e=>setBudgetInput(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition hover:border-slate-600 focus:border-amber-400" /><span className="mt-1.5 block text-[11px] font-normal text-amber-200">{budget > 0 ? partyBudgetExplanation(partyType, travelers) : 'Enter your total trip budget to continue.'}</span>{budgetReady && currencyResolved && <ReferenceAmount amount={budget} currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} className="mt-1 block text-[11px] font-normal text-cyan-200"/>}</label>
-                    <div className="text-xs font-medium text-slate-300"><div className="grid grid-cols-2 gap-2"><label>Destination currency<select id="trip-currency" value={selectedDestination&&currencyResolved?currency:''} disabled={!selectedDestination||contextBusy||!currencyNeedsFallback} onChange={e=>changeCurrency(e.target.value as CurrencyCode)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-amber-400 disabled:opacity-60"><option value="">{contextBusy?'Detecting...':selectedDestination?'Select':'Auto'}</option>{SUPPORTED_CURRENCIES.map(code=><option key={code} value={code}>{code}</option>)}</select></label><label>Show equivalents in<select id="trip-reference-currency" value={referenceCurrency} onChange={e=>setReferenceCurrency(e.target.value as CurrencyCode)} className="mt-1.5 w-full rounded-xl border border-cyan-700/70 bg-slate-950/80 px-3 py-2 text-white transition hover:border-cyan-500 focus:border-cyan-400">{SUPPORTED_CURRENCIES.map(code=><option key={code} value={code}>{code} · {CURRENCY_NAMES[code]}</option>)}</select></label></div><span className="mt-1.5 block text-[10px] text-slate-500">{currencyResolved?`${currency} (${CURRENCY_NAMES[currency]}) ${currencyWasDetected ? 'detected for the destination' : 'selected for planning'}.`:currencyNeedsFallback?(currencyFallbackMessage || 'Choose a supported planning currency.'):'Select a destination first.'}</span>{currencyResolved&&currency!==referenceCurrency&&<span className="mt-1 block text-[10px] text-cyan-200/70">{exchangeBusy?<span role="status" aria-label="Loading reference rate..."><Skeleton className="inline-block h-3 w-36 align-middle" /></span>:exchangeQuotes[currency]?`1 ${currency} ≈ ${formatMoney(exchangeQuotes[currency]!.rate,referenceCurrency)} · Frankfurter reference dated ${exchangeQuotes[currency]!.asOf}`:exchangeMessage||'Reference conversion unavailable.'}</span>}</div>
+                    <DestinationSelector selected={selectedDestination} onSelect={confirmDestination} onClear={()=>{changeDestinationInput('');setRestoredStaySelection(null);setStaySelectionState(null);setItinerary(null);setWeather(null);setMessage('');}} budget={budget} currency={currency} currencyResolved={currencyResolved} travelers={travelers} days={tripDays} interests="" />
+                    <label className="text-xs font-medium text-slate-300">{partyBudgetLabel(partyType, travelers)}<input id="trip-budget" type="number" min={currencyStep(currency)} max="1000000000" step={currencyStep(currency)} value={budgetInput} placeholder="Enter total budget" onChange={e=>setBudgetInput(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition hover:border-slate-600 focus:border-amber-400" /><span className="mt-1.5 block text-[11px] font-normal text-amber-200">{budget > 0 ? partyBudgetExplanation(partyType, travelers) : 'Enter your total trip budget to continue.'}</span>{budgetReady && currencyResolved && <ReferenceAmount amount={budget} currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} className="mt-1 block text-[11px] font-normal text-cyan-200"/>}</label>
+                    <div className="text-xs font-medium text-slate-300"><div className="grid grid-cols-2 gap-2"><label>Destination currency<select id="trip-currency" value={selectedDestination&&currencyResolved?currency:''} disabled={!selectedDestination||contextBusy} onChange={e=>changeCurrency(e.target.value as CurrencyCode)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-amber-400 disabled:opacity-60"><option value="">{contextBusy?'Detecting...':selectedDestination?'Select':'Auto'}</option>{SUPPORTED_CURRENCIES.map(code=><option key={code} value={code}>{code} · {CURRENCY_NAMES[code]}</option>)}</select></label><label>Show equivalents in<select id="trip-reference-currency" value={conversionEnabled?referenceCurrency:''} onChange={e=>{setConversionEnabled(Boolean(e.target.value));writeBrowserStorage('travelmate-conversion-enabled',String(Boolean(e.target.value)));if(e.target.value)setReferenceCurrency(e.target.value as CurrencyCode);}} className="mt-1.5 w-full rounded-xl border border-cyan-700/70 bg-slate-950/80 px-3 py-2 text-white transition hover:border-cyan-500 focus:border-cyan-400"><option value="">None</option>{SUPPORTED_CURRENCIES.map(code=><option key={code} value={code}>{code} · {CURRENCY_NAMES[code]}</option>)}</select></label></div><span className="mt-1.5 block text-[10px] text-slate-500">{currencyResolved?`${currency} · ${CURRENCY_NAMES[currency]}`:currencyNeedsFallback?currencyFallbackMessage:'Select a destination first.'}</span>{currencyResolved&&<ConversionDetails currency={currency} referenceCurrency={referenceCurrency} quotes={exchangeQuotes} busy={exchangeBusy}/>}</div>
                     <label className="text-xs font-medium text-slate-300">Start date<input id="trip-start-date" required type="date" min={localDateInputValue()} value={startDate} onChange={e=>{const next=e.target.value;setStartDate(next);if(next && Number.isFinite(Date.parse(next)) && (endDate<next||endDate>addCalendarDays(next,30)))setEndDate(addCalendarDays(next,6));setStaySelectionState(null);setItinerary(null);setWeather(null);}} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-cyan-400" /></label>
                     <label className="text-xs font-medium text-slate-300">End date<input id="trip-end-date" required type="date" min={startDate} max={maximumEndDate} value={endDate} onChange={e=>{setEndDate(e.target.value);setStaySelectionState(null);setItinerary(null);setWeather(null);}} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-cyan-400" /><span className={`mt-1.5 block text-[10px] ${tripDays>=1&&tripDays<=31?'text-emerald-300':'text-amber-300'}`}>{tripDays>=1&&tripDays<=31?`${tripDays} travel day${tripDays===1?'':'s'} selected`:'Choose 1–31 days'}</span></label>
                     <label className="text-xs font-medium text-slate-300">Traveling as<select id="trip-party-type" value={partyType} onChange={e=>changePartyType(e.target.value as PartyType)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-cyan-400">{Object.entries(PARTY_TYPE_LABELS).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
@@ -1117,12 +1187,10 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
                   <div className="mb-7 flex items-start gap-4 border-b border-white/12 pb-5"><span className="grid h-11 w-11 shrink-0 place-items-center border border-amber-300/35 bg-amber-300/5 text-amber-200"><Compass size={19}/></span><div><p className="text-[10px] font-black uppercase tracking-[.16em] text-amber-200/70">02 · Make it feel like yours</p><h2 className="mt-1 text-xl font-black tracking-[-0.03em]">Stays and preferences</h2><p className="mt-1 text-xs text-white/50">Choose a stay and add preferences to shape your trip.</p></div></div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div id="trip-accommodation" className="sm:col-span-2 min-w-0">
-                    <AccommodationPicker stayPreference={accommodationPreference} key={accommodationQueryKey} destinationLabel={selectedDestination?.label} latitude={selectedDestination?.latitude} longitude={selectedDestination?.longitude} providerAccommodations={providerAccommodations} providerStatus={providerStatus} providerMessage={providerMessage} providerEnvironment={providerEnvironment} suggestionsOnly enabled={Boolean(selectedDestination)} needsArea={accommodationNeedsArea} busy={staysBusy} message={stayMessage} currency={currency} offers={liveAccommodations} nearby={nearbyAccommodations} listings={stayOptions} selection={staySelection} onChange={selection => setStaySelectionState({ key: accommodationQueryKey, selection })} onRefresh={retryAccommodations} status={stayStatus} destinationName={selectedDestination?.name} />
+                    <p className="mb-1.5 text-xs font-medium text-slate-300">Accommodation suggestions</p>
+                    <AccommodationPicker travelStyle={travelStyle} stayPreference={accommodationPreference} key={accommodationQueryKey} destinationLabel={selectedDestination?.label} latitude={selectedDestination?.latitude} longitude={selectedDestination?.longitude} providerAccommodations={providerAccommodations} providerStatus={providerStatus} providerMessage={providerMessage} providerEnvironment={providerEnvironment} suggestionsOnly enabled={Boolean(selectedDestination)} needsArea={accommodationNeedsArea} busy={staysBusy} message={stayMessage} currency={currency} offers={liveAccommodations} nearby={nearbyAccommodations} listings={stayOptions} selection={staySelection} onChange={selection => { setRestoredStaySelection(null); setStaySelectionState({ key: accommodationQueryKey, selection }); }} onRefresh={retryAccommodations} status={stayStatus} destinationName={selectedDestination?.name} />
                     </div>
-                    <label className="sm:col-span-2 text-xs font-medium text-slate-300">Interests<input id="trip-interests" value={interests} onChange={e=>setInterests(e.target.value)} placeholder="food, culture, nature" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition placeholder:text-slate-600 hover:border-slate-600 focus:border-violet-400" /></label>
-                    <label className="sm:col-span-2 text-xs font-medium text-slate-300">Stay preference<select id="trip-stay-preference" value={accommodationPreference} onChange={e=>setAccommodationPreference(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-violet-400"><option value="no preference">No preference</option><option value="budget-friendly">Budget-friendly</option><option value="central location">Central location</option><option value="hostel">Hostel</option><option value="condo">Condo / apartment</option><option value="resort">Resort</option><option value="family-friendly">Family-friendly</option><option value="luxury">Luxury</option></select></label>
-                    <label className="sm:col-span-2 text-xs font-medium text-slate-300">Preferred activities<input id="trip-preferred-activities" value={preferredActivities} onChange={e=>setPreferredActivities(e.target.value)} placeholder="island hopping, museums" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white transition placeholder:text-slate-600 hover:border-slate-600 focus:border-violet-400" /></label>
-                    <div className="sm:col-span-2 text-xs font-medium text-slate-300"><div className="flex items-center justify-between gap-2"><label htmlFor="transportation">Transportation</label>{selectedDestination&&<button type="button" disabled={contextBusy} onClick={retryContext} className="font-bold text-cyan-300 hover:text-cyan-200 disabled:opacity-50">{contextBusy?'Finding options...':'Refresh options'}</button>}</div><select id="transportation" disabled={!selectedDestination||contextBusy||(transportationOptions.length===0&&!transportationPreference)} value={transportationPreference} onChange={e=>setTransportationPreference(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-3 py-2 text-white transition hover:border-slate-600 focus:border-violet-400 disabled:opacity-60"><option value="">{!selectedDestination?'Select a destination first':contextBusy?'Finding transportation options...':transportationOptions.length?'Choose a destination-relevant mode':'No verified options available'}</option>{transportationPreference&&!transportationOptions.some(mode=>mode.label.toLowerCase()===transportationPreference)&&<option value={transportationPreference}>Saved preference: {transportationPreference} — availability needs confirmation</option>}{transportationOptions.map(mode=><option key={mode.id} value={mode.label.toLowerCase()}>{mode.label}</option>)}</select>{contextMessage&&<p aria-live="polite" className="mt-1 text-[11px] text-slate-500">{contextMessage}</p>}</div>
+                    <TripPreferenceFields travelStyle={travelStyle} onTravelStyleChange={setTravelStyle} />
                   </div>
                 </article>
                 <article className="min-w-0 bg-[#102822] p-5 sm:p-7 xl:col-span-12">
@@ -1130,13 +1198,12 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
                     confirmDestination(location);
                     setVisitTripId(null); setEditingTripId(null); setRegenerationTargetId(null); setManualDirty(false); setSelectedDay(null);
                       setGenerationFailed(false);
-                    setPreferredActivities(current => [...new Set([...current.split(',').map(value => value.trim()).filter(Boolean), spot.name])].join(', '));
                     setMessage(`Planning a visit to ${spot.name} in ${spot.country}. Review your dates and budget before generating.`);
                   }}/>
                   <details className="mt-6 border-t border-white/10 pt-4">
                     <summary className="cursor-pointer text-xs font-bold text-amber-200">Budget details (optional){includePreTripCosts ? ` · ${formatMoney(preTripTotal, currency)} pre-trip` : ''}</summary>
                   <div className="mt-6 grid gap-4 border-t border-white/10 pt-5"><button type="button" aria-pressed={includePreTripCosts} onClick={()=>setIncludePreTripCosts(value=>!value)} className={`min-h-12 w-fit border px-5 py-3 text-sm font-bold transition ${includePreTripCosts?'border-amber-300 bg-amber-300 text-[#14231f]':'border-white/20 text-white hover:border-amber-300/60'}`}>{includePreTripCosts?'Remove pre-trip expenses':'Add pre-trip expenses (optional)'}</button></div>
-                  {includePreTripCosts&&<div className="mt-6 border-t border-white/10 pt-5"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{([['airportTransfers','Airport transfers'],['passport','Passport / renewal'],['visaOrAuthorization','Visa / authorization'],['departureTaxes','Travel tax'],['insurance','Insurance'],['other','Other costs']] as const).map(([field,label])=><label key={field} className="text-xs font-medium text-slate-300">{label}<input name={`preTripCost-${field}`} type="number" min="0" step={ZERO_DECIMAL_CURRENCIES.includes(currency)?'1':'0.01'} value={preTripCosts[field]||''} onChange={e=>updatePreTripAmount(field,e.target.value)} placeholder="0" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white placeholder:text-slate-600"/></label>)}</div><p className="mt-5 border-l-2 border-amber-300/50 pl-3 text-[11px] leading-5 text-white/48">Enter whole-party estimates in {currency}. Verify passport, visa, and tax amounts using official sources; leave non-applicable costs at zero.</p></div>}
+                  {includePreTripCosts&&<div className="mt-6 border-t border-white/10 pt-5"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{([['airportTransfers','Airport transfers'],['passport','Passport / renewal'],['visaOrAuthorization','Visa / authorization'],['departureTaxes','Travel tax'],['insurance','Insurance'],['other','Other costs']] as const).map(([field,label])=><label key={field} className="text-xs font-medium text-slate-300">{label}<input name={`preTripCost-${field}`} type="number" min="0" step={currencyStep(currency)} value={preTripCosts[field]||''} onChange={e=>updatePreTripAmount(field,e.target.value)} placeholder="0" className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-2 text-white placeholder:text-slate-600"/></label>)}</div><p className="mt-5 border-l-2 border-amber-300/50 pl-3 text-[11px] leading-5 text-white/48">Enter whole-party estimates in {currency}. Verify passport, visa, and tax amounts using official sources; leave non-applicable costs at zero.</p></div>}
                   <ExpenseAssumptionsFields value={expenseAssumptions} onChange={setExpenseAssumptions} currency={currency} travelers={travelers} quotedStay={Boolean(selectedLiveStayId)}/>
                   </details>
                 </article>
@@ -1216,6 +1283,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
               onDelete={deleteSavedTrip}
             />
           </div>}
+          {tab === 'help' && <HelpUserGuide selectedGuide={selectedHelpGuide} onSelectGuide={setSelectedHelpGuide} headingRef={workspaceHeadingRef} onNavigate={destination => { if (destination === 'planner') startNewTrip(); else setTab(destination); }} onFeedback={() => setTab('feedback')}/>}
           {tab === 'visited' && <VisitedPlaces key={`visited-places:${data.user.id}`} onOpenTrip={id => { const summary = data.trips.find(trip => trip.id === id); void loadTrip(summary || { id } as SavedTrip); }}/> }
           {tab === 'feedback' && <section className="space-y-5"><div className="rounded-xl border border-white/15 p-5"><h2 className="font-bold">Feedback about a trip</h2><p className="mt-2 text-sm text-white/55">Open a saved itinerary and use Rate this trip to share feedback about its budget, weather, route or recommendations.</p><button onClick={() => setTab('bookings')} className="mt-4 min-h-11 border border-white/20 px-4 text-sm">View saved trips</button></div><ReportProblem busy={busy} onSubmit={sendReport}/></section>}
           {tab === 'notifications' && <TravelerNotifications data={data} busy={busy} action={action}/>}
@@ -1227,7 +1295,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       {leaveDialogOpen && <UnsavedTripDialog returnFocusRef={backToSavedTripsRef} onClose={() => { navigation.cancelPending(); setLeaveDialogOpen(false); }} onDiscard={() => returnToSavedTrips(true)}/>}
       {saveToast && <TripSaveToast key={saveToast.id} toast={saveToast} onDismiss={dismissSaveToast}/>}
       {activityEditor && editorDay && <ActivityEditorDialog editor={activityEditor} day={editorDay} activity={editorActivity} currency={itinerary?.currency || currency} modalRef={activityModalRef} titleRef={activityTitleRef} onClose={() => setActivityEditor(null)} onSubmit={submitActivity} />}
-      {selectedDay && itinerary && <DayDetailsDialog visitTripId={visitTripId} draft={manualDirty} day={selectedDay} itinerary={itinerary} travelers={travelers} referenceCurrency={referenceCurrency} exchangeQuotes={exchangeQuotes} photoRefreshDay={photoRefreshDay} modalRef={dayModalRef} closeRef={dayCloseRef} onClose={() => setSelectedDay(null)} onRefreshPhotos={(day) => void refreshDayPhotos(day, true)} />}
-    </div>
+      {selectedDay && itinerary && <DayDetailsDialog weather={weather} visitTripId={visitTripId} draft={manualDirty} day={selectedDay} itinerary={itinerary} travelers={travelers} referenceCurrency={referenceCurrency} exchangeQuotes={exchangeQuotes} photoRefreshDay={photoRefreshDay} modalRef={dayModalRef} closeRef={dayCloseRef} onClose={() => setSelectedDay(null)} onRefreshPhotos={(day) => void refreshDayPhotos(day, true)} />}
+    </div></ConversionLoading.Provider></ConversionPreference.Provider>
   );
 }

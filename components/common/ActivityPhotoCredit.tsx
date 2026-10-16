@@ -6,10 +6,14 @@ export function ActivityPhotoCredit({ credit, className, cropped = true }: { cre
   if (credit.provider !== 'unsplash' && credit.license !== 'Unsplash') {
     const licenseUrl = commonsPhotoLicenseUrl(credit.license, credit.licenseUrl);
     if (!licenseUrl) return null;
-    return <span className={className}>{(credit.illustrative || credit.photoType === 'destination') && <span data-illustrative-photo>{credit.photoType === 'destination' ? 'Destination photo' : 'Illustrative photo'} · </span>}<a href={credit.sourceUrl} target="_blank" rel="noreferrer">Photo: {credit.creator}</a> · <a href={licenseUrl} target="_blank" rel="noreferrer">{credit.license}</a>{cropped && <> · Cropped to fit</>}</span>;
+    const content = <><a href={credit.sourceUrl} target="_blank" rel="noreferrer">Photo: {credit.creator}</a> · <a href={licenseUrl} target="_blank" rel="noreferrer">{credit.license}</a>{cropped && <> · Cropped to fit</>}</>;
+    return <div className={className}>{(credit.illustrative || credit.photoType === 'destination') && <span data-illustrative-photo>{credit.photoType === 'destination' ? 'Destination photo' : 'Illustrative photo'}{' · '}</span>}{content}</div>;
   }
-  return <span className={className}>
-    {(credit.illustrative || credit.photoType === 'destination') && <span data-illustrative-photo>{credit.photoType === 'destination' ? 'Destination photo' : 'Illustrative photo'} · </span>}
+  const content = <>
     Photo by <a href={credit.photographerUrl} target="_blank" rel="noreferrer" className="underline">{credit.creator}</a> on <a href={credit.sourceUrl} target="_blank" rel="noreferrer" className="underline">Unsplash</a>
-  </span>;
+  </>;
+  return <div className={className}>
+    {(credit.illustrative || credit.photoType === 'destination') && <span data-illustrative-photo>{credit.photoType === 'destination' ? 'Destination photo' : 'Illustrative photo'} · </span>}
+    {content}
+  </div>;
 }

@@ -18,14 +18,14 @@ const photo = (city: string) => ({
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:' + (city === 'Manila' ? 'The_Manila_Cathedral.jpg' : 'Fukuoka_City_from_Fukuoka_Tower.jpg') },
 });
 const saved = async (page: Page) => page.getByRole('navigation', { name: 'Traveler workspace' }).getByRole('button', { name: 'Saved trips', exact: true }).click();
-async function setup(page: Page, context: BrowserContext) {
+async function setup(page: Page, context: BrowserContext, resolvePhoto = photo) {
   await context.addCookies([{ name: 'travelmate_session', value: 'cover-fixture', domain: 'localhost', path: '/' }]);
   await page.emulateMedia({ reducedMotion: 'reduce' }); await mockPlanningLookups(page);
   const state = { trips: structuredClone(trips), photoRequests: [] as URL[], posts: [] as Record<string, unknown>[], feedback: [] as Record<string, unknown>[], details: [] as string[], histories: [] as string[] };
   await page.route('**/api/destination-context/photo?*', route => {
     const url = new URL(route.request().url()); state.photoRequests.push(url);
     const city = url.searchParams.get('city')!;
-    return route.fulfill({ json: { photo: city === 'Manila' || city === 'Fukuoka' ? photo(city) : null } });
+    return route.fulfill({ json: { photo: city === 'Manila' || city === 'Fukuoka' ? resolvePhoto(city) : null } });
   });
   await page.route('**/api/feedback**', route => {
     if (route.request().method() === 'POST') state.feedback.push(route.request().postDataJSON());
@@ -87,7 +87,7 @@ test('destination covers show real Manila and Fukuoka photos, preserve geometry,
 });
 
 test('failed destination images keep the neutral placeholder and status badge without flags or layout changes', async ({ page, context }) => {
-  await page.route('**/_next/image?*', route => route.fulfill({ status: 404, body: '' }));
+  await page.route('https://upload.wikimedia.org/**', route => route.fulfill({ status: 404, body: '' }));
   await setup(page, context);
   const cards = page.getByRole('region', { name: 'Saved plans' }).getByRole('article');
   for (const card of await cards.all()) {
@@ -95,16 +95,74 @@ test('failed destination images keep the neutral placeholder and status badge wi
     await expect(card.getByText('Destination photo unavailable', { exact: true })).toBeVisible();
     await expect(card.getByText('Upcoming trip', { exact: true })).toBeVisible();
     await expect(card.getByRole('img')).toHaveCount(0);
-    expect(await card.locator('[class*="image"]').evaluate(el => el.getBoundingClientRect().height)).toBe(180);
+    expect(await card.locator('[class*="image"]').evaluate(el => el.getBoundingClientRect().height)).toBe(page.viewportSize()!.width < 480 ? 160 : 180);
     await expect(card.getByRole('button', { name: 'View itinerary', exact: true })).toBeVisible();
   }
+});
+
+// Controlled image bytes keep this transport regression independent of CDN uptime.
+const imageBytes = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ahtsAAAAASUVORK5CYII=', 'base64');
+
+test('Commons covers bypass an unavailable image optimizer and retain their source and credits after reload', async ({ page, context }) => {
+  const optimized: string[] = [];
+  await page.route('**/_next/image?*', route => {
+    const source = new URL(route.request().url()).searchParams.get('url');
+    if (!source?.includes('wikimedia.org/')) return route.continue();
+    optimized.push(route.request().url());
+    return route.fulfill({ status: 504, body: 'Upstream image response timed out.' });
+  });
+  await page.route('https://upload.wikimedia.org/**', route => route.fulfill({ contentType: 'image/png', body: imageBytes }));
+  const state = await setup(page, context);
+  const card = page.getByRole('region', { name: 'Saved plans' }).getByRole('article').first();
+  const image = card.getByRole('img');
+  for (const reload of [false, true]) {
+    if (reload) await page.reload();
+    await image.scrollIntoViewIfNeeded();
+    await expect(image).toHaveAttribute('src', photo('Manila').src);
+    await expect(image).not.toHaveAttribute('srcset');
+    await expect.poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(0);
+    await expect(image).toHaveAttribute('loading', 'lazy');
+    await expect(card.getByRole('link', { name: 'Photo: Kuranges' })).toHaveAttribute('href', photo('Manila').attribution.sourceUrl);
+    await expect(card.getByRole('button', { name: 'View itinerary', exact: true })).toBeEnabled();
+    expect(await image.evaluate(element => getComputedStyle(element).objectFit)).toBe('cover');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+  expect(optimized).toEqual([]);
+  expect(state.posts).toEqual([]);
+});
+
+test('a failed Commons cover thumbnail falls back to its original without using the optimizer', async ({ page, context }) => {
+  const requested: string[] = [], optimized: string[] = [];
+  const thumbnail = 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/The_Manila_Cathedral.jpg/960px-The_Manila_Cathedral.jpg';
+  await page.route('**/_next/image?*', route => {
+    const source = new URL(route.request().url()).searchParams.get('url');
+    if (!source?.includes('wikimedia.org/')) return route.continue();
+    optimized.push(route.request().url());
+    return route.fulfill({ status: 504, body: '' });
+  });
+  await page.route('https://upload.wikimedia.org/**', route => {
+    requested.push(route.request().url());
+    return route.request().url().includes('/thumb/')
+      ? route.fulfill({ status: 404, body: '' })
+      : route.fulfill({ contentType: 'image/png', body: imageBytes });
+  });
+  await setup(page, context, city => ({ ...photo(city), src: city === 'Manila' ? thumbnail : photo(city).src }));
+  const card = page.getByRole('region', { name: 'Saved plans' }).getByRole('article').first();
+  const image = card.getByRole('img');
+  await card.scrollIntoViewIfNeeded();
+  await expect(image).toHaveAttribute('src', photo('Manila').src);
+  await expect.poll(() => image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(0);
+  expect(requested).toContain(thumbnail);
+  expect(requested).toContain(photo('Manila').src);
+  expect(optimized).toEqual([]);
+  await expect(card.getByRole('button', { name: 'View itinerary', exact: true })).toBeEnabled();
 });
 
 test('View, Edit, completion, rating, history, archive and restore retain their original behavior', async ({ page, context }) => {
   const state = await setup(page, context);
   const card = () => page.getByRole('region', { name: 'Saved plans' }).getByRole('article').filter({ has: page.getByRole('heading', { name: 'Manila, Philippines', exact: true }) }).first();
   await card().getByRole('button', { name: 'View itinerary', exact: true }).click();
-  await expect(page.getByText('Saved trip loaded.', { exact: false })).toBeVisible(); expect(state.details).toEqual(['manila']); await saved(page);
+  await expect(page.getByRole('heading', { name: 'Your trip itinerary', exact: true })).toBeVisible(); expect(state.details).toEqual(['manila']); await saved(page);
   await card().getByRole('button', { name: 'Edit', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Edit saved trip', exact: true }); await expect(dialog).toBeVisible(); await dialog.getByRole('button', { name: 'Close trip editor' }).click();
   const trigger = card().getByRole('button', { name: 'More options for Manila, Philippines' }); await trigger.focus(); await page.keyboard.press('ArrowDown'); await expect(page.getByRole('menuitem', { name: 'Rate this trip', exact: true })).toBeFocused(); await page.keyboard.press('Escape'); await expect(trigger).toBeFocused();

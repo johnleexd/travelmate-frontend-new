@@ -2,7 +2,7 @@ import type { ItineraryResponse, SavedTrip, WeatherData } from './contracts';
 import { isCurrencyCode } from './currency-conversion';
 import { parseWeatherData } from '../services/provider-response';
 
-export type ItineraryDraft = { trip: SavedTrip; itinerary: ItineraryResponse; weather: WeatherData | null; savedAt: string };
+export type ItineraryDraft = { trip: SavedTrip; itinerary: ItineraryResponse; providerBase?: ItineraryResponse; weather: WeatherData | null; savedAt: string };
 
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const text = (value: unknown): value is string => typeof value === 'string' && value.trim().length > 0;
@@ -32,7 +32,9 @@ export function parseItineraryDraft(stored: string, owner: string): ItineraryDra
         && Array.isArray(day.activities) && day.activities.every(activity => record(activity) && text(activity.title)
           && typeof activity.description === 'string' && text(activity.time) && text(activity.category) && amount(activity.estimatedCost)))) return null;
     if (plan.preferences !== undefined && (!record(plan.preferences)
-      || !['travelStyle', 'accommodation', 'transportation'].every(key => typeof (plan.preferences as Record<string, unknown>)[key] === 'string')
+      || (plan.preferences.travelStyle !== undefined && typeof plan.preferences.travelStyle !== 'string')
+      || !['accommodation', 'transportation'].every(key => typeof (plan.preferences as Record<string, unknown>)[key] === 'string')
+      || (plan.preferences.interests !== undefined && (!Array.isArray(plan.preferences.interests) || !plan.preferences.interests.every(item => typeof item === 'string')))
       || !Array.isArray(plan.preferences.activities) || !plan.preferences.activities.every(item => typeof item === 'string'))) return null;
     if (plan.grounding !== undefined && (!record(plan.grounding) || !record(plan.grounding.accommodation)
       || !record(plan.grounding.destination) || typeof plan.grounding.destination.latitude !== 'number' || !Number.isFinite(plan.grounding.destination.latitude)
@@ -45,7 +47,8 @@ export function parseItineraryDraft(stored: string, owner: string): ItineraryDra
     if (draft.weather) {
       try { weather = parseWeatherData(draft.weather); } catch { /* Restore the plan without invalid weather metadata. */ }
     }
-    return { trip: trip as unknown as SavedTrip, itinerary: plan as unknown as ItineraryResponse,
+    const providerBase = record(draft.providerBase) && draft.providerBase.destination === plan.destination && draft.providerBase.currency === plan.currency && typeof draft.providerBase.groundingProof === 'string' ? draft.providerBase as unknown as ItineraryResponse : undefined;
+    return { trip: trip as unknown as SavedTrip, itinerary: plan as unknown as ItineraryResponse, providerBase,
       weather, savedAt: draft.savedAt };
   } catch { return null; }
 }

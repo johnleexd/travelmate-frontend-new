@@ -3,12 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { legacyNavigationRedirect, validMapDay, validMapTripId } from '@/lib/retired-navigation';
 
-export type TravelerTab = 'overview' | 'planner' | 'budget' | 'bookings' | 'notifications' | 'profile' | 'visited' | 'feedback';
+export type TravelerTab = 'overview' | 'planner' | 'budget' | 'bookings' | 'notifications' | 'profile' | 'visited' | 'feedback' | 'help';
 export type ItineraryView = { tab: TravelerTab; tripId?: string; day?: number; fromSavedTrips?: boolean; mapTripId?: string; mapDay?: number; navigationMoved?: boolean };
 type Stop = { view: ItineraryView; index: number };
 type Entry = Stop & { ancestors: Stop[]; session: string; version: 2; position?: number };
 const key = 'travelmateItineraryView';
-const tabs: TravelerTab[] = ['overview', 'planner', 'budget', 'bookings', 'notifications', 'profile', 'visited', 'feedback'];
+const tabs: TravelerTab[] = ['overview', 'planner', 'budget', 'bookings', 'notifications', 'profile', 'visited', 'feedback', 'help'];
 const sameView = (a: ItineraryView, b: ItineraryView) => a.tab === b.tab && a.tripId === b.tripId && a.day === b.day && a.mapTripId === b.mapTripId && a.mapDay === b.mapDay && Boolean(a.navigationMoved) === Boolean(b.navigationMoved);
 const overviewOf = (view: ItineraryView): ItineraryView => ({ ...view, tab: 'planner', day: undefined });
 const isOverviewOf = (parent: ItineraryView, day: ItineraryView) => day.tab === 'planner' && day.day !== undefined && sameView(parent, overviewOf(day));

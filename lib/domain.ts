@@ -7,7 +7,7 @@ import type {
   PublicUser,
   SavedTrip,
 } from './generated/core-contracts';
-import type { CurrencyCode } from './generated/destination-contracts';
+import type { CurrencyCode } from './generated/currency.ts';
 
 export type {
   AuditEvent,
@@ -25,23 +25,8 @@ export type {
 } from './generated/core-contracts';
 export type { CurrencyCode } from './generated/destination-contracts';
 
-export const SUPPORTED_CURRENCIES = ['PHP', 'USD', 'EUR', 'JPY', 'KRW', 'THB', 'GBP', 'AUD', 'CAD', 'SGD', 'CNY', 'HKD', 'TWD', 'MYR', 'IDR', 'VND', 'INR', 'NZD', 'CHF', 'AED'] as const;
-export const ZERO_DECIMAL_CURRENCIES: readonly CurrencyCode[] = ['JPY', 'KRW', 'VND'];
-export const CURRENCY_NAMES: Record<CurrencyCode, string> = {
-  PHP: 'Philippine peso', USD: 'US dollar', EUR: 'Euro', JPY: 'Japanese yen', KRW: 'South Korean won',
-  THB: 'Thai baht', GBP: 'British pound', AUD: 'Australian dollar', CAD: 'Canadian dollar', SGD: 'Singapore dollar',
-  CNY: 'Chinese yuan', HKD: 'Hong Kong dollar', TWD: 'New Taiwan dollar', MYR: 'Malaysian ringgit', IDR: 'Indonesian rupiah',
-  VND: 'Vietnamese dong', INR: 'Indian rupee', NZD: 'New Zealand dollar', CHF: 'Swiss franc', AED: 'UAE dirham',
-};
-
-export function formatMoney(value: number, currency: CurrencyCode): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    currencyDisplay: 'code',
-    maximumFractionDigits: ZERO_DECIMAL_CURRENCIES.includes(currency) ? 0 : 2,
-  }).format(value);
-}
+export { SUPPORTED_CURRENCIES, ZERO_DECIMAL_CURRENCIES, CURRENCY_NAMES, normalizeCurrency, formatMoney, currencyFractionDigits, currencyStep, hasValidCurrencyPrecision, roundMoney, sumMoney } from './generated/currency.ts';
+import { currencyFractionDigits, hasValidCurrencyPrecision } from './generated/currency.ts';
 
 export const PARTY_TYPE_LABELS: Record<PartyType, string> = {
   solo: 'Solo',
@@ -121,16 +106,6 @@ export function travelersForParty(partyType: PartyType, requestedTravelers: numb
     throw new Error('Family and friends groups must have between 2 and 20 travelers.');
   }
   return requestedTravelers;
-}
-
-export function currencyFractionDigits(currency: CurrencyCode): 0 | 2 {
-  return ZERO_DECIMAL_CURRENCIES.includes(currency) ? 0 : 2;
-}
-
-export function hasValidCurrencyPrecision(value: number, currency: CurrencyCode): boolean {
-  if (!Number.isFinite(value)) return false;
-  const scale = 10 ** currencyFractionDigits(currency);
-  return Math.abs(value * scale - Math.round(value * scale)) < 1e-7;
 }
 
 /** Split money exactly in its smallest supported unit; the first members absorb any remainder. */

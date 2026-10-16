@@ -1,4 +1,4 @@
-import { SUPPORTED_CURRENCIES, type CurrencyCode } from './domain.ts';
+import { SUPPORTED_CURRENCIES, roundMoney, type CurrencyCode } from './domain.ts';
 import type { ExchangeRateQuote } from './contracts.ts';
 
 export function isCurrencyCode(value: unknown): value is CurrencyCode {
@@ -10,5 +10,6 @@ export function convertCurrency(amount: number, source: CurrencyCode, reference:
   if (source === reference) return amount;
   const quote = quotes[source];
   if (!quote || quote.base !== source || quote.quote !== reference || !Number.isFinite(quote.rate) || quote.rate <= 0) return null;
-  return amount * quote.rate;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(quote.asOf)) return null;
+  try { return roundMoney(amount * quote.rate,reference); } catch { return null; }
 }

@@ -33,7 +33,13 @@ import { handleResponse } from '@/services/api-response';
 import { fetchTripWithOptionalWeather } from '@/lib/trip-data';
 export { ApiError, handleResponse, isAuthenticationError } from '@/services/api-response';
 
-type TripOptions = { scheduleConstraints?: { arrivalTime?: string; departureTime?: string; restDates?: string[] }; startingLocation?: string; destinationDetails?: DestinationAnchor; rooms?: number; foodDailyPerPerson?: number; nightlyRoomEstimate?: number; transportFare?: number; transportFareType?: 'shared-fare' | 'per-person'; fees?: number; contingencyPercent?: number; idempotencyKey?: string; currency?: CurrencyCode; travelers?: number; partyType?: PartyType; startDate?: string; endDate?: string; latitude?: number; longitude?: number; interests?: string[]; preferredActivities?: string[]; accommodationPreference?: string; transportationPreference?: string; accommodationListingId?: string; plannedAccommodation?: PlannedAccommodation; selectedAccommodationQuote?: string; externalAccommodation?: { fetchedAt: string; total: number; hotelId: string; offerId: string; name: string; address: string; nightlyRate: number; currency: string; isLive: boolean; selectionToken: string }; selectedFlight?: { id: string; name: string; price: number; currency: string; fetchedAt: string; isLive?: boolean; selectionToken: string }; selectedActivities?: Array<{ id: string; name: string; price: number; currency: string; fetchedAt: string; isLive?: boolean; selectionToken: string }>; preTripCosts?: { startingLocation?: string; departureAirport?: string; passportCountry?: string; passportStatus?: 'valid' | 'needs_application' | 'needs_renewal' | 'not_sure'; airportTransferOutbound: number; airportTransferReturn: number; passport: number; visaOrAuthorization: number; departureTaxes: number; insurance: number; other: number } };
+export async function retryItineraryDays(itinerary: ItineraryResponse, days: number[], includeNearby: boolean, providerBase?: ItineraryResponse | null) {
+  const response = await fetch('/api/itinerary/retry-days', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ itinerary, days, includeNearby, ...(providerBase ? { providerBase } : {}) }), signal: AbortSignal.timeout(115_000) });
+  return handleResponse<{ itinerary: ItineraryResponse; added: number }>(response);
+}
+
+type TripOptions = { scheduleConstraints?: { arrivalTime?: string; departureTime?: string; restDates?: string[] }; startingLocation?: string; destinationDetails?: DestinationAnchor; rooms?: number; foodDailyPerPerson?: number; nightlyRoomEstimate?: number; transportFare?: number; transportFareType?: 'shared-fare' | 'per-person'; fees?: number; contingencyPercent?: number; idempotencyKey?: string; currency: CurrencyCode; travelers?: number; partyType?: PartyType; startDate?: string; endDate?: string; latitude?: number; longitude?: number; travelStyle?: string; interests?: string[]; preferredActivities?: string[]; accommodationPreference?: string; transportationPreference?: string; accommodationListingId?: string; plannedAccommodation?: PlannedAccommodation; selectedAccommodationQuote?: string; externalAccommodation?: { fetchedAt: string; total: number; hotelId: string; offerId: string; name: string; address: string; nightlyRate: number; currency: string; isLive: boolean; selectionToken: string }; selectedFlight?: { id: string; name: string; price: number; currency: string; fetchedAt: string; isLive?: boolean; selectionToken: string }; selectedActivities?: Array<{ id: string; name: string; price: number; currency: string; fetchedAt: string; isLive?: boolean; selectionToken: string }>; preTripCosts?: { startingLocation?: string; departureAirport?: string; passportCountry?: string; passportStatus?: 'valid' | 'needs_application' | 'needs_renewal' | 'not_sure'; airportTransferOutbound: number; airportTransferReturn: number; passport: number; visaOrAuthorization: number; departureTaxes: number; insurance: number; other: number } };
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
@@ -52,15 +58,14 @@ type TripOptions = { scheduleConstraints?: { arrivalTime?: string; departureTime
 export async function fetchItineraryFromAI(
   destination: string,
   budget: number,
-  options?: TripOptions,
+  options: TripOptions,
 ): Promise<ItineraryResponse> {
   if (!destination?.trim()) throw new Error('destination must not be empty.');
   if (!Number.isFinite(budget) || budget <= 0) throw new Error('budget must be a positive number.');
 
-  // Retired controls may still exist in an older caller's options. They must
-  // never override the server's Balanced generation default.
+  // Pacing remains automatic; travel style is a selectable recommendation focus.
   const payload: Record<string, unknown> = { destination: destination.trim(), budget, ...options };
-  delete payload.travelStyle; delete payload.pace;
+  delete payload.pace;
   let res: Response;
   try {
     res = await fetch('/api/itinerary', {
@@ -129,7 +134,7 @@ export async function fetchWeather(city: string, startDate?: string, endDate?: s
 export async function fetchTripData(
   destination: string,
   budget: number,
-  options?: TripOptions,
+  options: TripOptions,
 ): Promise<{ itinerary: ItineraryResponse; weather: WeatherData | null }> {
   return fetchTripWithOptionalWeather(
     () => fetchItineraryFromAI(destination, budget, options),

@@ -1,11 +1,15 @@
+import { readFileSync } from 'node:fs';
 import { expect, test, type Page, type BrowserContext } from '@playwright/test';
 import { searchDestinationIndex } from '../../travelmate-backend-api/src/services/destination/destination-index.ts';
 import { resolveDestinationContext } from '../../travelmate-backend-api/src/services/destination/destination-context-service.ts';
 import { destinationAreas } from '../../travelmate-backend-api/src/services/destination/location-resolution.ts';
 
+const evidence=JSON.parse(readFileSync(new URL('../../travelmate-backend-api/tests/fixtures/currency-provider-snapshot.json',import.meta.url),'utf8'));
 function rate(base: string, quote: string, ttl = 6 * 60 * 60_000) {
+  const captured=evidence.results.find((row:{base:string;quote:string;status:number})=>row.base===base&&row.quote===quote&&row.status===200);
+  if(!captured)throw Error('No checked provider rate for '+base+'/'+quote);
   const now = Date.now(); const fetchedAt = new Date(now).toISOString(); const refreshAfter = new Date(now + ttl).toISOString();
-  return { base, quote, rate: quote === 'PHP' ? 0.4 : 0.006, asOf: '2026-10-06', fetchedAt, refreshAfter, source: 'frankfurter', sourceUrl: 'https://frankfurter.dev/', disclaimer: 'Reference only.', freshness: { source: 'exchange-rates', status: 'live', isStale: false, fetchedAt, expiresAt: refreshAfter, staleUntil: new Date(now + 24 * 60 * 60_000).toISOString(), policy: 'Reference rate.' } };
+  return { base, quote, rate: captured.payload.rate, asOf: captured.payload.date, fetchedAt, refreshAfter, source: 'frankfurter', sourceUrl: 'https://frankfurter.dev/', disclaimer: 'Reference only.', freshness: { source: 'exchange-rates', status: 'live', isStale: false, fetchedAt, expiresAt: refreshAfter, staleUntil: new Date(now + 24 * 60 * 60_000).toISOString(), policy: 'Reference rate.' } };
 }
 
 async function setup(page: Page, context: BrowserContext) {
@@ -22,12 +26,13 @@ async function setup(page: Page, context: BrowserContext) {
   return stays;
 }
 
-async function selectShikoku(page: Page, manual = false) {
-  await page.getByRole('combobox', { name: 'Destination', exact: true }).fill('Shikoku, Japan');
-  if (manual) await page.getByRole('button', { name: /^Use .* manually$/ }).click();
+async function selectTokyo(page: Page, manual = false) {
+  await page.getByRole('combobox', { name: 'Destination', exact: true }).fill('Tokyo, Japan');
+  if (manual) await page.getByRole('button', { name: /^Verify .* with OpenStreetMap$/ }).click();
   else await page.locator('#destination-suggestions').getByRole('option').first().getByRole('button').click();
-  await expect(page.locator('#destination-status')).toContainText('Confirmed: Shikoku');
+  await expect(page.locator('#destination-status')).toContainText(/Confirmed:.*Tokyo/);
   await expect(page.getByRole('combobox', { name: /^Destination currency/ })).toHaveValue('JPY');
+  await page.getByText('Currency & rate details',{exact:true}).click();
 }
 
 async function editBudget(page: Page) {
@@ -37,26 +42,26 @@ async function editBudget(page: Page) {
 }
 
 for (const manual of [false, true]) {
-  test(`${manual ? 'manual' : 'suggestion'} Shikoku: idle and budget edits do not refetch; pair changes use separate cached rates`, async ({ page, context }) => {
+  test(`${manual ? 'manual' : 'suggestion'} Tokyo: idle and budget edits do not refetch; pair changes use separate cached rates`, async ({ page, context }) => {
     const calls: string[] = [];
     await page.route('**/api/destination-context/exchange-rate?**', route => { const params = new URL(route.request().url()).searchParams; const base = params.get('base')!; const quote = params.get('quote')!; calls.push(`${base}:${quote}`); return route.fulfill({ json: rate(base, quote) }); });
-    const stays = await setup(page, context); await selectShikoku(page, manual);
-    await expect(page.getByText(/1 JPY ≈ PHP/)).toBeVisible();
-    await page.waitForTimeout(4_000); expect(calls).toEqual(['JPY:PHP']); expect(stays).toHaveLength(0);
+    const stays = await setup(page, context); await selectTokyo(page, manual);
+    await expect(page.getByText(/1 JPY ≈ [0-9.,]+ PHP/)).toBeVisible();
+    await page.waitForTimeout(4_000); expect(calls).toEqual(['JPY:PHP']); expect(stays).toHaveLength(1);
     await editBudget(page); await page.waitForTimeout(2_000); expect(calls).toEqual(['JPY:PHP']);
     await page.getByRole('combobox', { name: 'Show equivalents in', exact: true }).selectOption('EUR');
-    await expect(page.getByText(/1 JPY ≈ EUR/)).toBeVisible();
+    await expect(page.getByText(/1 JPY ≈ [0-9.,]+ EUR/)).toBeVisible();
     expect(calls.sort()).toEqual(['JPY:EUR', 'JPY:PHP', 'PHP:EUR']);
     await page.getByRole('combobox', { name: 'Show equivalents in', exact: true }).selectOption('PHP');
-    await expect(page.getByText(/1 JPY ≈ PHP/)).toBeVisible(); await page.waitForTimeout(1_000); expect(calls).toHaveLength(3);
+    await expect(page.getByText(/1 JPY ≈ [0-9.,]+ PHP/)).toBeVisible(); await page.waitForTimeout(1_000); expect(calls).toHaveLength(3);
   });
 }
 
 test('short Retry-After is respected and three failed attempts stop at a clear unavailable state', async ({ page, context }) => {
   const times: number[] = [];
   await page.route('**/api/destination-context/exchange-rate?**', route => { times.push(Date.now()); return route.fulfill({ status: 429, headers: { 'Retry-After': '2', 'X-Rate-Limit-Source': 'upstream' }, json: { error: 'Fixture provider limit.' } }); });
-  await setup(page, context); await selectShikoku(page);
-  await expect(page.getByText('Reference conversion is temporarily unavailable. Destination prices remain unchanged.')).toBeVisible({ timeout: 12_000 });
+  await setup(page, context); await selectTokyo(page);
+  await expect(page.getByText('Conversion unavailable',{exact:true}).first()).toBeVisible({ timeout: 12_000 });
   expect(times).toHaveLength(3); expect(times[1] - times[0]).toBeGreaterThanOrEqual(1_950); expect(times[2] - times[1]).toBeGreaterThanOrEqual(1_950);
   await editBudget(page); await page.waitForTimeout(4_000); expect(times).toHaveLength(3);
   await page.screenshot({ path: '../audit/2026-10-06/exchange-rate-unavailable.png', fullPage: true });
@@ -65,8 +70,8 @@ test('short Retry-After is respected and three failed attempts stop at a clear u
 test('backend Retry-After 60 stops after one request, including idle and budget edits', async ({ page, context }) => {
   let calls = 0;
   await page.route('**/api/destination-context/exchange-rate?**', route => { calls++; return route.fulfill({ status: 429, headers: { 'Retry-After': '60', 'X-Rate-Limit-Source': 'backend' }, json: { error: 'Too many exchange-rate requests.' } }); });
-  await setup(page, context); await selectShikoku(page);
-  await expect(page.getByText('Reference conversion is temporarily unavailable. Destination prices remain unchanged.')).toBeVisible();
+  await setup(page, context); await selectTokyo(page);
+  await expect(page.getByText('Conversion unavailable',{exact:true}).first()).toBeVisible();
   await editBudget(page); await page.waitForTimeout(4_000); expect(calls).toBe(1);
 });
 
@@ -80,10 +85,10 @@ test('successful cache expiry refreshes once; an old pair response cannot overwr
     }
     await route.fulfill({ json: rate(base, quote, phpCalls === 1 && base === 'JPY' && quote === 'PHP' ? 1_500 : undefined) });
   });
-  await setup(page, context); await selectShikoku(page);
-  await expect(page.getByText(/1 JPY ≈ PHP/)).toBeVisible();
+  await setup(page, context); await selectTokyo(page);
+  await expect(page.getByText(/1 JPY ≈ [0-9.,]+ PHP/)).toBeVisible();
   await expect.poll(() => phpCalls).toBe(2);
   await page.getByRole('combobox', { name: 'Show equivalents in', exact: true }).selectOption('EUR');
-  await expect(page.getByText(/1 JPY ≈ EUR/)).toBeVisible(); release();
-  await page.waitForTimeout(2_000); await expect(page.getByText(/1 JPY ≈ EUR/)).toBeVisible(); expect(phpCalls).toBe(2);
+  await expect(page.getByText(/1 JPY ≈ [0-9.,]+ EUR/)).toBeVisible(); release();
+  await page.waitForTimeout(2_000); await expect(page.getByText(/1 JPY ≈ [0-9.,]+ EUR/)).toBeVisible(); expect(phpCalls).toBe(2);
 });

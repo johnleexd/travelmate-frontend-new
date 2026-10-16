@@ -12,6 +12,8 @@ export function SavedTripCoverPhoto({ src, alt, photoId, placeholderLabel = 'Des
   const unsplash = savedCoverUnsplashSource(src);
   const source = (unsplash ? [unsplash] : placePhotoCandidates(src)).find(candidate => !failed.includes(candidate));
   if (!source) return <div className={styles.placeholder}><MapPin aria-hidden="true" size={28}/><span>{placeholderLabel}</span></div>;
-  return <Image key={source} src={source} alt={alt} data-photo-id={photoId} unoptimized={Boolean(unsplash)} fill loading="lazy" sizes="(max-width: 1280px) 100vw, 50vw" className="object-cover"
+  // Validated provider photos load directly: the optimizer's extra server-side
+  // Wikimedia fetch can time out even when the browser can reach the same photo.
+  return <Image key={source} src={source} alt={alt} data-photo-id={photoId} unoptimized fill loading="lazy" sizes="(max-width: 1280px) 100vw, 50vw" className="object-cover"
     onError={() => setFailed(current => current.includes(source) ? current : [...current, source])}/>;
 }

@@ -31,7 +31,7 @@ test('missing island boundary has no 502, unsupported currency stays editable an
   const currency = page.locator('#trip-currency');
   await currency.selectOption('USD'); await expect(currency).toBeEnabled();
   await expect(page.getByText('USD (US dollar) selected for planning.',{exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Refresh options',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Refresh options',exact:true})).toHaveCount(0);
   await expect(currency).toBeEnabled(); await expect(currency).toHaveValue('USD');
   await currency.selectOption('EUR'); await expect(currency).toHaveValue('EUR');
   expect(statuses).toEqual([200]);

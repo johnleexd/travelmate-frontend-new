@@ -37,7 +37,7 @@ async function chooseTokyo(page:Page) {
 
 // The running UI uses the production POST handler and captured public provider responses.
 // Only account/session storage, AI responses and database writes are isolated.
-for(const legacyStyle of [null,'budget','balanced','comfort','luxury','family-friendly'])test(`${legacyStyle || 'new trip'}: Balanced generation, historical reopening and regeneration`,async({page,context})=>{
+for(const legacyStyle of [null,'budget','balanced','comfort','luxury','family-friendly'])test(`${legacyStyle || 'new trip'}: Travel style generation, historical reopening and regeneration`,async({page,context})=>{
  const evidence=await setup(page,context);const fixture:{saved:SavedFixture|null;generated:GeneratedFixture|null}={saved:null,generated:null};const writes:string[]=[];
  const user={id:'worldwide-browser-fixture',name:'World Test Traveler',email:'world@example.test',role:'traveler',accountStatus:'active',emailVerified:true};
  const restore:Array<()=>void>=[];const replace=(o:object,k:string,fn:unknown)=>{const prior=Reflect.get(o,k);Reflect.set(o,k,fn);restore.push(()=>{Reflect.set(o,k,prior);});};
@@ -58,17 +58,17 @@ for(const legacyStyle of [null,'budget','balanced','comfort','luxury','family-fr
  });
  await page.route('**/api/itinerary',async r=>{const body=r.request().postDataJSON();evidence.generations.push(body);const response=await POST(new Request('http://localhost/api/itinerary',{method:'POST',headers:{cookie:`travelmate_session=${createSessionToken(user.id,'traveler')}`,'content-type':'application/json'},body:JSON.stringify(body)}));fixture.generated=await response.json();await r.fulfill({status:response.status,json:fixture.generated});});
  await chooseTokyo(page);await page.locator('#trip-start-date').fill('2040-01-25');await page.locator('#trip-end-date').fill('2040-01-27');
- await expect(page.getByLabel('Travel style',{exact:true})).toHaveCount(0);await expect(page.locator('#trip-travel-style')).toHaveCount(0);await page.locator('#trip-stay-preference').selectOption('resort');await page.locator('#trip-interests').fill('nature');await page.locator('#trip-preferred-activities').fill('museum');
- const options=await page.locator('#transportation option').evaluateAll(rows=>rows.map(e=>(e as HTMLOptionElement).value));const mode=options.find(o=>/taxi/i.test(o))||options[0];await page.locator('#transportation').selectOption(mode);
+ await expect(page.getByLabel('Travel style',{exact:true})).toBeVisible();await page.locator('#trip-travel-style').selectOption(legacyStyle || 'balanced');await expect(page.locator('#trip-stay-preference, #trip-interests, #trip-preferred-activities')).toHaveCount(0);
+ const mode='route confirmation required'; await expect(page.locator('#transportation')).toHaveCount(0);
  if(legacyStyle===null){
-  await page.locator('#trip-interests').evaluate(e=>e.scrollIntoView({block:'center',behavior:'instant'}));await page.screenshot({path:'../audit/2026-10-14/balanced-default/form-desktop.png'});
-  await page.setViewportSize({width:390,height:844});await page.locator('#trip-interests').evaluate(e=>e.scrollIntoView({block:'start',behavior:'instant'}));expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);await page.screenshot({path:'../audit/2026-10-14/balanced-default/form-mobile.png'});await page.setViewportSize({width:1280,height:900});
+  await page.locator('#trip-travel-style').evaluate(e=>e.scrollIntoView({block:'center',behavior:'instant'}));await page.screenshot({path:'../audit/2026-10-14/balanced-default/form-desktop.png'});
+  await page.setViewportSize({width:390,height:844});await page.locator('#trip-travel-style').evaluate(e=>e.scrollIntoView({block:'start',behavior:'instant'}));expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);await page.screenshot({path:'../audit/2026-10-14/balanced-default/form-mobile.png'});await page.setViewportSize({width:1280,height:900});
  }
 
  await page.getByRole('button',{name:'Generate my trip',exact:true}).click();await expect.poll(()=>fixture.saved,{timeout:30000}).not.toBeNull();
- expect(evidence.generations[0]).toMatchObject({accommodationPreference:'resort',interests:['nature'],preferredActivities:['museum'],transportationPreference:mode});
- expect(fixture.generated!.preferences).toMatchObject({travelStyle:'balanced',pace:'balanced',accommodation:'resort',interests:['nature'],activities:['museum'],transportation:mode});
- expect(fixture.saved!.itinerary.preferences).toEqual(fixture.generated!.preferences);expect(evidence.generations[0]).not.toHaveProperty('travelStyle');expect(evidence.generations[0]).not.toHaveProperty('pace');expect(fixture.generated!.grounding.total).toBe(0);expect(fixture.generated!.grounding.unpricedExpenseCount).toBeGreaterThan(0);
+ expect(evidence.generations[0]).toMatchObject({travelStyle:legacyStyle || 'balanced',});
+ expect(fixture.generated!.preferences).toMatchObject({travelStyle:legacyStyle || 'balanced',pace:'balanced',interests:[],activities:[],transportation:mode});
+ expect(fixture.saved!.itinerary.preferences).toEqual(fixture.generated!.preferences);expect(evidence.generations[0]).not.toHaveProperty('interests');expect(evidence.generations[0]).not.toHaveProperty('pace');expect(fixture.generated!.grounding.total).toBe(0);expect(fixture.generated!.grounding.unpricedExpenseCount).toBeGreaterThan(0);
  const first=fixture.generated!.days[0].activities.find(a=>a.place)?.place?.name;expect(first).toBeTruthy();
  await expect(page.locator('[data-itinerary-day="1"]:visible')).toContainText('Visit '+first);await expect(page.getByText('Known subtotal · other costs unpriced',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:'View Itinerary',exact:true}).first().click();await expect(page.locator('[data-itinerary-day="1"]:visible')).toContainText('Visit '+first);
@@ -79,8 +79,8 @@ for(const legacyStyle of [null,'budget','balanced','comfort','luxury','family-fr
  expect(fixture.saved!.itinerary).toEqual(historical);
  {
   await page.getByRole('button',{name:'Saved trips',exact:true}).click();await page.getByRole('button',{name:'Edit',exact:true}).click();await page.getByRole('button',{name:'Change trip details',exact:true}).click();
-  await expect(page.locator('#trip-travel-style')).toHaveCount(0);await expect(page.locator('#trip-stay-preference')).toHaveValue('resort');await expect(page.locator('#trip-interests')).toHaveValue('nature');await expect(page.locator('#trip-preferred-activities')).toHaveValue('museum');await expect(page.locator('#transportation')).toHaveValue(mode);
-  await page.getByRole('button',{name:'Generate my trip',exact:true}).click();await expect.poll(()=>evidence.generations.length).toBe(2);expect(evidence.generations[1]).toMatchObject({accommodationPreference:'resort',interests:['nature'],preferredActivities:['museum'],transportationPreference:mode});await page.getByRole('button',{name:'Update saved trip',exact:true}).click();await expect.poll(()=>writes.includes('update-trip')).toBeTruthy();expect(fixture.saved!.itinerary.preferences).toEqual(fixture.generated!.preferences);expect(fixture.generated!.preferences).toMatchObject({travelStyle:'balanced',pace:'balanced'});expect(evidence.generations[1]).not.toHaveProperty('travelStyle');expect(evidence.generations[1]).not.toHaveProperty('pace');
+  await expect(page.locator('#trip-travel-style')).toHaveValue(legacyStyle || 'balanced');await expect(page.locator('#trip-stay-preference, #trip-interests, #trip-preferred-activities')).toHaveCount(0);await expect(page.locator('#transportation')).toHaveCount(0);
+  await page.getByRole('button',{name:'Generate my trip',exact:true}).click();await expect.poll(()=>evidence.generations.length).toBe(2);expect(evidence.generations[1]).toMatchObject({travelStyle:legacyStyle || 'balanced',});await page.getByRole('button',{name:'Update saved trip',exact:true}).click();await expect.poll(()=>writes.includes('update-trip')).toBeTruthy();expect(fixture.saved!.itinerary.preferences).toEqual(fixture.generated!.preferences);expect(fixture.generated!.preferences).toMatchObject({travelStyle:legacyStyle || 'balanced',pace:'balanced'});expect(evidence.generations[1]).not.toHaveProperty('interests');expect(evidence.generations[1]).not.toHaveProperty('pace');
  }
 
  }finally{restore.reverse().forEach(fn=>fn());clearProviderCache();if(priorKey===undefined)delete process.env.OPENAI_API_KEY;else process.env.OPENAI_API_KEY=priorKey;}

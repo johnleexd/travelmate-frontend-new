@@ -31,6 +31,16 @@ test('pairs have separate caches and returning to a fresh pair performs no fetch
   assert.deepEqual(calls, ['JPY:PHP', 'JPY:EUR']);
 });
 
+test('turning off the last conversion consumer cancels pending retries without caching a failure', async()=>{
+  let calls=0, release!:()=>void, waiting!:()=>void;
+  const ready=new Promise<void>(resolve=>{waiting=resolve;});
+  const client=createExchangeRateClient({now:()=>START,sleep:async()=>{waiting();await new Promise<void>(resolve=>{release=resolve;});},fetcher:async()=>++calls===1?Response.json({},{status:503}):Response.json(rate(START))});
+  const controller=new AbortController(), request=client.fetch('JPY','PHP',controller.signal);
+  await ready;controller.abort();await assert.rejects(request,{name:'AbortError'});release();
+  await Promise.resolve();assert.equal(calls,1);
+  await client.fetch('JPY','PHP');assert.equal(calls,2);
+});
+
 test('429 respects Retry-After, retries are bounded, and terminal failure is cached', async () => {
   let now = START; let calls = 0; const waits: number[] = [];
   const client = createExchangeRateClient({ now: () => now, random: () => 0, sleep: async ms => { waits.push(ms); now += ms; }, fetcher: async () => { calls++; return Response.json({ error: 'limited' }, { status: 429, headers: { 'Retry-After': '2' } }); } });

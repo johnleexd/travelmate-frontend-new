@@ -71,7 +71,7 @@ jobs:
       FRONTEND_URL: http://localhost:3000
       BACKEND_URL: http://localhost:5000
       BACKEND_REPOSITORY: ${{ vars.BACKEND_REPOSITORY || 'johnleexd/travelmate-backend-api' }}
-      BACKEND_REVISION: ${{ inputs.backend_revision || vars.BACKEND_REVISION || '234e08d2317526f772854296bfaf6a33ca5dd0fa' }}
+      BACKEND_REVISION: ${{ inputs.backend_revision || vars.BACKEND_REVISION || '8522a8061d794fba90de29199f0bf086a5b5b90c' }}
       SESSION_SECRET: travelmate-ci-session-secret-at-least-32-characters
       ACCOUNT_TOKEN_SECRET: travelmate-ci-account-token-secret-at-least-32-characters
       AI_MOCK_FALLBACK: "true"

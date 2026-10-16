@@ -52,33 +52,35 @@ export interface DestinationAnchor {
   countryCode: string;
   latitude: number;
   longitude: number;
+  id?: number;
+  provider?: "geonames" | "openstreetmap" | "psgc";
+  providerId?: string;
+  region?: string;
   administrativeCode?: string;
   provinceCode?: string;
   geographicProvinceCode?: string;
   administrativeLevel?: "Region" | "Province" | "City" | "Municipality" | "Barangay";
   coordinateSource?: string;
-  id?: number;
-  provider?: "geonames" | "openstreetmap" | "psgc";
-  providerId?: string;
-  region?: string;
+  placeType?: string;
   sourceFeatureCode?: string;
   scopeType?: "country" | "area" | "locality" | "natural";
   parentId?: number;
   canBrowse?: boolean;
   locationPath?: Array<{ id: number; providerId: string; name: string; type: string; countryCode: string; level?: number; }>;
-  placeType?: string;
 }
 
 export interface PriceEvidence {
-  status: "provider-quote" | "estimate" | "unavailable";
+  status: "provider-quote" | "estimate" | "allowance" | "unavailable";
+  ruleId?: string;
+  coverage?: "daily-food" | "daily-transport";
   basis: string;
   source: string;
   sourceUrl?: string;
   fetchedAt: string;
-  currency: "PHP" | "USD" | "EUR" | "JPY" | "KRW" | "THB" | "GBP" | "AUD" | "CAD" | "SGD" | "CNY" | "HKD" | "TWD" | "MYR" | "IDR" | "VND" | "INR" | "NZD" | "CHF" | "AED";
+  currency: CurrencyCode;
   unitAmount: number;
   quantity: number;
-  unit: "per-person" | "shared-fare" | "per-room-night" | "group" | "daily-per-person";
+  unit: "per-person" | "shared-fare" | "per-room-night" | "group" | "daily-per-person" | "meal" | "day" | "night" | "room" | "transport-leg";
   participants: number;
   needsConfirmation: boolean;
 }
@@ -105,17 +107,21 @@ export interface PlaceEvidence {
 
 export interface PlanGrounding {
   version: number;
-  destination: DestinationAnchor;
+  destination: { city: string; country: string; countryCode: string; latitude: number; longitude: number; id?: number; provider?: "geonames" | "openstreetmap" | "psgc"; providerId?: string; region?: string; administrativeCode?: string; provinceCode?: string; geographicProvinceCode?: string; administrativeLevel?: "Region" | "Province" | "City" | "Municipality" | "Barangay"; coordinateSource?: string; placeType?: string; sourceFeatureCode?: string; scopeType?: "country" | "area" | "locality" | "natural"; parentId?: number; canBrowse?: boolean; locationPath?: Array<{ id: number; providerId: string; name: string; type: string; countryCode: string; level?: number; }>; };
+  estimationVersion?: string;
   startingLocation: string;
   startDate: string;
   endDate: string;
+  timeZone?: string;
+  scheduleConstraints?: { arrivalTime?: string; departureTime?: string; restDates: Array<string>; };
+  previousPlaceIds?: Array<string>;
   fetchedAt: string;
   placeDataStatus: "live" | "fresh-cache" | "stale-cache" | "unavailable";
-  currency: "PHP" | "USD" | "EUR" | "JPY" | "KRW" | "THB" | "GBP" | "AUD" | "CAD" | "SGD" | "CNY" | "HKD" | "TWD" | "MYR" | "IDR" | "VND" | "INR" | "NZD" | "CHF" | "AED";
+  currency: CurrencyCode;
   rooms: number;
   nights: number;
   foodDailyPerPerson: number;
-  accommodation: { status: "provider-quote" | "estimate" | "unavailable"; basis: string; source: string; sourceUrl?: string; fetchedAt: string; currency: "PHP" | "USD" | "EUR" | "JPY" | "KRW" | "THB" | "GBP" | "AUD" | "CAD" | "SGD" | "CNY" | "HKD" | "TWD" | "MYR" | "IDR" | "VND" | "INR" | "NZD" | "CHF" | "AED"; unitAmount: number; quantity: number; unit: "per-person" | "shared-fare" | "per-room-night" | "group" | "daily-per-person"; participants: number; needsConfirmation: boolean; };
+  accommodation: { status: "provider-quote" | "estimate" | "allowance" | "unavailable"; ruleId?: string; coverage?: "daily-food" | "daily-transport"; basis: string; source: string; sourceUrl?: string; fetchedAt: string; currency: CurrencyCode; unitAmount: number; quantity: number; unit: "per-person" | "shared-fare" | "per-room-night" | "group" | "daily-per-person" | "meal" | "day" | "night" | "room" | "transport-leg"; participants: number; needsConfirmation: boolean; };
   additionalFees: number;
   contingencyPercent: number;
   contingencyAmount: number;
@@ -124,11 +130,10 @@ export interface PlanGrounding {
   total: number;
   verifiedAmount: number;
   estimatedAmount: number;
+  unpricedExpenseCount?: number;
   unknownPriceCount: number;
   budgetStatus: "exceeds-budget" | "needs-confirmation" | "within-quoted-budget";
   limitations: Array<string>;
-  timeZone?: string;
-  unpricedExpenseCount?: number;
 }
 
 export type Role = "traveler" | "admin";
@@ -148,7 +153,7 @@ export interface AccommodationQuote {
   checkInDate: string;
   checkOutDate: string;
   occupancy: Array<{ adults: number; childAges: Array<number>; }>;
-  currency: "PHP" | "USD" | "EUR" | "JPY" | "KRW" | "THB" | "GBP" | "AUD" | "CAD" | "SGD" | "CNY" | "HKD" | "TWD" | "MYR" | "IDR" | "VND" | "INR" | "NZD" | "CHF" | "AED";
+  currency: CurrencyCode;
   total: number;
   nightlyAverage: number;
   taxesAndFeesIncluded?: boolean;
@@ -236,6 +241,7 @@ export interface DayPlan {
   planningStatus?: "suggested" | "incomplete" | "rest" | "travel";
   planningReason?: string;
   scheduleBlocks?: Array<{ kind: "meal" | "free-time" | "unscheduled"; startMinutes: number; endMinutes: number; label: string; }>;
+  planningIssue?: "provider-failure" | "no-results" | "insufficient-coverage" | "scheduling-conflict";
 }
 
 export interface AccommodationPlan {
@@ -395,6 +401,7 @@ export interface ItineraryResponse {
   plannedAccommodation?: PlannedAccommodation;
   grounding?: PlanGrounding;
   groundingProof?: string;
+  accommodationEstimate?: PriceEvidence;
 }
 
 export interface PublicUser {

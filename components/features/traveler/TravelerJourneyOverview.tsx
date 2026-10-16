@@ -31,7 +31,7 @@ const JOURNEY_STEPS = [
   },
   {
     title: 'Generate a draft', shortTitle: 'Generate',
-    youDo: 'Add any interests or travel preferences, then request a plan.',
+    youDo: 'Choose your Travel style, then request a plan.',
     systemDoes: 'TravelMate gathers available context, estimates costs, and creates a validated day-by-day draft.',
     result: 'An editable itinerary, not a booking.', action: 'Build the itinerary', icon: Sparkles,
   },

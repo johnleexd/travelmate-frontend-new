@@ -1,5 +1,5 @@
 import type { BudgetOptimization, BudgetOptimizationSuggestion, DayPlan } from './contracts.ts';
-import { formatMoney, type CurrencyCode } from './domain.ts';
+import { formatMoney, roundMoney, type CurrencyCode } from './domain.ts';
 
 interface BudgetOptimizationInput {
   budget: number;
@@ -11,12 +11,9 @@ interface BudgetOptimizationInput {
   days: DayPlan[];
 }
 
-function money(value: number): number {
-  return Math.max(0, Math.round(value * 100) / 100);
-}
-
 /** Mirrors the server calculation for immediate, unsaved editor feedback. */
 export function buildBudgetOptimization(input: BudgetOptimizationInput): BudgetOptimization {
+  const money = (value: number) => Math.max(0,roundMoney(value,input.currency));
   const budget = money(input.budget);
   const plannedSpend = money(input.plannedSpend);
   const reserve = Math.min(budget, money(input.reserve));

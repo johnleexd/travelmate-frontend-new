@@ -33,7 +33,7 @@ test('focus polling stays small, saved trip pages append, and a plan loads only 
   await expect(page.getByRole('heading', { name: 'Paris', exact: true })).toBeVisible();
   expect(details).toBe(0);
   await page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'Tokyo', exact: true }) }).getByRole('button', { name: 'View', exact: true }).click();
-  await expect(page.getByText('Saved trip loaded.', { exact: false })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Your trip itinerary', exact: true })).toBeVisible();
   expect(details).toBe(1);
 });
 

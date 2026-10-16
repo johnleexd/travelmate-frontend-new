@@ -54,7 +54,8 @@ export function createExchangeRateClient(options: Options = {}) {
   const random = options.random ?? Math.random;
   const cache = new Map<string, CachedRate>();
   const failures = new Map<string, Failure>();
-  const inFlight = new Map<string, Promise<ExchangeRateQuote>>();
+  type Pending = { promise: Promise<ExchangeRateQuote>; controller: AbortController; consumers: number };
+  const inFlight = new Map<string, Pending>();
   let backendBlocked: ExchangeRateUnavailable | null = null;
 
   function remember<T>(map: Map<string, T>, key: string, value: T) {
@@ -70,13 +71,14 @@ export function createExchangeRateClient(options: Options = {}) {
     return Math.min(Date.parse(value.refreshAfter), Date.parse(value.freshness.expiresAt), now() + 6 * 60 * 60_000);
   }
 
-  async function load(base: CurrencyCode, quote: CurrencyCode, key: string): Promise<ExchangeRateQuote> {
+  async function load(base: CurrencyCode, quote: CurrencyCode, key: string, signal: AbortSignal): Promise<ExchangeRateQuote> {
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      signal.throwIfAborted();
       let error: ExchangeRateUnavailable;
       let wait = 1_000 * 2 ** attempt + Math.floor(random() * 250);
       try {
         if (backendBlocked && backendBlocked.retryAt > now()) throw backendBlocked;
-        const response = await fetcher(`/api/destination-context/exchange-rate?${new URLSearchParams({ base, quote })}`, { signal: AbortSignal.timeout(10_000) });
+        const response = await fetcher(`/api/destination-context/exchange-rate?${new URLSearchParams({ base, quote })}`, { signal: AbortSignal.any([signal,AbortSignal.timeout(10_000)]) });
         if (response.ok) {
           const value = await response.json() as ExchangeRateQuote;
           if (!value || value.base !== base || value.quote !== quote || !Number.isFinite(value.rate) || value.rate <= 0 || !value.freshness || !/^\d{4}-\d{2}-\d{2}$/.test(value.asOf)) throw new ExchangeRateUnavailable();
@@ -92,6 +94,7 @@ export function createExchangeRateClient(options: Options = {}) {
         await response.body?.cancel();
         if (response.status === 429 && error.rateLimitSource === 'backend') backendBlocked = error;
       } catch (cause) {
+        if (signal.aborted) throw signal.reason;
         error = cause instanceof ExchangeRateUnavailable ? cause : new ExchangeRateUnavailable();
         wait = Math.max(wait, error.retryAt - now());
       }
@@ -100,9 +103,17 @@ export function createExchangeRateClient(options: Options = {}) {
         remember(failures, key, { error, expiresAt: Math.max(now() + FAILURE_COOLDOWN_MS, error.retryAt) });
         throw error;
       }
-      await sleep(wait);
+      await consume(sleep(wait),signal);
     }
     throw new ExchangeRateUnavailable();
+  }
+
+  function subscribe(pending: Pending, signal?: AbortSignal) {
+    pending.consumers++;
+    return consume(pending.promise,signal).finally(()=>{
+      pending.consumers--;
+      if(!pending.consumers) pending.controller.abort();
+    });
   }
 
   return {
@@ -112,13 +123,14 @@ export function createExchangeRateClient(options: Options = {}) {
       const hit = cache.get(key);
       if (hit && hit.expiresAt > now()) return consume(Promise.resolve(hit.value), signal);
       const pending = inFlight.get(key);
-      if (pending) return consume(pending, signal);
+      if (pending && !pending.controller.signal.aborted) return subscribe(pending, signal);
       const failure = failures.get(key);
       if (failure && failure.expiresAt > now()) return Promise.reject(failure.error);
       if (backendBlocked && backendBlocked.retryAt > now()) return Promise.reject(backendBlocked);
-      const request = load(base, quote, key).finally(() => inFlight.delete(key));
+      const controller = new AbortController();
+      const request: Pending = { controller, consumers: 0, promise: load(base, quote, key,controller.signal).finally(() => { if(inFlight.get(key)===request) inFlight.delete(key); }) };
       inFlight.set(key, request);
-      return consume(request, signal);
+      return subscribe(request, signal);
     },
     expiresAt(base: CurrencyCode, quote: CurrencyCode): number | undefined {
       return cache.get(`${base}:${quote}`)?.expiresAt;

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ProviderAccommodation, FreshnessMetadata, LiveAccommodation, NearbyAccommodation, LocationSuggestion, LocationCandidate, TransportationOption } from '@/lib/contracts';
 import { SUPPORTED_CURRENCIES, type CurrencyCode, type SavedTrip } from '@/lib/domain';
+import { destinationCurrencies, CURRENCY_NAMES } from '@/lib/generated/currency';
 import { savedDestinationAnchor } from '@/lib/destination-identity';
 import { fetchDestinationAccommodations, fetchDestinationContext, searchLocationPage, resolveManualDestination, resolveAdministrativeDestination } from '@/services/destination-planning.service';
 
@@ -81,7 +82,14 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
     void (async () => {
       setContextBusy(true);
       setContextMessage('');
-      setCurrencyFallbackMessage('');
+      const choices = destinationCurrencies(selectedDestination.countryCode);
+      const chosen = manualCurrency.current?.identity === contextIdentity ? manualCurrency.current.currency : null;
+      const detected = choices.length === 1 ? choices[0] : null;
+      const resolved = chosen ?? detected;
+      if (resolved) setCurrencyState(resolved);
+      setCurrencyResolved(Boolean(resolved));
+      setCurrencyWasDetected(Boolean(detected && !chosen));
+      setCurrencyFallbackMessage(resolved ? `${resolved} · ${CURRENCY_NAMES[resolved]}` : choices.length ? `Destination currencies: ${choices.join(', ')}. Choose one for your budget.` : 'Destination currency unconfirmed. Choose a planning currency.');
       setTransportationOptions([]);
       try {
         const result = await fetchDestinationContext(selectedDestination as LocationSuggestion, controller.signal);
@@ -89,24 +97,9 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
         setTransportationOptions(result.transportation);
         // Destination changes clear the preference explicitly. Context refresh must not silently erase a saved or chosen mode.
         setContextMessage(result.transportationMessage);
-        setCurrencyFallbackMessage(result.currencyMessage || 'Local currency is not supported for planning. Choose a supported planning currency.');
-        setCurrencyWasDetected(Boolean(result.currency));
-        if (result.currency) {
-          setCurrencyState(result.currency);
-          setCurrencyResolved(true);
-        } else {
-          const chosen = manualCurrency.current?.identity === contextIdentity ? manualCurrency.current.currency : null;
-          if (chosen) setCurrencyState(chosen);
-          setCurrencyResolved(Boolean(chosen));
-        }
       } catch (error: unknown) {
         if (controller.signal.aborted) return;
         if (!(error instanceof DOMException && error.name === 'AbortError')) {
-          const chosen = manualCurrency.current?.identity === contextIdentity ? manualCurrency.current.currency : null;
-          if (chosen) setCurrencyState(chosen);
-          setCurrencyResolved(Boolean(chosen));
-          setCurrencyWasDetected(false);
-          setCurrencyFallbackMessage('Destination currency lookup is temporarily unavailable. Choose a supported planning currency.');
           setContextMessage(error instanceof Error ? error.message : 'Destination details are temporarily unavailable.');
         }
       } finally { if (!controller.signal.aborted) { setContextBusy(false); setResolvedContextIdentity(contextIdentity); } }
@@ -271,6 +264,7 @@ export function useDestinationPlanning(startDate: string, endDate: string, trave
       ...(anchor?.provider ? { provider: anchor.provider, providerId: anchor.providerId, administrativeCode: anchor.administrativeCode, provinceCode: anchor.provinceCode, geographicProvinceCode: anchor.geographicProvinceCode, administrativeLevel: anchor.administrativeLevel, coordinateSource: anchor.coordinateSource } : {}),
     };
     setDestination(trip.destination);
+    manualCurrency.current = { identity: JSON.stringify([restored.id,restored.countryCode,restored.latitude,restored.longitude]), currency: trip.currency };
     setSelectedDestination(restored);
     setBrowsingDestination(restored.canBrowse || ['country','area'].includes(restored.scopeType || '') ? restored : null);
     setSuggestions([]);

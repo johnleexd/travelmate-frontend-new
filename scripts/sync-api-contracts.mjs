@@ -1,4 +1,5 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const sourcePath = resolve(process.cwd(), '../travelmate-backend-api/openapi/travelmate-api.json');
@@ -8,6 +9,8 @@ const weatherOutputPath = resolve(process.cwd(), 'lib/generated/weather-contract
 const travelOutputPath = resolve(process.cwd(), 'lib/generated/travel-option-contracts.ts');
 const coreOutputPath = resolve(process.cwd(), 'lib/generated/core-contracts.ts');
 const storedMediaOutputPath = resolve(process.cwd(), 'lib/generated/stored-trip-media.ts');
+const preferencesOutputPath = resolve(process.cwd(), 'lib/generated/trip-preferences.ts');
+const generatedPreferences = '// Generated from travelmate-backend-api/src/lib/trip-preferences.ts. Do not edit by hand.\n' + await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/lib/trip-preferences.ts'), 'utf8');
 const generatedStoredMedia = '// Generated from travelmate-backend-api/src/lib/stored-trip-media.ts. Do not edit by hand.\n' + await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/lib/stored-trip-media.ts'), 'utf8');
 const document = JSON.parse(await readFile(sourcePath, 'utf8'));
 const schemas = document?.components?.schemas;
@@ -25,6 +28,7 @@ if (!Array.isArray(codes) || codes.length === 0 || codes.some((code) => typeof c
 const generatedError = `// Generated from travelmate-backend-api/openapi/travelmate-api.json. Do not edit by hand.\n\nexport const API_ERROR_CODES = ${JSON.stringify(codes)} as const;\nexport type ApiErrorCode = typeof API_ERROR_CODES[number];\n\nexport interface ApiErrorResponse {\n  error: string;\n  code: ApiErrorCode;\n  retryable: boolean;\n  details?: Record<string, unknown>;\n}\n\nconst API_ERROR_CODE_SET = new Set<string>(API_ERROR_CODES);\n\nexport function isApiErrorResponse(value: unknown): value is ApiErrorResponse {\n  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;\n  const candidate = value as Partial<ApiErrorResponse>;\n  return typeof candidate.error === 'string' && candidate.error.length > 0\n    && typeof candidate.code === 'string' && API_ERROR_CODE_SET.has(candidate.code)\n    && typeof candidate.retryable === 'boolean'\n    && (candidate.details === undefined || (typeof candidate.details === 'object' && candidate.details !== null && !Array.isArray(candidate.details)));\n}\n`;
 
 function typeFor(value) {
+  if (Array.isArray(value.enum) && JSON.stringify(value.enum) === JSON.stringify(schemas.CurrencyCode.enum)) return 'CurrencyCode';
   if (value['x-typescript-type']) return value['x-typescript-type'];
   if (value.$ref) return value.$ref.split('/').at(-1);
   if (Array.isArray(value.anyOf)) return value.anyOf.map(typeFor).join(' | ');
@@ -62,6 +66,7 @@ const destinationSchemaNames = [
 const generatedDestination = `// Generated from travelmate-backend-api/openapi/travelmate-api.json. Do not edit by hand.\n\n${destinationSchemaNames.map((name) => {
   const value = schemas?.[name];
   if (!value) throw new Error(`Backend OpenAPI schema ${name} is missing.`);
+  if (name === 'CurrencyCode') return "import type { CurrencyCode } from './currency';\nexport type { CurrencyCode } from './currency';";
   if (value.type !== 'object') return `export type ${name} = ${typeFor(value)};`;
   const required = new Set(value.required || []);
   const fields = Object.entries(value.properties || {}).map(([propertyName, property]) => `  ${propertyName}${required.has(propertyName) ? '' : '?'}: ${typeFor(property)};`).join('\n');
@@ -112,37 +117,51 @@ const generatedCore = `// Generated from travelmate-backend-api/openapi/travelma
   return `export interface ${name} {\n${fields}\n}`;
 }).join('\n\n')}\n`;
 
+const routeSource = await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/services/itinerary/transport-planning.ts'), 'utf8');
+const routeTarget = resolve(process.cwd(), 'lib/generated/transport-planning.ts');
+const routeContent = '// Generated from backend transport-planning.ts. Do not edit by hand.\n' + routeSource;
+const outputs = [
+  ...await Promise.all(['currency','currency-data'].map(async name=>[resolve(process.cwd(), 'lib/generated/'+name+'.ts'), '// Generated from backend '+name+'.ts. Do not edit by hand.\n' + await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/lib/'+name+'.ts'),'utf8')])),
+  [resolve(process.cwd(), 'lib/generated/expense-ledger.ts'), '// Generated from backend expense-ledger.ts. Do not edit by hand.\n' + (await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/lib/expense-ledger.ts'), 'utf8')).replace("'../controllers/itinerary-controller.ts'", "'../contracts.ts'").replace("'../schemas/domain.ts'", "'../domain.ts'")],
+  [errorOutputPath, generatedError],
+  [plannerOutputPath, generatedDestination],
+  [weatherOutputPath, generatedWeather],
+  [travelOutputPath, generatedTravel],
+  [coreOutputPath, generatedCore],
+  [storedMediaOutputPath, generatedStoredMedia],
+  [preferencesOutputPath, generatedPreferences],
+  [routeTarget, routeContent],
+];
+
+// Validate every source before replacing any working contract.
+for (const [outputPath, content] of outputs) {
+  if (content.includes('\0')) throw new Error(`Refusing to generate ${outputPath}: source contains null bytes.`);
+}
+
+const normalizeLines = value => value.replace(/\r\n/g, '\n');
+const currentContents = await Promise.all(outputs.map(([outputPath]) => readFile(outputPath, 'utf8').catch(error => {
+  if (error.code === 'ENOENT') return '';
+  throw error;
+})));
+
 if (process.argv.includes('--check')) {
-  const [currentError, currentDestination, currentWeather, currentTravel, currentCore, currentStoredMedia] = await Promise.all([
-    readFile(errorOutputPath, 'utf8').catch(() => ''),
-    readFile(plannerOutputPath, 'utf8').catch(() => ''),
-    readFile(weatherOutputPath, 'utf8').catch(() => ''),
-    readFile(travelOutputPath, 'utf8').catch(() => ''),
-    readFile(coreOutputPath, 'utf8').catch(() => ''),
-    readFile(storedMediaOutputPath, 'utf8').catch(() => ''),
-  ]);
-  const normalizeLines = value => value.replace(/\r\n/g, '\n');
-  if ([
-    [currentError, generatedError], [currentDestination, generatedDestination],
-    [currentWeather, generatedWeather], [currentTravel, generatedTravel], [currentCore, generatedCore], [currentStoredMedia, generatedStoredMedia],
-  ].some(([current, generated]) => normalizeLines(current) !== normalizeLines(generated))) {
+  if (outputs.some(([, content], index) => normalizeLines(currentContents[index]) !== normalizeLines(content))) {
     console.error('Generated API contracts are stale. Run npm run contracts:sync.');
     process.exitCode = 1;
   }
 } else {
   await mkdir(resolve(process.cwd(), 'lib/generated'), { recursive: true });
-  await Promise.all([
-    writeFile(errorOutputPath, generatedError, 'utf8'),
-    writeFile(plannerOutputPath, generatedDestination, 'utf8'),
-    writeFile(weatherOutputPath, generatedWeather, 'utf8'),
-    writeFile(travelOutputPath, generatedTravel, 'utf8'),
-    writeFile(coreOutputPath, generatedCore, 'utf8'),
-    writeFile(storedMediaOutputPath, generatedStoredMedia, 'utf8'),
-  ]);
-  console.log(`Updated ${errorOutputPath}, ${plannerOutputPath}, ${weatherOutputPath}, ${travelOutputPath}, and ${coreOutputPath}`);
+  for (const [index, [outputPath, content]] of outputs.entries()) {
+    if (normalizeLines(currentContents[index]) === normalizeLines(content)) continue;
+    // Flush a sibling temporary file before atomically replacing the target.
+    // An interrupted write leaves the existing module intact for Next.js.
+    const temporaryPath = `${outputPath}.${randomUUID()}.tmp`;
+    try {
+      await writeFile(temporaryPath, content, { encoding: 'utf8', flag: 'wx', flush: true });
+      await rename(temporaryPath, outputPath);
+    } finally {
+      await rm(temporaryPath, { force: true });
+    }
+  }
+  console.log('API contracts are synchronized.');
 }
-
-const routeSource = await readFile(resolve(process.cwd(), '../travelmate-backend-api/src/services/itinerary/transport-planning.ts'), 'utf8');
-const routeTarget = resolve(process.cwd(), 'lib/generated/transport-planning.ts');
-const routeContent = '// Generated from backend transport-planning.ts. Do not edit by hand.\n' + routeSource;
-if (process.argv.includes('--check')) { if (await readFile(routeTarget,'utf8').catch(()=>null) !== routeContent) throw new Error('Transport planning contract is stale.'); } else await writeFile(routeTarget,routeContent);

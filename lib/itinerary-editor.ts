@@ -1,6 +1,7 @@
+import { expenseLedger } from './generated/expense-ledger.ts';
 import type { DayActivity, ItineraryResponse } from './contracts.ts';
 import { rescheduleActivities, validateActivitySchedule } from './activity-schedule.ts';
-import { allocateEqualShares, allocateNightlyCosts, formatMoney } from './domain.ts';
+import { allocateEqualShares, allocateNightlyCosts, formatMoney, roundMoney, sumMoney, hasValidCurrencyPrecision } from './domain.ts';
 import { buildBudgetOptimization } from './budget-optimization.ts';
 
 export type ActivityDraft = Pick<DayActivity, 'time' | 'title' | 'description' | 'estimatedCost' | 'category' | 'durationMinutes' | 'travelMinutes' | 'location'>;
@@ -13,13 +14,14 @@ function normalizedActivity(activity: DayActivity, travelers: number, currency: 
   const cost = Number(activity.estimatedCost);
   if (!activity.title.trim() || activity.title.length > 160) throw new Error('Activity title is required and must not exceed 160 characters.');
   if (!Number.isFinite(cost) || cost < 0 || cost > 10_000_000) throw new Error(`Activity cost must be between ${formatMoney(0, currency)} and ${formatMoney(10_000_000, currency)}.`);
+  if (!hasValidCurrencyPrecision(cost,currency)) throw new Error('Activity cost has invalid currency precision.');
   return {
     ...activity,
     time: activity.time.trim() || 'Flexible',
     title: activity.title.trim(),
     description: activity.description.trim(),
-    estimatedCost: Math.round(cost * 100) / 100,
-    unitCost: activity.priceEvidence ? activity.unitCost : Math.round((cost / travelers) * 100) / 100,
+    estimatedCost: roundMoney(cost,currency),
+    unitCost: activity.priceEvidence ? activity.unitCost : allocateEqualShares(cost,travelers,currency)[0],
     icon: activity.category,
   };
 }
@@ -28,16 +30,18 @@ export function recalculateItineraryCosts(plan: ItineraryResponse): ItineraryRes
   const travelers = Math.max(1, plan.travelers || 1);
   const nights = Math.max(0, plan.accommodation?.nights || 0);
   const nightlyRate = Math.max(0, plan.accommodation?.nightlyRate || 0);
-  const accommodationTotal = plan.accommodation?.quotedTotal ?? (plan.grounding?.categories.accommodation ?? Math.round(nightlyRate * nights * 100) / 100);
+  const accommodationTotal = plan.accommodation?.quotedTotal ?? (plan.grounding?.categories.accommodation ?? roundMoney(nightlyRate * nights,plan.currency));
   const lodgingNights = nights || plan.grounding?.nights || 0;
   const lodgingByNight = lodgingNights ? allocateNightlyCosts(accommodationTotal, lodgingNights, plan.currency) : [];
   const days = plan.days.map((day, dayIndex) => {
     const activities = day.activities.map((activity) => normalizedActivity(plan.accommodation && activity.category === 'accommodation' ? { ...activity, estimatedCost: 0 } : activity, travelers, plan.currency));
-    const activityTotal = activities.reduce((sum, activity) => sum + activity.estimatedCost, 0);
-    const rideFare = activities.filter((activity) => activity.category === 'transport').reduce((sum, activity) => sum + activity.estimatedCost, 0);
-    return { ...day, activities, rideFare, totalCost: Math.round((activityTotal + (lodgingByNight[dayIndex] || 0)) * 100) / 100 };
+    const activityTotal = sumMoney(activities.map(activity => activity.estimatedCost),plan.currency);
+    const rideFare = sumMoney(activities.filter(activity => activity.category === 'transport').map(activity => activity.estimatedCost),plan.currency);
+    return { ...day, activities, rideFare, totalCost: sumMoney([activityTotal,lodgingByNight[dayIndex] || 0],plan.currency) };
   });
-  const plannedSpend = Math.round((days.reduce((sum, day) => sum + day.totalCost, 0) + (plan.selectedTravelCosts?.total ?? 0)) * 100) / 100;
+  const intermediate = { ...plan, days };
+  const ledger = expenseLedger(intermediate);
+  const plannedSpend = ledger.total ?? 0;
   const groupBudget = plan.totalBudget || plan.budgetSummary.total;
   const remainingBudget = Math.max(0, groupBudget - plannedSpend);
   const shortfall = Math.max(0, plannedSpend - groupBudget);
@@ -78,7 +82,7 @@ export function upsertActivity(plan: ItineraryResponse, dayIndex: number, activi
   // Notes, timing and cost do not identify a place. A title/location change does.
   const identityUnchanged = existing && existing.title === draft.title.trim() && (existing.location || '') === (draft.location || '').trim();
   const priceUnchanged = identityUnchanged && existing.estimatedCost === draft.estimatedCost && existing.category === draft.category;
-  const userEvidence: Partial<DayActivity> = plan.grounding && !priceUnchanged ? { ...(identityUnchanged ? {} : { place: undefined, imageUrl: undefined, imageAttribution: undefined, placeVerification: 'unverified' }), unitCost: draft.estimatedCost,
+  const userEvidence: Partial<DayActivity> = !priceUnchanged ? { ...(identityUnchanged ? {} : { place: undefined, imageUrl: undefined, imageAttribution: undefined, placeVerification: 'unverified' }), unitCost: draft.estimatedCost,
     priceEvidence: { status: 'estimate', source: 'user-entered', basis: 'User-entered whole-group estimate after editing; venue and price are unverified.', fetchedAt: new Date().toISOString(), currency: plan.currency, unit: 'group', unitAmount: draft.estimatedCost, quantity: 1, participants: plan.travelers || 1, needsConfirmation: true } } : {};
   const activity: DayActivity = normalizedActivity({ ...existing, ...draft, durationMinutes: draft.durationMinutes ?? existing?.durationMinutes, ...userEvidence, ...(!identityUnchanged ? { place: undefined, googlePlaceId: undefined, imageUrl: undefined, imageAttribution: undefined, placeVerification: 'unverified' as const } : {}), icon: draft.category }, Math.max(1, plan.travelers || 1), plan.currency);
   if (activityIndex === null) activities.push(activity);

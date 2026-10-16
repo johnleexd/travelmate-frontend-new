@@ -149,7 +149,7 @@ test('destination browsing, keyboard card selection, generation and automatic sa
   expect(generated!.externalAccommodation).toBeUndefined();
   await expect.poll(() => saves.length).toBe(1);
   expect((saves[0].itinerary as Record<string, unknown>).plannedAccommodation).toEqual(generated!.plannedAccommodation);
-  await expect(page.getByText(/It was saved automatically/)).toBeVisible();
+  await expect(page.getByText(/Saved to your trips\./)).toBeVisible();
   await page.reload();
   await page.getByRole('button', { name: 'Saved trips', exact: true }).click();
   await page.getByRole('button', { name: 'View itinerary', exact: true }).click();
