@@ -20,11 +20,21 @@ export function RecordTripVisitsDialog({ trip, onClose, onSaved }: { trip: Saved
     void fetch(`/api/platform/trips/${encodeURIComponent(trip.id)}/visit-candidates`, { cache: 'no-store', signal: AbortSignal.any([controller.signal, AbortSignal.timeout(20000)]) })
       .then(handleResponse<TripVisitCandidatesResponse>).then(data => {
         if (data.tripId !== trip.id || !Array.isArray(data.places)) throw new Error('The places do not match this trip. Try again.');
-        if (!controller.signal.aborted) { setResult(data); setSelected(new Set()); }
+        if (!controller.signal.aborted) {
+          const selectable = data.places.filter(place => !place.alreadyRecorded);
+          setResult(data);
+          setSelected(new Set(trip.status === 'completed' ? selectable.map(place => place.key) : []));
+          if (trip.status === 'completed') {
+            const today = localDateInputValue();
+            const completedDate = trip.completedAt?.slice(0, 10);
+            const preferred = completedDate && completedDate <= today ? completedDate : trip.endDate <= today ? trip.endDate : today;
+            setDate(preferred);
+          }
+        }
       }).catch(cause => { if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Saved places could not load.'); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [trip.id, attempt]);
+  }, [trip.id, trip.status, trip.completedAt, trip.endDate, attempt]);
   const available = result?.places.filter(place => !place.alreadyRecorded) || [];
   useEffect(() => { if (all.current) all.current.indeterminate = selected.size > 0 && selected.size < available.length; }, [selected.size, available.length]);
   async function save() {
@@ -46,7 +56,7 @@ export function RecordTripVisitsDialog({ trip, onClose, onSaved }: { trip: Saved
           {!loading && !result && <button type="button" onClick={() => { setError(''); setLoading(true); setAttempt(value => value + 1); }}>Retry loading places</button>}
           {result && <>
             {!!result.places.length && <label className={styles.selectAll}><input ref={all} type="checkbox" checked={available.length > 0 && selected.size === available.length} disabled={busy || !available.length} onChange={event => setSelected(new Set(event.target.checked ? available.map(place => place.key) : []))}/>Select all</label>}
-            {!result.places.length && <p>No named places are available in this saved itinerary. Allowances, breaks, and placeholders are not visits. You can use Record a visit in Visited places.</p>}
+            {!result.places.length && <p>No recordable places were found in this itinerary. Open the itinerary and add or find named activities first, or use Record a visit in Visited places.</p>}
             <ul className={styles.list}>{result.places.map((place, index) => <li key={place.key} className={styles.row}>
               <input id={`${id}-place-${index}`} type="checkbox" checked={place.alreadyRecorded || selected.has(place.key)} disabled={busy || place.alreadyRecorded} onChange={event => setSelected(current => { const next = new Set(current); if (event.target.checked) next.add(place.key); else next.delete(place.key); return next; })}/>
               <div className={styles.photoColumn}><ActivityPhoto src={place.imageUrl} attribution={place.imageAttribution} alt={place.name} sizes="72px" frameClassName={styles.photo} creditClassName={styles.credit} emptyMessage="Photo unavailable"/></div>
@@ -57,7 +67,9 @@ export function RecordTripVisitsDialog({ trip, onClose, onSaved }: { trip: Saved
         </div>
         <footer className={styles.footer}>
           <p role="status" aria-live="polite"><strong>{selected.size} {selected.size === 1 ? 'place' : 'places'} selected</strong></p>
-          <p>This does not mark your trip as completed.</p>
+          <p>{trip.status === 'completed'
+            ? 'This trip is marked as done. Saving adds the selected places to Visited places.'
+            : 'Saving adds the selected places to Visited places. You can mark the trip as done separately.'}</p>
           {error && <p role="alert" className={styles.error}>{error}</p>}
           <div className={styles.buttons}><button type="button" disabled={busy} onClick={onClose}>Cancel</button><button type="submit" className={styles.primary} disabled={busy || loading || !selected.size || !date}>{busy ? 'Saving visited places…' : 'Save visited places'}</button></div>
         </footer>

@@ -168,7 +168,15 @@
 .tripSummary strong { font-size: 15px; color: #20352D; font-weight: 750; }
 .tripSummary span span { color: #52645A; font-size: 11px; }
 .notice { display: flex; gap: 9px; align-items: flex-start; margin-bottom: 16px; padding: 12px 16px; background: #F6EFDF; color: #69512B; border-radius: 12px; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
-.card { border: 1px solid #D8E1D7; border-radius: 12px; background: #FFFEFA; padding: 22px; box-shadow: 0 3px 12px rgb(32 53 45 / 3%); }
+.noticeAction { display: inline-flex; align-items: center; justify-content: center; gap: 7px; flex: 0 0 auto; min-height: 38px; margin-left: auto; padding: 7px 12px; border: 1px solid #806025; border-radius: 7px; background: #FFFEFA; color: #193F32; font-weight: 750; }
+.noticeAction:disabled { opacity: .55; }
+.dayNavigator { position: sticky; top: 82px; z-index: 8; display: flex; gap: 8px; margin: 0 0 18px; padding: 9px; overflow-x: auto; overscroll-behavior-inline: contain; border: 1px solid #C9D6CC; border-radius: 12px; background: rgb(255 254 250 / 96%); box-shadow: 0 8px 28px rgb(25 63 50 / 10%); backdrop-filter: blur(12px); }
+.dayNavigator button { display: grid; flex: 0 0 min(180px, 48vw); gap: 3px; min-height: 66px; padding: 10px 12px; border: 1px solid #D8E1D7; border-radius: 9px; text-align: left; color: #20352D; background: #F7F5ED; transition: transform 180ms ease, border-color 180ms ease, background 180ms ease; }
+.dayNavigator button:hover { transform: translateY(-2px); border-color: #28594C; background: #EDF3EA; }
+.dayNavigator span { font-size: 11px; font-weight: 800; color: #806025; }
+.dayNavigator strong { overflow: hidden; font-size: 13px; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+.dayNavigator small { font-size: 10px; color: #52645A; }
+.card { border: 1px solid #C7D4C9; border-radius: 14px; background: #FFFEFA; padding: 24px; box-shadow: 0 8px 24px rgb(32 53 45 / 6%); }
 .heading { align-items: flex-start; margin-bottom: 18px; gap: 16px; }
 .dayTitle { display: flex; align-items: flex-start; gap: 16px; min-width: 0; }
 .dayBadge { display: grid; place-items: center; flex: 0 0 44px; height: 44px; border-radius: 7px; background: #DEBB70; color: #193F32; font-size: 23px; font-weight: 750; }
@@ -176,8 +184,9 @@
 .dayTitle p { margin-top: 5px; font-size: 15px; color: #52645A; overflow-wrap: anywhere; }
 .dayMeta { display: grid; gap: 5px; text-align: right; flex-shrink: 0; color: #52645A; font-size: 12px; }
 .dayMeta time { margin: 0; font-size: 14px; }
-.activityGrid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 0; margin: 0; list-style: none; }
-.overviewActivity { min-width: 0; display: flex; flex-direction: column; }
+.activityGrid { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-flow: dense; gap: 14px; padding: 0; margin: 0; list-style: none; }
+.overviewActivity { min-width: 0; display: flex; flex-direction: column; overflow: hidden; padding: 12px; border: 1px solid #D8E1D7; border-radius: 11px; background: #F8F6EF; transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
+.overviewActivity:hover { transform: translateY(-3px); border-color: #9EB7A7; box-shadow: 0 12px 28px rgb(32 53 45 / 9%); }
 .overviewPhoto { position: relative; height: 220px; width: 100%; overflow: hidden; border-radius: 8px; background: #EDF1E8; }
 .overviewPhoto img { object-fit: contain; object-position: center; }
 .overviewPhoto :is([data-photo-unavailable], [aria-hidden=true]) { background: #EDF1E8; color: #52645A; }
@@ -202,9 +211,10 @@
 .detailPage .localTime { border-left: 0; padding-left: 0; }
 .detailPage .overviewFooter { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @container itinerary (min-width: 560px) { .activityGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@container itinerary (min-width: 950px) { .activityGrid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@container itinerary (min-width: 950px) { .activityGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @container itinerary (max-width: 949px) { .overviewFooter { grid-template-columns: repeat(2, minmax(0, 1fr)); } .viewButton { grid-column: auto; width: auto; justify-self: end; } }
 @media (max-width: 639px) {
+  .dayNavigator { top: 68px; margin-inline: -4px; }
   .tripHeading { align-items: stretch; }
   .tripTitle { flex-basis: 100%; }
   .tripActions { flex-basis: 100%; }
@@ -214,6 +224,8 @@
   .tripSummary > div { border-left: 0; border-top: 1px solid #D8E1D7; padding: 14px 0; }
   .tripSummary > div:first-child { border-top: 0; }
   .card { padding: 16px; }
+  .notice { flex-direction: column; }
+  .noticeAction { width: 100%; margin-left: 0; }
   .dayTitle { gap: 10px; }
   .dayBadge { flex-basis: 36px; height: 36px; font-size: 20px; }
   .heading h3 { font-size: 23px; }

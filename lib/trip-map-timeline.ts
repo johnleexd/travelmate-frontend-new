@@ -33,6 +33,26 @@ export function dayTimeline(activities: TripMapActivity[]) {
   });
   return { timeline, budget, stops };
 }
+
+/** Budget allowances and skipped activities never provide a route destination. */
+export function dayRouteAvailability(activities: TripMapActivity[], hasOrigin = false) {
+  const scheduled = activities.filter(activity => !activity.budgetOnly);
+  const active = scheduled.filter(activity => activity.status !== 'skipped');
+  const mapped = active.filter(activity => activity.place);
+  const available = mapped.length >= 2 || mapped.length === 1 && hasOrigin;
+  const message = !scheduled.length
+    ? 'This day has no saved places to route. Meal and transport allowances are budget entries, not map stops. Open the day itinerary to retry or add activities, then save your changes.'
+    : !active.length
+      ? 'All activities for this day are skipped. Restore an activity or add places in the day itinerary before routing.'
+      : active.length === 1 && mapped.length === 1 && hasOrigin
+        ? 'This day has one mapped stop. Show day route starts from your saved accommodation or destination centre.'
+        : active.length === 1 && mapped.length === 1
+          ? 'This day has one mapped stop. Use Navigate here for directions from your starting point, or add another place in the day itinerary.'
+        : !available
+          ? 'A day route needs at least two mapped stops. Select an activity and use Choose an exact place to confirm its location.'
+          : 'Choose Show day route for roads and walking paths. Straight-line previews are not directions.';
+  return { scheduledCount: scheduled.length, mappedCount: mapped.length, available, message };
+}
 export function timelineDuration(minutes: number) {
   const hours = Math.floor(minutes / 60), rest = minutes % 60;
   return hours ? hours + ' hr' + (rest ? ' ' + rest + ' min' : '') : minutes + ' min';

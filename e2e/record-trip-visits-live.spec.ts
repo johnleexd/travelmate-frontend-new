@@ -38,9 +38,7 @@ test('real API/database: Active visits, completion, Completed visits, duplicate 
   await dialog.screenshot({ path: '../audit/2026-10-15/trip-visits/modal-desktop.png' });
   await dialog.getByRole('button', { name: 'Save visited places', exact: true }).click();
   await expect(dialog).toHaveCount(0);
-  await expect(plans.getByRole('button', { name: /^Active 1$/ })).toHaveAttribute('aria-pressed', 'true');
   expect((await history()).visits.map(row => row.name).sort()).toEqual(['Eiffel Tower', 'Louvre Museum']);
-  await page.getByRole('navigation', { name: 'Traveler workspace' }).getByRole('button', { name: 'Visited places', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Eiffel Tower', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Louvre Museum', exact: true })).toBeVisible();
   await page.getByRole('navigation', { name: 'Traveler workspace' }).getByRole('button', { name: 'Saved trips', exact: true }).click();
@@ -48,12 +46,15 @@ test('real API/database: Active visits, completion, Completed visits, duplicate 
   await expect(plans.getByRole('button', { name: /^Completed 1$/ })).toHaveAttribute('aria-pressed', 'true');
   expect((await history()).page.total).toBe(2);
   await open();
+  await expect(dialog.getByText('This trip is marked as done. Saving adds the selected places to Visited places.', { exact: true })).toBeVisible();
   await expect(dialog.getByRole('checkbox', { name: /^Eiffel Tower/ })).toBeDisabled();
   await expect(dialog.getByText('Already recorded', { exact: true })).toHaveCount(2);
   await dialog.getByRole('checkbox', { name: /^Notre-Dame de Paris/ }).check();
   await dialog.getByLabel('Visit date', { exact: true }).fill('2020-01-01');
   await dialog.getByRole('button', { name: 'Save visited places', exact: true }).click();
   await expect(dialog).toHaveCount(0); expect((await history()).page.total).toBe(3);
+  await expect(page.getByRole('heading', { name: 'Notre-Dame de Paris', exact: true })).toBeVisible();
+  await page.getByRole('navigation', { name: 'Traveler workspace' }).getByRole('button', { name: 'Saved trips', exact: true }).click();
   await expect(plans.getByRole('button', { name: 'Mark as not done', exact: true })).toBeVisible();
   const repeat = await page.request.post('/api/platform', { data: { action: 'record-trip-visits', tripId: fixture.tripId, visitDate: '2020-01-02', timeZone: 'Asia/Manila', places: candidates.places.map(({ key, fingerprint }) => ({ key, fingerprint })) } });
   expect(repeat.status()).toBe(200); expect((await repeat.json()).result).toEqual({ recorded: 0, alreadyRecorded: 3 });

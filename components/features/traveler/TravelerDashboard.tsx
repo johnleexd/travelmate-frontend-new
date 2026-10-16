@@ -652,18 +652,21 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
 
   async function saveEditedTrip(trip: SavedTrip, plan: ItineraryResponse): Promise<void> {
     const owner = workspaceOwnerRef.current;
+    const sectionVersion = sectionVersionRef.current;
     if (!owner || trip.userId !== owner) throw new Error('Your account changed. Reopen the trip to continue.');
     setBusy(true);
     try {
       const response = await api({ action: 'update-trip-itinerary', id: trip.id, itinerary: plan });
-      if (owner !== workspaceOwnerRef.current) return;
+      if (owner !== workspaceOwnerRef.current) throw new Error('Your account changed. Reopen the trip to continue.');
       const saved = response.result as SavedTrip | undefined;
       const canonical = savedItinerary(saved?.itinerary);
       if (!saved || saved.id !== trip.id || !canonical) throw new Error('The server did not confirm the saved itinerary. Retry your changes.');
       setData(current => current?.user.id === owner ? { ...current, trips: current.trips.map(existing => existing.id === saved.id ? { ...existing, ...saved } : existing) } : current);
       if (editingTripId === saved.id && !manualDirty) { setItinerary(canonical); setSelectedDay(null); }
-      const refreshed = await refresh().then(() => true, () => false);
-      if (owner === workspaceOwnerRef.current) setMessage(refreshed ? 'Trip changes saved.' : 'Trip changes saved. The list could not be refreshed; reload to update it.');
+      setMessage('Trip changes saved.');
+      void refresh().catch(() => {
+        if (owner === workspaceOwnerRef.current && sectionVersion === sectionVersionRef.current) setMessage('Trip changes saved. The list could not be refreshed; reload to update it.');
+      });
     } finally { setBusy(false); }
   }
 
@@ -730,13 +733,13 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     finally { savePendingRef.current = false; setSavingTrip(false); setBusy(false); }
   }
 
-  async function retryDay(dayIndex: number, includeNearby: boolean) {
+  async function retryDays(dayIndices: number[], includeNearby: boolean) {
     if (!itinerary || busy || savePendingRef.current) return;
     const owner = data?.user.id;
     const retryFingerprint = itineraryFingerprint;
-    setBusy(true); setRetryingDay(dayIndex); setMessage('Checking for additional verified places…');
+    setBusy(true); setRetryingDay(dayIndices.length === 1 ? dayIndices[0] : -1); setMessage('Checking for additional verified places…');
     try {
-      const result = await retryItineraryDays(itinerary, [dayIndex], includeNearby, providerBaseRef.current);
+      const result = await retryItineraryDays(itinerary, dayIndices, includeNearby, providerBaseRef.current);
       if (owner !== workspaceOwnerRef.current || latestDraftRef.current.itinerary !== retryFingerprint) return;
       providerBaseRef.current = result.itinerary;
       setItinerary(result.itinerary); setManualDirty(true);
@@ -744,6 +747,9 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Could not refresh this day. Your draft is preserved; please retry.');
     } finally { setBusy(false); setRetryingDay(null); }
+  }
+  async function retryDay(dayIndex: number, includeNearby: boolean) {
+    return retryDays([dayIndex], includeNearby);
   }
 
   async function saveManualChanges() {
@@ -1137,6 +1143,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
               onSave={() => void (manualDirty ? saveManualChanges() : saveCurrentTrip())}
               onReviewBudget={() => setTab('budget')}
               onRetryDay={(dayIndex, includeNearby) => void retryDay(dayIndex, includeNearby)}
+              onRetryIncompleteDays={() => void retryDays(itinerary.days.flatMap((day, index) => day.planningStatus === 'incomplete' ? [index] : []), false)}
               retryingDay={retryingDay}
               visitTripId={manualDirty ? null : visitTripId}
               onReorderActivity={reorderActivity}
@@ -1281,6 +1288,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
               onEdit={(trip)=>setTripEditor({ owner: data.user.id, trip })}
               onAction={action}
               onDelete={deleteSavedTrip}
+              onVisitsSaved={() => setTab('visited')}
             />
           </div>}
           {tab === 'help' && <HelpUserGuide selectedGuide={selectedHelpGuide} onSelectGuide={setSelectedHelpGuide} headingRef={workspaceHeadingRef} onNavigate={destination => { if (destination === 'planner') startNewTrip(); else setTab(destination); }} onFeedback={() => setTab('feedback')}/>}
@@ -1290,12 +1298,19 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
           {tab === 'profile' && <TravelerAccountCenter user={data.user} busy={busy} onSaveProfile={saveProfile} onReport={sendReport}  />}
         </main>
       </div>
-      {tripMapSelection && tripMapSelection.owner === data.user.id && <SavedTripMapDialog key={`${tripMapSelection.owner}:${tripMapSelection.tripId}`} tripId={tripMapSelection.tripId} initialDayIndex={tripMapSelection.dayIndex} onTripUpdated={trip => { setData(current => current?.user.id === tripMapSelection.owner ? { ...current, trips: current.trips.map(saved => saved.id === trip.id ? { ...saved, ...trip } : saved), itineraryVersions: (current.itineraryVersions || []).filter(version => version.tripId !== trip.id) } : current); }} onClose={() => { setTripMapSelection(null); if (navigation.view.mapTripId) navigation.replace({ tab: 'bookings', navigationMoved: navigation.view.navigationMoved }); }}/>}
-      {tripEditor && tripEditor.owner === data.user.id && <EditTripDialog key={`${tripEditor.owner}:${tripEditor.trip.id}`} trip={tripEditor.trip} onClose={() => setTripEditor(null)} onSave={saveEditedTrip} onManage={(trip, dayIndex) => { setTripEditor(null); setTripMapSelection({ owner: data.user.id, tripId: trip.id, dayIndex }); }} onChangeDetails={trip => { setTripEditor(null); void loadTrip(trip, false); }}/>}
+      {tripMapSelection && tripMapSelection.owner === data.user.id && <SavedTripMapDialog key={`${tripMapSelection.owner}:${tripMapSelection.tripId}`} tripId={tripMapSelection.tripId} initialDayIndex={tripMapSelection.dayIndex} onTripUpdated={trip => { setData(current => current?.user.id === tripMapSelection.owner ? { ...current, trips: current.trips.map(saved => saved.id === trip.id ? { ...saved, ...trip } : saved), itineraryVersions: (current.itineraryVersions || []).filter(version => version.tripId !== trip.id) } : current); }} onReviewDay={day => { setTripMapSelection(null); navigation.navigate({ tab: 'planner', tripId: tripMapSelection.tripId, fromSavedTrips: true, day }); }} onClose={() => { setTripMapSelection(null); if (navigation.view.mapTripId) navigation.replace({ tab: 'bookings', navigationMoved: navigation.view.navigationMoved }); }}/>}
+      {tripEditor && tripEditor.owner === data.user.id && <EditTripDialog
+        key={`${tripEditor.owner}:${tripEditor.trip.id}`}
+        trip={tripEditor.trip}
+        onClose={() => setTripEditor(null)}
+        onSave={async (trip, plan) => { await saveEditedTrip(trip, plan); setTripEditor(null); }}
+        onManage={(trip, dayIndex) => { setTripEditor(null); setTripMapSelection({ owner: data.user.id, tripId: trip.id, dayIndex }); }}
+        onChangeDetails={trip => { setTripEditor(null); void loadTrip(trip, false); }}
+      />}
       {leaveDialogOpen && <UnsavedTripDialog returnFocusRef={backToSavedTripsRef} onClose={() => { navigation.cancelPending(); setLeaveDialogOpen(false); }} onDiscard={() => returnToSavedTrips(true)}/>}
       {saveToast && <TripSaveToast key={saveToast.id} toast={saveToast} onDismiss={dismissSaveToast}/>}
       {activityEditor && editorDay && <ActivityEditorDialog editor={activityEditor} day={editorDay} activity={editorActivity} currency={itinerary?.currency || currency} modalRef={activityModalRef} titleRef={activityTitleRef} onClose={() => setActivityEditor(null)} onSubmit={submitActivity} />}
-      {selectedDay && itinerary && <DayDetailsDialog weather={weather} visitTripId={visitTripId} draft={manualDirty} day={selectedDay} itinerary={itinerary} travelers={travelers} referenceCurrency={referenceCurrency} exchangeQuotes={exchangeQuotes} photoRefreshDay={photoRefreshDay} modalRef={dayModalRef} closeRef={dayCloseRef} onClose={() => setSelectedDay(null)} onRefreshPhotos={(day) => void refreshDayPhotos(day, true)} />}
+      {selectedDay && itinerary && <DayDetailsDialog weather={weather} visitTripId={visitTripId} draft={manualDirty} day={selectedDay} itinerary={itinerary} travelers={travelers} referenceCurrency={referenceCurrency} exchangeQuotes={exchangeQuotes} photoRefreshDay={photoRefreshDay} retryingDay={retryingDay} busy={busy} modalRef={dayModalRef} closeRef={dayCloseRef} onClose={() => setSelectedDay(null)} onRefreshPhotos={(day) => void refreshDayPhotos(day, true)} onFindActivities={dayIndex => void retryDay(dayIndex, false)} />}
     </div></ConversionLoading.Provider></ConversionPreference.Provider>
   );
 }

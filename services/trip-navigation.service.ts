@@ -44,7 +44,7 @@ export function createTripNavigationClient(tripId: string, fetcher: typeof fetch
     invalidate() { for (const entry of pending.values()) entry.controller.abort(); pending.clear(); cache.clear(); },
     async manifest(signal: AbortSignal) {
       const result = await request<{ map: TripMapManifest }>('/map', undefined, signal, 0);
-      if (!result.map || result.map.tripId !== tripId || !Array.isArray(result.map.days) ||
+      if (!result.map || result.map.tripId !== tripId || result.map.origin && !mapCoordinates(result.map.origin) || !Array.isArray(result.map.days) ||
         result.map.days.some(day => !day || !Array.isArray(day.activities) || day.activities.some(activity => !activity || typeof activity.title !== 'string' || typeof activity.time !== 'string' || !Number.isInteger(activity.index) || activity.place && !mapCoordinates(activity.place)))) throw new Error('This map does not match the selected saved trip.');
       return result.map;
     },
@@ -56,7 +56,7 @@ export function createTripNavigationClient(tripId: string, fetcher: typeof fetch
       const result = await request<DayMapRoute>('/day-route', { dayIndex, mode, selections: selections.filter(item => item.placeId && item.query)
         .map(({ activityIndex, query, placeId }) => ({ activityIndex, query, placeId })) }, signal, 300_000);
       const route = parseNavigationRoute(result.route);
-      if (!route || route.mode !== mode || !Array.isArray(result.stopIndices)) throw new Error('The day route is incomplete or uses a different travel mode.');
+      if (!route || route.mode !== mode || !Array.isArray(result.stopIndices) || result.origin && (!mapCoordinates(result.origin) || typeof result.origin.name !== 'string')) throw new Error('The day route is incomplete or uses a different travel mode.');
       return { ...result, route };
     },
   };

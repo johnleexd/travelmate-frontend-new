@@ -7,14 +7,14 @@ const item = { title:'Visit Casa Gorordo Museum',description:'Nearby attraction 
 test('legacy descriptions are shortened without mutating their stored details or qualifications',()=>{
   const before=JSON.stringify(item), result=activityPresentation(item);
   assert.equal(result.description,'Historic house and museum in Cebu City, Philippines.');
-  assert.deepEqual(result.badges,['Outside selected destination','Location unconfirmed','Hours unverified','Route unverified']);
+  assert.deepEqual(result.badges,['Museum & art','Outside selected destination','Location unconfirmed','Hours unverified','Route unverified']);
   assert.equal(result.location,'');assert.equal(JSON.stringify(item),before);
   assert.equal(activityPresentation({...item,description:item.description+' Ballesteros Street. Cebu City.'}).description,result.description);
 });
 test('qualified locations stay accurate; user locations never become verified claims',()=>{
   const known={...item,description:'A museum with local history.',place:{...item.place!,city:'Cebu City',openingHours:'09:00–17:00'}};
   assert.equal(activityPresentation(known).location,'Cebu City, Philippines');
-  assert.deepEqual(activityPresentation(known).badges,['Outside selected destination']);
+  assert.deepEqual(activityPresentation(known).badges,['Museum & art','Outside selected destination']);
   const manual={...known,place:undefined,location:'My meeting point'};
   assert.equal(activityPresentation(manual).location,'Entered location: My meeting point');
   assert.ok(activityPresentation(manual).badges.includes('Location unconfirmed'));
@@ -25,4 +25,10 @@ test('long natural descriptions stay concise and weather cautions are combined w
   const alerts=['Heavy rain and strong winds expected. Keep plans flexible.','Heavy rain and strong winds expected. Keep plans flexible.'];
   assert.equal(shortWeatherWarning(alerts),'Rain risk · Strong winds. Check weather details.');
   assert.equal(alerts[0],'Heavy rain and strong winds expected. Keep plans flexible.');
+});
+test('verified activities show their cultural focus from place evidence',()=>{
+  const known={...item,title:'Visit Nezu Museum',description:'art museum in Tokyo, Japan',place:{...item.place!,city:'Tokyo',country:'Japan',locationScope:undefined,openingHours:'09:00–17:00'}};
+  assert.equal(activityPresentation(known).badges[0],'Museum & art');
+  assert.equal(activityPresentation({...known,title:'Visit Gokoku-ji Temple',description:'Buddhist temple in Tokyo, Japan',place:{...known.place!,name:'Gokoku-ji Temple'}}).badges[0],'Spiritual heritage');
+  assert.equal(activityPresentation({...known,title:'Visit Shinjuku Gyoen',description:'park and garden in Tokyo, Japan',place:{...known.place!,name:'Shinjuku Gyoen'}}).badges[0],'Garden & landscape');
 });

@@ -11,7 +11,7 @@ import mapStyles from './SavedTripMap.module.css';
 import { savedAccommodation } from '@/lib/saved-accommodation';
 import { Archive, BedDouble, CalendarDays, Check, ChevronDown, Clock3, Eye, History, MoreHorizontal, MapPinned, MapPin, Pencil, RotateCcw, Star, Trash2, UserRound } from 'lucide-react';
 import { formatMoney, type ItineraryGenerationSummary, type ItineraryVersion, type SavedTrip } from '@/lib/domain';
-import type { ItineraryResponse, PageInfo } from '@/lib/contracts';
+import type { ItineraryResponse, PageInfo, TripVisitsRecordResponse } from '@/lib/contracts';
 import { localDateInputValue } from '@/lib/date';
 import { savedTripCoverImage, type SavedTripCoverImage } from '@/lib/place-image';
 import { resolveSavedTripCovers } from '@/lib/saved-trip-photo-selection';
@@ -31,6 +31,7 @@ type Props = {
   onEdit: (trip: SavedTrip) => void;
   onAction: (body: Record<string, unknown>, message: string) => Promise<boolean>;
   onDelete: (trip: SavedTrip, onError: (message: string) => void) => Promise<boolean>;
+  onVisitsSaved: (result: TripVisitsRecordResponse) => void;
 };
 
 function sourceLabel(value: unknown): string {
@@ -106,7 +107,7 @@ function SavedTripCardMenu({ destination, children }: { destination: string; chi
   </div>;
 }
 
-export function SavedTripLifecycle({ trips, versions, generations, busy, tripsPage, versionPages, onLoadMoreTrips, onLoadVersions, onPlanFirstTrip, onView, onMap, onEdit, onAction, onDelete }: Props) {
+export function SavedTripLifecycle({ trips, versions, generations, busy, tripsPage, versionPages, onLoadMoreTrips, onLoadVersions, onPlanFirstTrip, onView, onMap, onEdit, onAction, onDelete, onVisitsSaved }: Props) {
   const [feedbackTrip, setFeedbackTrip] = useState<string | null>(null);
   const [deletingTrip, setDeletingTrip] = useState<SavedTrip | null>(null);
   const [recordingTrip, setRecordingTrip] = useState<SavedTrip | null>(null);
@@ -221,7 +222,16 @@ export function SavedTripLifecycle({ trips, versions, generations, busy, tripsPa
       {tripsPage && <div className="mt-5"><p className="text-xs text-white/50">{trips.length} of {tripsPage.total} trips loaded. Active, completed and archived filters apply to loaded trips.</p>{tripsPage.nextCursor && onLoadMoreTrips && <button disabled={busy} onClick={() => void onLoadMoreTrips()} className="mt-3 border border-white/20 px-4 py-2 text-sm font-bold">Load more trips</button>}</div>}
       <div className="mt-8 border-t border-white/10 pt-6"><div className="flex items-center gap-3"><History size={18} className="text-cyan-200"/><div><h3 className="font-bold">Recent AI generations</h3><p className="text-xs text-white/40">Persistent request history helps prevent duplicate provider calls.</p></div></div>{generations.length === 0 ? <p className="mt-4 text-sm text-white/40">No generation attempts recorded yet.</p> : <div className="mt-4 grid gap-px bg-white/10 sm:grid-cols-2 xl:grid-cols-3">{generations.slice(0, 6).map((generation) => <div key={generation.id} className="bg-[#0b1d1a] p-4"><span className={`text-[10px] font-bold uppercase tracking-wider ${generation.status === 'completed' ? 'text-emerald-200' : generation.status === 'failed' ? 'text-red-300' : 'text-amber-200'}`}>{generation.status}</span><strong className="mt-1 block truncate text-sm">{generation.destination}</strong><p className="mt-1 text-[11px] text-white/35">{new Date(generation.createdAt).toLocaleString()}{generation.errorCode ? ` · ${generation.errorCode}` : ''}</p></div>)}</div>}</div>
       {deletingTrip && <DeleteTripDialog trip={deletingTrip} busy={busy} onClose={() => setDeletingTrip(null)} onConfirm={onError => onDelete(deletingTrip, onError)}/>}
-      {recordingTrip && <RecordTripVisitsDialog key={recordingTrip.id} trip={recordingTrip} onClose={() => setRecordingTrip(null)} onSaved={result => setVisitMessage(result.recorded ? `${result.recorded} visited ${result.recorded === 1 ? 'place' : 'places'} saved. Your trip status is unchanged.${result.alreadyRecorded ? ` ${result.alreadyRecorded} already recorded.` : ''}` : 'These places are already recorded. No duplicates added.')}/>}
+      {recordingTrip && <RecordTripVisitsDialog
+        key={recordingTrip.id}
+        trip={recordingTrip}
+        onClose={() => setRecordingTrip(null)}
+        onSaved={result => {
+          setVisitMessage(result.recorded ? `${result.recorded} visited ${result.recorded === 1 ? 'place' : 'places'} saved.${result.alreadyRecorded ? ` ${result.alreadyRecorded} already recorded.` : ''}` : 'These places are already recorded. No duplicates added.');
+          setRecordingTrip(null);
+          onVisitsSaved(result);
+        }}
+      />}
     </section>
   );
 }

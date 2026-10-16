@@ -3,6 +3,18 @@ import type { DayActivity } from './contracts';
 const uncertain = /unconfirmed|unverified|unknown|unavailable|not available|need(?:s)? confirmation|confirm (?:address|location|hours|opening)/i;
 const shorten = (text: string, limit: number) => text.length <= limit ? text : text.slice(0, limit - 1).replace(/\s+\S*$/, '') + '…';
 
+function activityFocus(activity: DayActivity) {
+  if (activity.category !== 'activity') return '';
+  const evidence = `${activity.place?.name ?? ''} ${activity.description}`;
+  if (/\b(?:museum|gallery|art center|exhibition)\b/i.test(evidence)) return 'Museum & art';
+  if (/\b(?:temple|shrine|church|mosque|cathedral|basilica|pagoda|monastery|abbey)\b/i.test(evidence)) return 'Spiritual heritage';
+  if (/\b(?:historic|heritage|castle|palace|fortress|monument|archaeological)\b/i.test(evidence)) return 'History & heritage';
+  if (/\b(?:theatre|theater|performing arts|cinema|movie theater)\b/i.test(evidence)) return 'Performing arts';
+  if (/\b(?:garden|park)\b/i.test(evidence)) return 'Garden & landscape';
+  if (/\b(?:market|food|cuisine)\b/i.test(evidence)) return 'Food culture';
+  return '';
+}
+
 /** Presentation only. Older descriptions embed planning assumptions alongside
  * venue text; the original remains available in Details & sources. */
 export function activityPresentation(activity: DayActivity) {
@@ -20,7 +32,7 @@ export function activityPresentation(activity: DayActivity) {
   return {
     description: shorten(description, 180),
     location: locationUnconfirmed ? activity.location?.trim() ? `Entered location: ${shorten(activity.location.trim(),80)}` : '' : [place!.city,place!.country].filter(Boolean).join(', '),
-    badges: [outside ? 'Outside selected destination' : '', locationUnconfirmed ? 'Location unconfirmed' : '', hoursUnverified ? 'Hours unverified' : '', routeUnverified ? 'Route unverified' : ''].filter(Boolean),
+    badges: [activityFocus(activity), outside ? 'Outside selected destination' : '', locationUnconfirmed ? 'Location unconfirmed' : '', hoursUnverified ? 'Hours unverified' : '', routeUnverified ? 'Route unverified' : ''].filter(Boolean),
   };
 }
 

@@ -22,6 +22,10 @@ test('exact trip context, real day controls, pin-panel sync, photos, forecast ho
   await expect(detail.getByRole('heading', { name: museum.name, exact: true })).toBeVisible();
   await expect(dialog.getByText(/Forecast not available yet/)).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Activity 1: National Museum', exact: true })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Show day route', exact: true })).toBeEnabled();
+  await dialog.getByRole('button', { name: 'Show day route', exact: true }).click();
+  await expect(dialog.locator('.trip-road-route')).toBeVisible();
+  expect(state.dayRoutes.at(-1)?.dayIndex).toBe(1);
   await expect(dialog.getByRole('button', { name: 'Activity 1: Manila Cathedral', exact: true })).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Close trip map' }).click(); await open(1);
   const second = page.getByRole('dialog', { name: 'Fukuoka, Japan', exact: true });
@@ -115,6 +119,8 @@ test('daily timeline sorts local schedules, preserves pin identity, separates bu
   await expect(detail.getByRole('heading', { name: cathedral.name, exact: true })).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Activity 4: Manila Cathedral', exact: true })).toHaveAttribute('aria-pressed', 'true');
   const budget = panel.getByRole('region', { name: 'Daily budget' }); await expect(budget).toContainText('PHP 375.00'); await expect(budget).toContainText('PHP 125.00');
+  await expect(panel.getByRole('region', { name: 'Recorded daily estimate' })).toContainText('PHP 900.00');
+  await expect(panel.getByRole('region', { name: 'Recorded daily estimate' })).toContainText('partial (2 items unpriced)');
   await expect(budget.getByRole('button')).toHaveCount(0); await expect(dialog.getByRole('button', { name: /Activity [13]: Daily/ })).toHaveCount(0);
   await buttons.nth(4).click(); await expect(detail).toContainText('Time not set'); await expect(detail.getByRole('button', { name: 'Navigate here', exact: true })).toBeDisabled();
   await buttons.nth(2).click(); await expect(detail.getByRole('heading', { name: 'Named Restaurant', exact: true })).toBeVisible();
@@ -129,6 +135,11 @@ test('daily timeline sorts local schedules, preserves pin identity, separates bu
   await expect(detail.getByRole('heading', { name: museum.name, exact: true })).toBeVisible(); await expect(dialog.getByRole('button', { name: 'Activity 2: National Museum', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(panel.getByRole('region', { name: 'Daily budget' })).toContainText('PHP 400.00');
   await dialog.getByRole('button', { name: 'Day 3 2040-10-12', exact: true }).click();
+  await expect(dialog.getByText('2040-10-12 · 0 scheduled activities · times are local to the place', { exact: true })).toBeVisible();
+  await expect(dialog.getByText('0 mapped stops', { exact: true })).toBeVisible();
+  await expect(dialog.getByText('No mapped stops for this day', { exact: true })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Show day route', exact: true })).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Review Day 3 itinerary', exact: true })).toBeVisible();
   await expect(panel).toContainText('No scheduled activities for this day.'); await expect(detail).toHaveCount(0); await expect(list.getByRole('button')).toHaveCount(0);
   await expect(panel.getByRole('region', { name: 'Daily budget' })).toContainText('PHP 250.00'); await expect(dialog.getByRole('button', { name: /^Activity/ })).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Day 1 2026-10-10', exact: true }).click();

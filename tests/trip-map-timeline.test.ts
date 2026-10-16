@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { dayTimeline, timelineCost, timelineSchedule, timelineTravel } from '../lib/trip-map-timeline.ts';
+import { dayRouteAvailability, dayTimeline, timelineCost, timelineSchedule, timelineTravel } from '../lib/trip-map-timeline.ts';
 import type { TripMapActivity, DayMapRoute } from '../lib/trip-navigation.ts';
 const activity = (index: number, time: string, budgetOnly = false): TripMapActivity => ({ index, title: 'Saved activity ' + index, time, budgetOnly, description: '', place: null, locationStatus: 'Choose an exact place' });
 test('chronological presentation preserves saved indices and data; allowances are separate', () => {
@@ -8,6 +8,30 @@ test('chronological presentation preserves saved indices and data; allowances ar
   const before = JSON.stringify(saved), { timeline, budget, stops } = dayTimeline(saved);
   assert.deepEqual(timeline.map(item => item.index), [2, 4, 1, 3]); assert.deepEqual(budget.map(item => item.index), [0, 5]);
   assert.deepEqual(stops.map(item => item.index), [1, 2, 3, 4]); assert.equal(JSON.stringify(saved), before);
+});
+test('route availability excludes budget entries and explains empty, unmapped, skipped and routable days', () => {
+  const budgetOnly = [activity(0, 'Daily allowance', true), activity(1, 'Daily allowance', true)];
+  const empty = dayRouteAvailability(budgetOnly);
+  assert.equal(empty.scheduledCount, 0); assert.equal(empty.mappedCount, 0); assert.equal(empty.available, false);
+  assert.match(empty.message, /allowances are budget entries, not map stops/);
+
+  const unconfirmed = dayRouteAvailability([activity(0, '09:00')]);
+  assert.equal(unconfirmed.scheduledCount, 1); assert.equal(unconfirmed.mappedCount, 0); assert.equal(unconfirmed.available, false);
+  assert.match(unconfirmed.message, /Choose an exact place/);
+
+  const skipped = dayRouteAvailability([{ ...activity(0, '09:00'), status: 'skipped', place: {
+    id: 'Q112', name: 'Saved place', address: 'Saved address', sourceUrl: 'https://www.wikidata.org/wiki/Q112', latitude: 14.59, longitude: 120.97, photo: null,
+  } }]);
+  assert.equal(skipped.scheduledCount, 1); assert.equal(skipped.mappedCount, 0); assert.equal(skipped.available, false);
+  assert.match(skipped.message, /All activities for this day are skipped/);
+
+  const mapped = { ...activity(0, '09:00'), place: {
+    id: 'Q112', name: 'Saved place', address: 'Saved address', sourceUrl: 'https://www.wikidata.org/wiki/Q112', latitude: 14.59, longitude: 120.97, photo: null,
+  } };
+  const singleFromOrigin = dayRouteAvailability([mapped], true);
+  assert.equal(singleFromOrigin.available, true); assert.match(singleFromOrigin.message, /saved accommodation or destination centre/);
+  const routable = dayRouteAvailability([mapped, { ...mapped, index: 1, place: { ...mapped.place!, id: 'Q113', longitude: 120.98 } }]);
+  assert.equal(routable.scheduledCount, 2); assert.equal(routable.mappedCount, 2); assert.equal(routable.available, true);
 });
 test('saved ranges and durations provide local endpoints without defaulting missing times', () => {
   assert.equal(timelineSchedule({ time: '9:00 AM – 10:30 AM' }).duration, 90);

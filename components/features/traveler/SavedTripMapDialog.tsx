@@ -17,12 +17,12 @@ import { SmartDayManager } from './SmartDayManager';
 import type { SavedTrip } from '@/lib/contracts';
 import type { ManagedTripState } from '@/services/smart-itinerary.service';
 import { DayActivityTimeline } from './DayActivityTimeline';
-import { dayTimeline, timelineSchedule } from '@/lib/trip-map-timeline';
+import { dayRouteAvailability, dayTimeline, timelineSchedule } from '@/lib/trip-map-timeline';
 import { TripDayMapCanvas } from './TripDayMapCanvas';
 import styles from './SavedTripMap.module.css';
 
 const modes = [{ id: 'walking', label: 'Walking', Icon: Footprints }, { id: 'cycling', label: 'Cycling', Icon: Bike }, { id: 'driving', label: 'Driving', Icon: Car }] as const;
-export function SavedTripMapDialog({ tripId, onClose, initialDayIndex = 0, onTripUpdated }: { tripId: string; onClose: () => void; initialDayIndex?: number; onTripUpdated?: (trip: SavedTrip) => void }) {
+export function SavedTripMapDialog({ tripId, onClose, initialDayIndex = 0, onTripUpdated, onReviewDay }: { tripId: string; onClose: () => void; initialDayIndex?: number; onTripUpdated?: (trip: SavedTrip) => void; onReviewDay: (day: number) => void }) {
   useNonGoogleMapView();
   const dialog = useRef<HTMLDivElement>(null), close = useRef<HTMLButtonElement>(null), lookupController = useRef<AbortController | null>(null), routeController = useRef<AbortController | null>(null);
   const client = useMemo(() => createTripNavigationClient(tripId), [tripId]);
@@ -40,11 +40,12 @@ export function SavedTripMapDialog({ tripId, onClose, initialDayIndex = 0, onTri
   const day = manifest?.days[dayIndex];
   const activities = useMemo(() => day?.activities.map(activity => resolved[dayIndex + ':' + activity.index] || activity) || [], [day, resolved, dayIndex]);
   const { timeline, budget, stops } = useMemo(() => dayTimeline(activities), [activities]);
+  const routeAvailability = dayRouteAvailability(activities, Boolean(manifest?.origin));
   const activity = activities.find(item => item.index === selected && !item.budgetOnly), activityKey = dayIndex + ':' + selected;
   const selection = choices[activityKey] || { dayIndex, activityIndex: selected };
   const selectionKey = JSON.stringify(selection), pointKey = activity?.place ? activity.place.latitude + ':' + activity.place.longitude : '';
   const weatherKey = activityKey + ':' + pointKey + ':' + selectionKey + ':' + showCurrent;
-  const routeKey = dayIndex + ':' + mode + ':' + JSON.stringify(activities.map(item => item.place?.id || null));
+  const routeKey = dayIndex + ':' + mode + ':' + JSON.stringify(stops.map(item => [item.index, item.status, item.place?.id, item.place?.latitude, item.place?.longitude]));
   const selectedDestination = navActive && activity?.place ? activity.place : null;
   const manualPosition = useMemo<TripLocation | null>(() => manualOrigin ? { latitude: manualOrigin.latitude, longitude: manualOrigin.longitude, accuracy: 0, timestamp: manualOrigin.selectedAt } : null, [manualOrigin]);
   const live = gps.status === 'live', origin = manualPosition || gps.position;
@@ -116,6 +117,7 @@ export function SavedTripMapDialog({ tripId, onClose, initialDayIndex = 0, onTri
     finally { if (!controller.signal.aborted) setLookupBusy(false); }
   }
   async function routeDay() {
+    if (!routeAvailability.available || navActive || routeBusy) return;
     routeController.current?.abort();
     const controller = new AbortController(); routeController.current = controller; setRouteBusy(true); setRouteMessage('');
     try {
@@ -141,13 +143,17 @@ export function SavedTripMapDialog({ tripId, onClose, initialDayIndex = 0, onTri
       {manifest && !manifest.days.length && <p className={styles.notice}>This saved trip does not contain a usable daily itinerary.</p>}
       {manifest && day && <>
         <nav aria-label="Itinerary days" className={styles.days}>{manifest.days.map((item, index) => <button key={index} aria-current={dayIndex === index ? 'date' : undefined} onClick={() => changeDay(index)}>Day {item.day}<span>{item.date}</span></button>)}</nav>
-        <div className={styles.dayHeading}><div><h3>Day {day.day}: {day.theme || manifest.destination}</h3><p>{day.date} · {activities.length} planned activities · times are local to the place</p></div><span>{activities.filter(item => item.place).length} mapped stops</span></div>
+        <div className={styles.dayHeading}><div><h3>Day {day.day}: {day.theme || manifest.destination}</h3><p>{day.date} · {routeAvailability.scheduledCount} scheduled {routeAvailability.scheduledCount === 1 ? 'activity' : 'activities'} · times are local to the place</p></div><span>{routeAvailability.mappedCount} mapped {routeAvailability.mappedCount === 1 ? 'stop' : 'stops'}</span></div>
         {!manifest.anchor && <p role="status" className={styles.notice}>A verified destination is missing. Uncertain locations will not be pinned.</p>}
         <div className={styles.workspace}>
           <div className={styles.mapColumn}>
-            <div className={styles.routeControls}><div role="group" aria-label="Travel mode">{modes.map(({ id, label, Icon }) => <button key={id} aria-pressed={mode === id} onClick={() => changeMode(id)}><Icon size={16}/>{label}</button>)}</div><button className={styles.primary} disabled={routeBusy || activities.filter(item => item.place && item.status !== 'skipped').length < 2 || navActive} onClick={() => void routeDay()}><Navigation size={16}/>{routeBusy ? 'Finding route…' : 'Show day route'}</button></div>
+            <div className={styles.routeControls}><div role="group" aria-label="Travel mode">{modes.map(({ id, label, Icon }) => <button key={id} aria-pressed={mode === id} onClick={() => changeMode(id)}><Icon size={16}/>{label}</button>)}</div><button className={styles.primary} aria-describedby="trip-map-route-status" disabled={routeBusy || !routeAvailability.available || navActive} onClick={() => void routeDay()}><Navigation size={16}/>{routeBusy ? 'Finding route…' : 'Show day route'}</button></div>
+            {!routeAvailability.available && !navActive && <div className={styles.notice}>
+              <p id="trip-map-route-status" role="status">{routeAvailability.message}</p>
+              <button type="button" onClick={() => { endNavigation(); onReviewDay(day.day); }}>Review Day {day.day} itinerary</button>
+            </div>}
             <TripDayMapCanvas activities={stops} selected={selected} onSelect={chooseActivity} anchor={manifest.anchor} dayKey={tripId + ':' + dayIndex} route={roadRoute} position={gps.position} live={live}/>
-            <p role="status" className={styles.routeNote}>{roadRoute ? navigationDistance(roadRoute.distanceMeters) + ' · ' + navigationDuration(roadRoute.durationSeconds) + ' estimated · OSRM road/path route · no live traffic' : 'Choose Show day route for roads and walking paths. Straight-line previews are not directions.'} {navActive ? guidance.message : routeMessage}</p>
+            <p id={routeAvailability.available || navActive ? 'trip-map-route-status' : undefined} role="status" className={styles.routeNote}>{roadRoute ? navigationDistance(roadRoute.distanceMeters) + ' · ' + navigationDuration(roadRoute.durationSeconds) + ' estimated · OSRM road/path route · no live traffic' : routeAvailability.available ? routeAvailability.message : ''} {navActive ? guidance.message : routeMessage}</p>
             {dayRoute?.key === routeKey && !navActive && <p className={styles.routeNote}>{dayRoute.value.message}</p>}
             {navActive && <section aria-label="Navigate to selected activity" className={styles.navigation}>
               <h3>Navigate to {activity?.place?.name}</h3><p>Routes are estimates. GPS accuracy and mapped entrances affect the final approach.</p>

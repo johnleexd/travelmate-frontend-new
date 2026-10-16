@@ -36,6 +36,7 @@ export function TripDayMapCanvas({ activities, selected, onSelect, anchor, dayKe
   }, [attempt]);
   const stopKey = JSON.stringify(activities.map(item => [item.index, item.title, item.time, item.place?.latitude, item.place?.longitude]));
   const pointsKey = activities.filter(activity => activity.place).map(activity => activity.place!.latitude + ':' + activity.place!.longitude).join('|');
+  const routeStopCount = activities.filter(activity => !activity.budgetOnly && activity.place && activity.status !== 'skipped').length;
   function fit() {
     const state = runtime.current;
     if (!state) return;
@@ -98,7 +99,7 @@ export function TripDayMapCanvas({ activities, selected, onSelect, anchor, dayKe
   return <div className={styles.mapBox}>
     <div ref={container} role="region" aria-label="Daily itinerary map" className={styles.canvas}/>
     {!ready && <div role="status" className={styles.mapLoading}>{error || 'Loading itinerary map…'}{error && <button onClick={() => { setError(''); setAttempt(value => value + 1); }}>Retry map</button>}</div>}
-    <div className={styles.mapFooter}><span>{route ? 'Solid green · road/path route' : 'Dashed gold · straight-line preview, not a navigable route'}</span><button onClick={() => fitRef.current()} disabled={!ready}>Fit day</button></div>
+    <div className={styles.mapFooter}><span>{route ? 'Solid green · road/path route' : routeStopCount >= 2 ? 'Dashed gold · straight-line preview, not a navigable route' : routeStopCount === 1 ? 'One mapped stop · no day route yet' : 'No mapped stops for this day'}</span><button onClick={() => fitRef.current()} disabled={!ready}>Fit day</button></div>
     {tilesFailed && <p role="status" className={styles.notice}>Map tiles are unavailable. You can still use the activity list.</p>}
   </div>;
 }

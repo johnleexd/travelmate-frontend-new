@@ -22,7 +22,7 @@ async function setup(page: Page, context: BrowserContext) {
   await mockPlanningLookups(page);
   const state = {
     trip: structuredClone(baseTrip), failLoad: false, malformedPlan: false, saveFailures: 0, failRefresh: false,
-    pauseSave: false, release: () => {}, posts: [] as Array<{ action: string; id: string; itinerary: typeof itinerary }>,
+    pauseSave: false, release: () => {}, holdRefresh: false, refreshStarted: false, releaseRefresh: () => {}, posts: [] as Array<{ action: string; id: string; itinerary: typeof itinerary }>,
   };
   await page.route('**/api/platform**', async route => {
     const path = new URL(route.request().url()).pathname;
@@ -39,6 +39,7 @@ async function setup(page: Page, context: BrowserContext) {
       state.trip = { ...state.trip, itinerary: body.itinerary, updatedAt: '2026-10-08T12:00:00Z' };
       return route.fulfill({ json: { result: state.trip } });
     }
+    if (state.holdRefresh && state.posts.length) { state.refreshStarted = true; await new Promise<void>(resolve => { state.releaseRefresh = resolve; }); }
     if (state.failRefresh && state.posts.length) return route.fulfill({ status: 503, json: { error: 'List refresh unavailable.' } });
     return route.fulfill({ json: {
       user, trips: [{ ...state.trip, itinerary: null }], tripsPage: { total: 1, hasMore: false, nextCursor: null },
@@ -85,9 +86,12 @@ test('saved-trip Edit opens a responsive modal with hotel details, nested edits 
   await editMuseum(page, 'Updated museum visit');
   await expect(modal.getByRole('button', { name: 'Edit Updated museum visit', exact: true })).toBeFocused();
   expect(state.posts).toHaveLength(0);
+  state.holdRefresh = true;
   await modal.getByRole('button', { name: 'Save changes', exact: true }).click();
   await expect(modal).toHaveCount(0);
   expect(state.posts).toHaveLength(1);
+  await expect.poll(() => state.refreshStarted).toBe(true);
+  state.holdRefresh = false; state.releaseRefresh();
   expect(state.posts[0].itinerary.days[0].activities[0].estimatedCost).toBe(800);
   expect(state.posts[0].itinerary.plannedAccommodation.name).toBe('Conrad Manila');
   await expect(page.getByText('Trip changes saved.', { exact: true })).toBeVisible();

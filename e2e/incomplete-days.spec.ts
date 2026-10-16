@@ -37,6 +37,7 @@ test('restore, edit, retry, refresh and explicitly save an incomplete AFN browse
   await page.goto('/dashboard?tab=planner');
   await page.getByRole('button', { name: 'Restore draft', exact: true }).click();
   await expect(page.locator('[data-itinerary-day="7"]')).toContainText('0 activities');
+  await expect(page.getByRole('button', { name: 'Find activities for all 7 days', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'View day itinerary', exact: true }).first().click();
   await page.getByRole('button', { name: 'Edit Visit Fixture museum 0', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Edit activity', exact: true });
@@ -45,8 +46,14 @@ test('restore, edit, retry, refresh and explicitly save an incomplete AFN browse
   await page.getByRole('button', { name: 'Back to itinerary', exact: true }).click();
   const beforeRetry = await page.evaluate(key => JSON.parse(localStorage.getItem(key)!).itinerary, storageKey);
   const day2 = page.locator('[data-itinerary-day="2"]');
-  await day2.getByRole('button', { name: 'Retry Day 2 activities', exact: true }).focus();
-  await page.keyboard.press('Enter');
+  await day2.getByRole('button', { name: 'View day itinerary', exact: true }).click();
+  await page.getByRole('button', { name: 'Full details', exact: true }).click();
+  const dayDetails = page.getByRole('dialog', { name: /Day 2:/ });
+  await expect(dayDetails.getByRole('button', { name: 'Find culture activities for Day 2', exact: true })).toBeVisible();
+  await dayDetails.getByRole('button', { name: 'Find culture activities for Day 2', exact: true }).click();
+  await expect(dayDetails.getByRole('heading', { name: /Visit Fixture museum/ }).first()).toBeVisible();
+  await dayDetails.getByRole('button', { name: 'Close day details', exact: true }).click();
+  await page.getByRole('button', { name: 'Back to itinerary', exact: true }).click();
   await expect(day2.getByRole('heading', { name: /Visit Fixture museum/ }).first()).toBeVisible();
   expect(state.requests).toHaveLength(1); expect(state.requests[0].includeNearby).toBe(false);
   const retried = await page.evaluate(key => JSON.parse(localStorage.getItem(key)!), storageKey);
