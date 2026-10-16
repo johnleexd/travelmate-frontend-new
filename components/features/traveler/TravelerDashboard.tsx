@@ -36,6 +36,7 @@ import { ItinerarySkeleton } from '@/components/common/ContentSkeletons';
 import { TravelerJourneyOverview } from '@/components/features/traveler/TravelerJourneyOverview';
 import { TravelerAccountCenter } from '@/components/features/traveler/TravelerAccountCenter';
 import { SavedTripLifecycle } from '@/components/features/traveler/SavedTripLifecycle';
+import { SavedTripItineraryDialog } from './SavedTripItineraryDialog';
 import { EditTripDialog } from '@/components/features/traveler/EditTripDialog';
 import { TripLocationMap } from '@/components/features/traveler/TripLocationMap';
 import { SavedTripMapDialog } from './SavedTripMapDialog';
@@ -282,6 +283,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       tab: nextTab,
       tripId: navigation.view.tripId || visitTripId || editingTripId || undefined,
       fromSavedTrips: navigation.view.fromSavedTrips ?? !!savedTripOrigin,
+      returnToSavedItinerary: nextTab === 'budget' && navigation.view.tab === 'bookings' && !!navigation.view.tripId,
     } : { tab: nextTab }));
     if (nextTab === 'bookings') setSavedTripsVisited(true);
   };
@@ -431,8 +433,10 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       dashboardMountedRef.current = true;
       return;
     }
+    // The dialog owns focus and scrolling while a saved itinerary is open.
+    if (tab === 'bookings' && navigation.view.tripId) return;
     const frame = window.requestAnimationFrame(() => {
-      const savedReturn = tab === 'bookings' && restoreSavedTripsRef.current ? savedTripsReturnRef.current : null;
+      const savedReturn = tab === 'bookings' && !navigation.view.tripId && restoreSavedTripsRef.current ? savedTripsReturnRef.current : null;
       restoreSavedTripsRef.current = false;
       if (savedReturn) {
         (savedReturn.opener?.isConnected ? savedReturn.opener : workspaceHeadingRef.current)?.focus({ preventScroll: true });
@@ -440,7 +444,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       } else workspaceHeadingRef.current?.focus();
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [tab]);
+  }, [tab, navigation.view.tripId]);
   useEffect(() => {
     if (!data?.user.id) return;
     let active = true;
@@ -655,6 +659,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       const updated = response.result as SavedTrip | undefined;
       if (updated?.id && ['active', 'completed', 'archived'].includes(updated.status)) {
         setData(current => current?.user.id === owner ? { ...current, trips: current.trips.map(trip => trip.id === updated.id ? { ...trip, ...updated } : trip) } : current);
+        setSavedTripOrigin(current => current?.id === updated.id ? { ...current, ...updated } : current);
         if (updated.id === editingTripId && updated.status !== 'active') setEditingTripId(null);
       }
       try { await refresh(); }
@@ -687,6 +692,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       const canonical = savedItinerary(saved?.itinerary);
       if (!saved || saved.id !== trip.id || !canonical) throw new Error('The server did not confirm the saved itinerary. Retry your changes.');
       setData(current => current?.user.id === owner ? { ...current, trips: current.trips.map(existing => existing.id === saved.id ? { ...existing, ...saved } : existing) } : current);
+      setSavedTripOrigin(current => current?.id === saved.id ? { ...current, ...saved, itinerary: canonical } : current);
       if (editingTripId === saved.id && !manualDirty) { setItinerary(canonical); setSelectedDay(null); }
       setMessage('Trip changes saved.');
       void refresh().catch(() => {
@@ -880,7 +886,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
 
   function backToSavedTrips() {
     if (busy || generationBusy || !savedTripOrigin) return;
-    if (hasUnsavedTripChanges()) { setLeaveDialogOpen(true); return; }
+    if (tab !== 'bookings' && hasUnsavedTripChanges()) { setLeaveDialogOpen(true); return; }
     if (manualDirty) {
       setManualDirty(false);
       if (data?.user.id) removeBrowserStorage(`travelmate-itinerary-draft:${data.user.id}`);
@@ -905,19 +911,22 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
 
   async function loadTrip(summary: SavedTrip, keepPlan = true, routeView?: ItineraryView) {
     const owner = workspaceOwnerRef.current;
-    const fromSavedTrips = routeView ? !!routeView.fromSavedTrips : tab === 'bookings';
+    const fromSavedTrips = routeView ? routeView.tab === 'bookings' || !!routeView.fromSavedTrips : tab === 'bookings';
     const returnState = fromSavedTrips ? { scrollY: window.scrollY, opener: document.activeElement instanceof HTMLElement ? document.activeElement : null } : null;
     setBusy(true);
     try {
       const trip = savedItinerary(summary.itinerary) ? summary : (await handleResponse<TripDetailResponse>(await fetch(`/api/platform/trips/${encodeURIComponent(summary.id)}`, { signal: AbortSignal.timeout(15_000) }))).trip;
       if (owner !== workspaceOwnerRef.current) return;
+      if (trip.id !== summary.id) throw new Error('The saved itinerary did not match the selected trip. Please try again.');
       const plan = savedItinerary(trip.itinerary);
       if (!plan) { setMessage('This saved trip does not contain a usable itinerary.'); return; }
       applyLoadedTrip(trip, keepPlan, owner);
       setSavedTripOrigin(fromSavedTrips ? trip : null);
       if (!routeView) savedTripsReturnRef.current = returnState;
       const draftDates = regenerationDraftDates(trip.startDate, trip.endDate);
-      if (!routeView) setTab('planner', { tab: 'planner', tripId: keepPlan ? trip.id : undefined, fromSavedTrips });
+      if (!routeView) setTab(fromSavedTrips && keepPlan ? 'bookings' : 'planner', fromSavedTrips && keepPlan
+        ? { tab: 'bookings', tripId: trip.id, fromSavedTrips: true }
+        : { tab: 'planner', tripId: keepPlan ? trip.id : undefined, fromSavedTrips });
       setMessage(trip.status === 'completed' ? 'Completed trip. Changes save as a new trip.' : keepPlan ? '' : draftDates.movedForward ? `Past travel dates. Review the new draft dates: ${draftDates.startDate}–${draftDates.endDate}. Your saved plan is unchanged.` : 'No itinerary yet. Generate a plan to continue.');
     } catch (error) {
       if (owner !== workspaceOwnerRef.current) return;
@@ -932,7 +941,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
       restoreSavedTripsRef.current = true;
     }
     const tripId = navigation.view.tripId;
-    if ((tab !== 'planner' && tab !== 'budget') || !tripId || visitTripId === tripId || !data || busy || routeLoadRef.current === tripId) return;
+    if ((tab !== 'planner' && tab !== 'budget' && tab !== 'bookings') || !tripId || visitTripId === tripId || !data || busy || routeLoadRef.current === tripId) return;
     const summary = data.trips.find(trip => trip.id === tripId);
     routeLoadRef.current = tripId;
     // A refreshed URL loads once. Same-trip overview/day transitions use memory.
@@ -1047,6 +1056,10 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
   const today = localDateInputValue();
   const upcomingTrip = [...data.trips].filter((trip) => trip.status === 'active' && trip.endDate >= today).sort((a, b) => a.startDate.localeCompare(b.startDate))[0];
   const userInitials = data.user.name.split(/\s+/).filter(Boolean).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'TM';
+  const isSavedItineraryView = tab === 'bookings' && !!navigation.view.tripId && navigation.view.tripId === visitTripId && !!itinerary;
+  const viewedSavedTrip = isSavedItineraryView
+    ? data.trips.find(trip => trip.id === visitTripId) || (savedTripOrigin?.id === visitTripId ? savedTripOrigin : null)
+    : null;
   const currentTabCopy = tab === 'planner' && itinerary
     ? { title: 'Review and shape your trip', description: 'Inspect the generated days, edit activities, check conditions, and save only when the plan is ready.' }
     : tab === 'planner' && editingTripId
@@ -1088,7 +1101,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
     return true;
   };
   return (
-    <ConversionPreference.Provider value={conversionEnabled}><ConversionLoading.Provider value={exchangeBusy}><div ref={pageRef} className={`${styles.theme} ${tab === 'overview' ? styles.homeTheme : ''} ${tab === 'planner' && itinerary ? styles.itineraryTheme : ''} traveler-dashboard min-h-screen w-full max-w-full overflow-x-clip bg-[#0b1d1a] pt-[calc(3.5rem+max(0.5rem,env(safe-area-inset-top)))] sm:pt-[calc(4rem+max(1rem,env(safe-area-inset-top)))] text-slate-100`}>
+    <ConversionPreference.Provider value={conversionEnabled}><ConversionLoading.Provider value={exchangeBusy}><div ref={pageRef} inert={isSavedItineraryView || undefined} className={`${styles.theme} ${tab === 'overview' ? styles.homeTheme : ''} ${tab === 'planner' && itinerary ? styles.itineraryTheme : ''} traveler-dashboard min-h-screen w-full max-w-full overflow-x-clip bg-[#0b1d1a] pt-[calc(3.5rem+max(0.5rem,env(safe-area-inset-top)))] sm:pt-[calc(4rem+max(1rem,env(safe-area-inset-top)))] text-slate-100`}>
       <a href="#traveler-main-content" className="sr-only z-[100] bg-[#f1ead8] px-4 py-2 font-bold text-[#14231f] focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to trip workspace</a>
       {recoveryDraft && recoveryDraft.trip.userId === data.user.id && <RestoreDraftDialog destination={recoveryDraft.trip.destination} savedAt={recoveryDraft.savedAt} returnFocusRef={workspaceHeadingRef} onClose={() => setRecoveryDraft(null)} onRestore={restoreDraft}/>}
       <header className="fixed inset-x-0 top-0 z-40 px-3 pt-[max(0.5rem,env(safe-area-inset-top))] sm:px-6 sm:pt-[max(1rem,env(safe-area-inset-top))]">
@@ -1119,7 +1132,10 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
         <aside className="min-w-0 max-w-[calc(100vw-2rem)] py-4 lg:sticky lg:top-24 lg:max-w-none lg:self-start lg:py-8">
           <div data-traveler-rail className="lg:flex lg:h-[calc(100vh-144px)] lg:w-[248px] lg:flex-col">
             <nav aria-label="Traveler workspace" className="traveler-mobile-nav flex max-w-full snap-x gap-px overflow-x-auto border border-white/10 bg-white/10 p-px lg:flex-col lg:overflow-visible">
-              {([['overview','Home',Home],['planner','Plan a trip',MapPin],['bookings','Saved trips',CalendarDays],['visited','Visited places',MapPin],['feedback','Feedback',MessageSquare],['notifications','Notifications',Bell]] as const).map(([id,label,Icon]) => <button key={id} aria-current={tab===id?'page':undefined} onClick={() => { if (id === 'planner') startNewTrip(); else { setTab(id); } }} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}{id === 'notifications' && data.notifications.filter((item) => !item.readAt).length > 0 && <span className="ml-auto bg-amber-300 px-1.5 text-[10px] font-black text-[#14231f]">{data.notifications.filter((item) => !item.readAt).length}</span>}</button>)}
+              {([['overview','Home',Home],['planner','Plan a trip',MapPin],['bookings','Saved trips',CalendarDays],['visited','Visited places',MapPin],['feedback','Feedback',MessageSquare],['notifications','Notifications',Bell]] as const).map(([id,label,Icon]) => {
+                const active = tab === id;
+                return <button key={id} aria-current={active?'page':undefined} onClick={() => { if (id === 'planner') startNewTrip(); else { setTab(id); } }} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${active?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${active?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}{id === 'notifications' && data.notifications.filter((item) => !item.readAt).length > 0 && <span className="ml-auto bg-amber-300 px-1.5 text-[10px] font-black text-[#14231f]">{data.notifications.filter((item) => !item.readAt).length}</span>}</button>;
+              })}
               <div className="hidden px-4 pb-2 pt-6 text-[10px] font-bold uppercase tracking-[0.16em] text-white/28 lg:block">Use with a plan</div>
               {([['budget','Budget review',WalletCards],['help','Help / User Guide',CircleHelp],['plan','My Plan',WalletCards]] as const).map(([id,label,Icon]) => <button key={id} type="button" aria-current={tab===id?'page':undefined} onClick={() => setTab(id)} className={`group relative flex shrink-0 snap-start items-center gap-3 px-4 py-3.5 text-sm font-semibold transition-colors lg:w-full ${tab===id?'bg-[#f1ead8] text-[#14231f]':'bg-[#0b1d1a] text-white/55 hover:bg-[#16302b] hover:text-white'}`}><span className={`absolute inset-y-0 left-0 w-0.5 ${tab===id?'bg-amber-400':'bg-transparent'}`}/><Icon size={17}/>{label}</button>)}
             </nav>
@@ -1132,7 +1148,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
             <div className="min-w-0 max-w-4xl"><h1 ref={workspaceHeadingRef} tabIndex={-1} className="break-words text-[clamp(2rem,4vw,3.75rem)] font-black leading-[0.96] tracking-[-0.05em] outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-4 focus-visible:ring-offset-[#0b1d1a]">{currentTabCopy.title}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-white/52">{currentTabCopy.description}</p></div>
             <span className={`w-fit shrink-0 border px-3 py-2 text-[11px] font-bold tracking-wide ${data.user.emailVerified?'border-emerald-400/40 bg-emerald-400/10 text-emerald-200':'border-amber-300/40 bg-amber-300/10 text-amber-200'}`}>{data.user.emailVerified?'Email verified':'Email not verified'}</span>
           </div>}
-          {message && !(tab === 'planner' && itinerary) && <div role="status" aria-live="polite" className="mb-6 border-l-2 border-amber-300 bg-white/[0.055] px-4 py-3 text-sm text-white/80">{message}</div>}
+          {message && !((tab === 'planner' && itinerary) || isSavedItineraryView) && <div role="status" aria-live="polite" className="mb-6 border-l-2 border-amber-300 bg-white/[0.055] px-4 py-3 text-sm text-white/80">{message}</div>}
 
           {tab === 'overview' && <TravelerJourneyOverview
             userName={data.user.name}
@@ -1293,7 +1309,7 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
             options={budgetReviewOptions}
             loading={busy && !!navigation.view.tripId && visitTripId !== navigation.view.tripId}
             headingRef={workspaceHeadingRef}
-            onBack={() => setTab('planner')}
+            onBack={() => navigation.view.returnToSavedItinerary && navigation.view.tripId ? setTab('bookings', { tab: 'bookings', tripId: navigation.view.tripId, fromSavedTrips: true }) : setTab('planner')}
             onEditBudget={() => { planningFocusRef.current = 'trip-budget'; setTab('planner'); }}
             onTripDetails={() => { planningFocusRef.current = 'trip-budget'; setTab('planner'); }}
           />}
@@ -1329,7 +1345,38 @@ function TravelerDashboardContent({ initialTab }: { initialTab?: Tab }) {
           {tab === 'profile' && <TravelerAccountCenter user={data.user} busy={busy} onSaveProfile={saveProfile} onReport={sendReport}  />}
         </main>
       </div>
-      {tripMapSelection && tripMapSelection.owner === data.user.id && <SavedTripMapDialog key={`${tripMapSelection.owner}:${tripMapSelection.tripId}`} tripId={tripMapSelection.tripId} initialDayIndex={tripMapSelection.dayIndex} onTripUpdated={trip => { setData(current => current?.user.id === tripMapSelection.owner ? { ...current, trips: current.trips.map(saved => saved.id === trip.id ? { ...saved, ...trip } : saved), itineraryVersions: (current.itineraryVersions || []).filter(version => version.tripId !== trip.id) } : current); }} onReviewDay={day => { setTripMapSelection(null); navigation.navigate({ tab: 'planner', tripId: tripMapSelection.tripId, fromSavedTrips: true, day }); }} onClose={() => { setTripMapSelection(null); if (navigation.view.mapTripId) navigation.replace({ tab: 'bookings', navigationMoved: navigation.view.navigationMoved }); }}/>}
+      {isSavedItineraryView && viewedSavedTrip && itinerary && <SavedTripItineraryDialog
+        key={`${data.user.id}:${viewedSavedTrip.id}`}
+        onClose={() => { if (!busy) returnToSavedTrips(); }}
+        workspace={{
+          selectedDayIndex: navigation.view.day === undefined ? null : itinerary.days.findIndex(day => day.day === navigation.view.day),
+          onViewDay: dayIndex => navigation.navigate({ tab: 'bookings', tripId: viewedSavedTrip.id, fromSavedTrips: true, day: itinerary.days[dayIndex].day }),
+          onBackToOverview: navigation.backToOverview,
+          itinerary,
+          weather,
+          manualDirty: false,
+          editingTripId: null,
+          busy,
+          travelers,
+          referenceCurrency,
+          exchangeQuotes,
+          onSave: () => {},
+          onReviewBudget: () => setTab('budget', { tab: 'budget', tripId: viewedSavedTrip.id, fromSavedTrips: true, returnToSavedItinerary: true }),
+          visitTripId: viewedSavedTrip.id,
+          onReorderActivity: () => {},
+          onEditActivity: () => {},
+          onRemoveActivity: () => {},
+          onOpenDay: openDayDetails,
+        }}
+      />}
+      {tripMapSelection && tripMapSelection.owner === data.user.id && <SavedTripMapDialog
+        key={`${tripMapSelection.owner}:${tripMapSelection.tripId}`}
+        tripId={tripMapSelection.tripId}
+        initialDayIndex={tripMapSelection.dayIndex}
+        onTripUpdated={trip => { setData(current => current?.user.id === tripMapSelection.owner ? { ...current, trips: current.trips.map(saved => saved.id === trip.id ? { ...saved, ...trip } : saved), itineraryVersions: (current.itineraryVersions || []).filter(version => version.tripId !== trip.id) } : current); }}
+        onReviewDay={day => { setTripMapSelection(null); navigation.navigate({ tab: 'bookings', tripId: tripMapSelection.tripId, fromSavedTrips: true, day }); }}
+        onClose={() => { setTripMapSelection(null); if (navigation.view.mapTripId) navigation.replace({ tab: 'bookings', navigationMoved: navigation.view.navigationMoved }); }}
+      />}
       {tripEditor && tripEditor.owner === data.user.id && <EditTripDialog
         key={`${tripEditor.owner}:${tripEditor.trip.id}`}
         trip={tripEditor.trip}

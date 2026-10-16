@@ -19,6 +19,8 @@ import type { ExchangeRateQuote, ItineraryResponse, WeatherData } from '@/lib/co
 import { formatMoney, allocateEqualShares, partyBudgetLabel, partySpendLabel, PARTY_TYPE_LABELS, type CurrencyCode } from '@/lib/domain';
 
 export type ItineraryWorkspaceProps = {
+  scrollContainerRef?: RefObject<HTMLElement | null>;
+  compactHeader?: boolean;
   headingRef?: RefObject<HTMLHeadingElement | null>;
   selectedDayIndex?: number | null;
   onViewDay?: (dayIndex: number) => void;
@@ -47,7 +49,7 @@ export type ItineraryWorkspaceProps = {
   onOpenDay: (day: ItineraryResponse['days'][number]) => void;
 };
 
-export function ItineraryWorkspace({ readOnly = false, itinerary: storedItinerary, weather, notice, manualDirty, editingTripId, busy, savingTrip = false, updated = false, travelers, referenceCurrency, exchangeQuotes, onSave, onReviewBudget, onRetryDay, onRetryIncompleteDays, retryingDay, visitTripId, onReorderActivity, onEditActivity, onRemoveActivity, onOpenDay, headingRef, selectedDayIndex: routedDayIndex, onViewDay, onBackToOverview }: ItineraryWorkspaceProps) {
+export function ItineraryWorkspace({ scrollContainerRef, compactHeader = false, readOnly = false, itinerary: storedItinerary, weather, notice, manualDirty, editingTripId, busy, savingTrip = false, updated = false, travelers, referenceCurrency, exchangeQuotes, onSave, onReviewBudget, onRetryDay, onRetryIncompleteDays, retryingDay, visitTripId, onReorderActivity, onEditActivity, onRemoveActivity, onOpenDay, headingRef, selectedDayIndex: routedDayIndex, onViewDay, onBackToOverview }: ItineraryWorkspaceProps) {
   const [localDayIndex, setSelectedDayIndex] = useState<number | null>(null);
   const selectedDayIndex = routedDayIndex === undefined ? localDayIndex : routedDayIndex !== null && storedItinerary.days[routedDayIndex] ? routedDayIndex : null;
   const visibilityKey = JSON.stringify([visitTripId, storedItinerary.destination, storedItinerary.days.map(day => day.date)]);
@@ -75,14 +77,15 @@ export function ItineraryWorkspace({ readOnly = false, itinerary: storedItinerar
     const frame = requestAnimationFrame(() => {
       if (selectedDayIndex !== null) {
         detailHeading.current?.focus({ preventScroll: true });
-        detailHeading.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
+        if (scrollContainerRef?.current) scrollContainerRef.current.scrollTo({ top: 0, behavior: 'instant' });
+        else detailHeading.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
       } else {
         (opener.current?.isConnected ? opener.current : headingRef?.current)?.focus({ preventScroll: true });
-        window.scrollTo({ top: overviewScroll.current, behavior: 'instant' });
+        (scrollContainerRef?.current ?? window).scrollTo({ top: overviewScroll.current, behavior: 'instant' });
       }
     });
     return () => cancelAnimationFrame(frame);
-  }, [selectedDayIndex, headingRef]);
+  }, [selectedDayIndex, headingRef, scrollContainerRef]);
   const days = itinerary.days.map((day, dayIndex) => ({ day, dayIndex })).sort((a, b) => (a.day.date || '').localeCompare(b.day.date || '') || a.day.day - b.day.day);
   const cost = itineraryCostPresentation(itinerary);
   const ledger = expenseLedger(itinerary);
@@ -93,7 +96,7 @@ export function ItineraryWorkspace({ readOnly = false, itinerary: storedItinerar
   const stayShares = stayAmount == null ? null : allocateEqualShares(stayAmount, count, itinerary.currency);
   const viewDay = (dayIndex: number, button: HTMLButtonElement) => {
     opener.current = button;
-    overviewScroll.current = window.scrollY;
+    overviewScroll.current = scrollContainerRef?.current?.scrollTop ?? window.scrollY;
     if (onViewDay) onViewDay(dayIndex);
     else setSelectedDayIndex(dayIndex);
   };
@@ -105,7 +108,7 @@ export function ItineraryWorkspace({ readOnly = false, itinerary: storedItinerar
   const incompleteDays = itinerary.days.filter(day => day.planningStatus === 'incomplete').length;
   return <GoogleActivityPhotos.Provider value={{ photos: googlePhotos, onFailure: onGooglePhotoFailure }}><ActivityPhotoRecovery.Provider value={onPhotoFailure}><div ref={workspaceRef} className={styles.workspace} data-itinerary-workspace>
     <div className={styles.tripHeading}>
-      {selectedDayIndex === null && <div className={styles.tripTitle}><h1 ref={headingRef} tabIndex={-1}>Your trip itinerary</h1><p>{itinerary.destination} · {itinerary.days.length} day{itinerary.days.length === 1 ? '' : 's'} · {count} traveler{count === 1 ? '' : 's'}</p></div>}
+      {selectedDayIndex === null && !compactHeader && <div className={styles.tripTitle}><h1 ref={headingRef} tabIndex={-1}>Your trip itinerary</h1><p>{itinerary.destination} · {itinerary.days.length} day{itinerary.days.length === 1 ? '' : 's'} · {count} traveler{count === 1 ? '' : 's'}</p></div>}
       {selectedDayIndex === null && onReviewBudget ? <div className={styles.tripActions}>
         <button type="button" disabled={busy} onClick={onReviewBudget} className={styles.reviewBudgetButton}><WalletCards size={15} aria-hidden="true"/>Review budget</button>
         {saveAction}

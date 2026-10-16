@@ -4,14 +4,14 @@ import { useEffect, useRef, useState } from 'react';
 import { legacyNavigationRedirect, validMapDay, validMapTripId } from '@/lib/retired-navigation';
 
 export type TravelerTab = 'overview' | 'planner' | 'budget' | 'bookings' | 'notifications' | 'profile' | 'visited' | 'feedback' | 'help' | 'plan';
-export type ItineraryView = { tab: TravelerTab; tripId?: string; day?: number; fromSavedTrips?: boolean; mapTripId?: string; mapDay?: number; navigationMoved?: boolean };
+export type ItineraryView = { tab: TravelerTab; tripId?: string; day?: number; fromSavedTrips?: boolean; returnToSavedItinerary?: boolean; mapTripId?: string; mapDay?: number; navigationMoved?: boolean };
 type Stop = { view: ItineraryView; index: number };
 type Entry = Stop & { ancestors: Stop[]; session: string; version: 2; position?: number };
 const key = 'travelmateItineraryView';
 const tabs: TravelerTab[] = ['overview', 'planner', 'budget', 'bookings', 'notifications', 'profile', 'visited', 'feedback', 'help', 'plan'];
-const sameView = (a: ItineraryView, b: ItineraryView) => a.tab === b.tab && a.tripId === b.tripId && a.day === b.day && a.mapTripId === b.mapTripId && a.mapDay === b.mapDay && Boolean(a.navigationMoved) === Boolean(b.navigationMoved);
-const overviewOf = (view: ItineraryView): ItineraryView => ({ ...view, tab: 'planner', day: undefined });
-const isOverviewOf = (parent: ItineraryView, day: ItineraryView) => day.tab === 'planner' && day.day !== undefined && sameView(parent, overviewOf(day));
+const sameView = (a: ItineraryView, b: ItineraryView) => a.tab === b.tab && a.tripId === b.tripId && a.day === b.day && Boolean(a.returnToSavedItinerary) === Boolean(b.returnToSavedItinerary) && a.mapTripId === b.mapTripId && a.mapDay === b.mapDay && Boolean(a.navigationMoved) === Boolean(b.navigationMoved);
+const overviewOf = (view: ItineraryView): ItineraryView => ({ ...view, day: undefined });
+const isOverviewOf = (parent: ItineraryView, day: ItineraryView) => (day.tab === 'planner' || day.tab === 'bookings') && day.day !== undefined && sameView(parent, overviewOf(day));
 const browserHistory = () => (window as unknown as { navigation?: { currentEntry?: { index: number }; entries: () => { index: number; url?: string }[] } }).navigation;
 const browserPosition = () => browserHistory()?.currentEntry?.index;
 const distance = (from: Entry, to: Entry) => from.position !== undefined && to.position !== undefined ? to.position - from.position : to.index - from.index;
@@ -32,21 +32,27 @@ function viewFromUrl(fallback: TravelerTab, search = window.location.search): It
   const mapTripId = validMapTripId(params.get('map'));
   const day = Number(params.get('day'));
   return { tab: tabs.includes(tab) ? tab : fallback, ...((tab === 'planner' || tab === 'budget') && tripId ? {
-    tripId, ...(tab === 'planner' && Number.isInteger(day) && day > 0 && day <= 31 ? { day } : {}), fromSavedTrips: params.get('from') === 'saved',
-  } : {}), ...(tab === 'bookings' ? { mapTripId, mapDay: mapTripId ? validMapDay(params.get('day')) : undefined, navigationMoved: params.get('navigation') === 'moved' } : {}) };
+    tripId, ...(tab === 'planner' && Number.isInteger(day) && day > 0 && day <= 31 ? { day } : {}), fromSavedTrips: params.get('from') === 'saved', returnToSavedItinerary: params.get('return') === 'saved-trip',
+  } : {}), ...(tab === 'bookings' ? mapTripId
+    ? { mapTripId, mapDay: validMapDay(params.get('day')), navigationMoved: params.get('navigation') === 'moved' }
+    : tripId ? { tripId, ...(Number.isInteger(day) && day > 0 && day <= 31 ? { day } : {}), fromSavedTrips: true }
+    : { navigationMoved: params.get('navigation') === 'moved' }
+  : {}) };
 }
 
 function viewUrl(view: ItineraryView) {
   const url = new URL(window.location.href);
-  ['tab', 'trip', 'day', 'from', 'map', 'navigation'].forEach(name => url.searchParams.delete(name));
+  ['tab', 'trip', 'day', 'from', 'return', 'map', 'navigation'].forEach(name => url.searchParams.delete(name));
   if (view.tab !== 'overview') url.searchParams.set('tab', view.tab);
   if ((view.tab === 'planner' || view.tab === 'budget') && view.tripId) {
     url.searchParams.set('trip', view.tripId);
     if (view.tab === 'planner' && view.day !== undefined) url.searchParams.set('day', String(view.day));
     if (view.fromSavedTrips) url.searchParams.set('from', 'saved');
+    if (view.tab === 'budget' && view.returnToSavedItinerary) url.searchParams.set('return', 'saved-trip');
   }
   if (view.tab === 'bookings') {
-    if (view.mapTripId) { url.searchParams.set('map', view.mapTripId); if (view.mapDay) url.searchParams.set('day', String(view.mapDay)); }
+    if (view.tripId) { url.searchParams.set('trip', view.tripId); if (view.day !== undefined) url.searchParams.set('day', String(view.day)); }
+    else if (view.mapTripId) { url.searchParams.set('map', view.mapTripId); if (view.mapDay) url.searchParams.set('day', String(view.mapDay)); }
     if (view.navigationMoved) url.searchParams.set('navigation', 'moved');
   }
   return `${url.pathname}${url.search}${url.hash}`;
@@ -73,7 +79,7 @@ export function useItineraryNavigation(initialTab: TravelerTab, shouldBlock: (ta
     let entry: Entry = compatible
       ? { ...prior, view: route, version: 2 }
       : { view: route, index: 0, ancestors: [], session: crypto.randomUUID(), version: 2 };
-    if (route.tab === 'planner' && route.day !== undefined && !(parentOverview ?? isOverviewOf(entry.ancestors.at(-1)?.view || { tab: 'overview' }, route))) {
+    if ((route.tab === 'planner' || route.tab === 'bookings') && route.day !== undefined && !(parentOverview ?? isOverviewOf(entry.ancestors.at(-1)?.view || { tab: 'overview' }, route))) {
       // A refreshed/legacy deep day link still needs its own trip overview as
       // the immediate browser Back destination, independently of from=saved.
       const parent = { ...entry, view: overviewOf(route) };
@@ -150,8 +156,8 @@ export function useItineraryNavigation(initialTab: TravelerTab, shouldBlock: (ta
     const from = current.current;
     if (!from) return;
     const route = viewFromUrl(initialTab);
-    const dayView = route.tab === 'planner' && route.tripId ? route : from.view;
-    if (dayView.tab !== 'planner' || dayView.day === undefined) return;
+    const dayView = (route.tab === 'planner' || route.tab === 'bookings') && route.tripId ? route : from.view;
+    if ((dayView.tab !== 'planner' && dayView.tab !== 'bookings') || dayView.day === undefined) return;
     const url = new URL(window.location.href);
     url.searchParams.delete('day');
     // In-app Day Back is an explicit same-trip route change. The browser's

@@ -88,15 +88,28 @@ Files under `app` stay intentionally thin: they define URLs and render feature
 screens from `components/features`. Browser-to-backend communication is isolated
 in `services`, while deterministic calculations remain in `lib`.
 
-Saved Trip **View itinerary** opens `/dashboard?tab=planner&trip=<id>&from=saved`
-with the trip's day cards. A day card adds `day=<number>` to open its activities.
-Day **Back to itinerary** explicitly replaces the URL after removing only the
-day; it never calls browser Back. It retains the same trip/planner view. Native
-History API replacements pass only app state so Next synchronizes its canonical
-URL. Only the overview offers **Back to saved trips**. Same-trip navigation keeps
-the loaded plan, unsaved edits, photos, overview scroll and opener focus; it never
-regenerates or reloads the itinerary. Legacy day history is repaired without
-trusting stale multi-entry offsets. See the [original-account Cheonan verification report](../audit/2026-10-13/explicit-cheonan-overview-back/REPORT.md).
+Saved Trip **View itinerary** opens a read-only modal at
+`/dashboard?tab=bookings&trip=<id>`, keeping Saved trips selected and the list
+in place behind it. The modal shows that saved trip's destination, dates, budget,
+accommodation, and generated day cards without regenerating the plan. It has no
+Edit trip, View map, Record visited places, or Mark as done toolbar; trip management
+remains on the saved-trip cards. Close, Escape, the backdrop, or Back to saved trips
+returns to the same list position and opener. The background cannot receive focus
+while the modal is open.
+
+Day cards add `day=<number>` to show that day's activities inside the modal.
+Back to itinerary removes the day and restores the modal overview's scroll and
+button focus. Refreshed links and browser history retain the selected trip/day.
+Review budget keeps that trip's context and returns to its modal. Existing planner
+links at `/dashboard?tab=planner&trip=<id>&from=saved` retain their editable
+workspace and unsaved-change guards. Neither view regenerates a saved itinerary
+when opened.
+
+Run the isolated modal and budget navigation checks with:
+`node node_modules/@playwright/test/cli.js test --config playwright.saved-itinerary.config.ts`.
+They exercise desktop, mobile, a 320px screen, 31-day plans, per-trip place matching,
+keyboard focus, scrolling, loading failure/retry, history, refresh, and budget
+round trips with controlled API responses and no database writes.
 
 The shared overview for saved and generated plans uses cream margins, subtle sage
 contours, and white rounded day cards. Its compact summary separates the entered

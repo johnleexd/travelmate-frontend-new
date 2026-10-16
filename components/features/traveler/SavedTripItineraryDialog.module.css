@@ -1,0 +1,50 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(13 31 25 / 58%);
+  backdrop-filter: blur(5px);
+}
+.dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(1120px, 100%);
+  max-height: calc(100dvh - 48px);
+  overflow: hidden;
+  border: 1px solid #d8e1d7;
+  border-radius: 20px;
+  box-shadow: 0 28px 90px rgb(9 31 23 / 28%);
+  outline: none;
+}
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-shrink: 0;
+  gap: 16px;
+  padding: 22px 28px 18px;
+  border-bottom: 1px solid var(--tm-border);
+  background: var(--tm-surface);
+}
+.title { min-width: 0; }
+.eyebrow { color: var(--tm-muted); font-size: 10px; font-weight: 750; letter-spacing: .16em; text-transform: uppercase; }
+.title h2 { margin-top: 5px; font-size: clamp(23px, 3vw, 32px); line-height: 1.2; font-weight: 800; letter-spacing: -.03em; overflow-wrap: anywhere; }
+.description { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin-top: 8px; font-size: 12px; color: var(--tm-muted); }
+.close { display: grid; flex-shrink: 0; width: 44px; height: 44px; place-items: center; border: 1px solid var(--tm-border); border-radius: 50%; color: var(--tm-primary); background: var(--tm-page); }
+.close:hover { background: var(--tm-sage); }
+.content { --itinerary-day-nav-top: 0px; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding: 22px 28px; }
+.footer { display: flex; flex-shrink: 0; padding: 10px 28px; border-top: 1px solid var(--tm-border); background: var(--tm-surface); }
+.footer button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; font-size: 13px; font-weight: 700; color: var(--tm-primary); }
+.dialog button { cursor: pointer; }
+.dialog button:focus-visible { outline: 2px solid var(--tm-primary); outline-offset: 3px; }
+@media (max-width: 639px) {
+  .overlay { padding: 8px; padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .dialog { max-height: calc(100dvh - max(8px, env(safe-area-inset-top)) - max(8px, env(safe-area-inset-bottom))); border-radius: 14px; }
+  .header { padding: 18px 16px 14px; gap: 10px; }
+  .content { padding: 16px 12px; }
+  .footer { padding: 8px 16px; }
+  .footer button { width: 100%; }
+}

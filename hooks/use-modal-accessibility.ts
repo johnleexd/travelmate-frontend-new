@@ -80,7 +80,7 @@ export function useModalAccessibility({ active, containerRef, onClose, initialFo
       const index = modalStack.indexOf(token);
       if (index >= 0) modalStack.splice(index, 1);
       if (!modalStack.length) document.body.style.overflow = originalOverflow;
-      if (previouslyFocused?.isConnected) previouslyFocused.focus();
+      if (previouslyFocused?.isConnected) previouslyFocused.focus({ preventScroll: true });
     };
   }, [active, containerRef, initialFocusRef]);
 }

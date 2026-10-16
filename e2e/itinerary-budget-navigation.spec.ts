@@ -68,10 +68,11 @@ test('both saved trips keep their own budget, accommodation and expenses through
   for (const trip of expected) {
     const card = page.getByRole('region', { name: 'Saved plans' }).getByRole('article').filter({ has: page.getByRole('heading', { name: trip.destination, exact: true }) });
     await card.getByRole('button', { name: 'View itinerary', exact: true }).click();
-    await expect(page).toHaveURL(`/dashboard?tab=planner&trip=${trip.id}&from=saved`);
-    await expect(saveButton(page)).toBeEnabled();
+    await expect(page).toHaveURL(`/dashboard?tab=bookings&trip=${trip.id}`);
+    await expect(page.getByRole('dialog', { name: trip.destination, exact: true })).toBeVisible();
+    await expect(saveButton(page)).toHaveCount(0);
     await reviewButton(page).click();
-    await expect(page).toHaveURL(`/dashboard?tab=budget&trip=${trip.id}&from=saved`);
+    await expect(page).toHaveURL(`/dashboard?tab=budget&trip=${trip.id}&from=saved&return=saved-trip`);
     await expect(amount(page, 'budget')).toHaveText(trip.budget);
     await expect(amount(page, 'cost')).toHaveText(trip.cost);
     await expect(amount(page, 'remaining')).toHaveText(trip.remaining);
@@ -92,11 +93,11 @@ test('both saved trips keep their own budget, accommodation and expenses through
     await expect(amount(page, 'budget')).toHaveText(trip.budget);
     await expect(amount(page, 'cost')).toHaveText(trip.cost);
     await backButton(page).click();
-    await expect(page).toHaveURL(`/dashboard?tab=planner&trip=${trip.id}&from=saved`);
+    await expect(page).toHaveURL(`/dashboard?tab=bookings&trip=${trip.id}`);
     await expect(page.locator('[data-itinerary-workspace]')).toContainText(trip.destination);
     await page.reload();
-    await expect(saveButton(page)).toBeEnabled();
-    await nav(page).getByRole('button', { name: 'Budget review', exact: true }).click();
+    await expect(page.getByRole('dialog', { name: trip.destination, exact: true })).toBeVisible();
+    await reviewButton(page).click();
     await expect(amount(page, 'cost')).toHaveText(trip.cost);
     await backButton(page).click();
     await page.getByRole('button', { name: 'Back to saved trips', exact: true }).click();
@@ -108,8 +109,7 @@ test('both saved trips keep their own budget, accommodation and expenses through
 
 test('review and return preserve unsaved activity edits and existing leave protection', async ({ page, context }) => {
   const state = await setup(page, context);
-  await page.goto('/dashboard?tab=bookings');
-  await page.getByRole('button', { name: 'View itinerary', exact: true }).first().click();
+  await page.goto('/dashboard?tab=planner&trip=budget-nav-a&from=saved');
   await page.getByRole('button', { name: 'View day itinerary', exact: true }).first().click();
   await expect(reviewButton(page)).toHaveCount(0);
   await page.getByRole('button', { name: 'Edit Recorded activity', exact: true }).first().click();
