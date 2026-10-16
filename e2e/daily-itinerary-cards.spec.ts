@@ -122,6 +122,19 @@ test('overview and selected day are separate responsive views with recorded acco
   await expect(details).toContainText('Time not set'); await expect(details).toContainText('End time not set');
 });
 
+test('each activity uses its own place photo instead of the destination cover', async ({ page, context }) => {
+  await setup(page, context);
+  const first = page.locator('[data-daily-card]').first();
+  await expect(first.locator('[data-overview-activity-index="1"] img')).toHaveAttribute('alt', 'Museum');
+  await expect(first.locator('[data-overview-activity-index="2"] img')).toHaveCount(0);
+  await expect(first.locator('[data-overview-activity-index="2"] [data-photo-unavailable]')).toContainText('Finding a photo for Heritage walk.');
+  await first.getByRole('button', { name: 'View day itinerary', exact: true }).click();
+  const details = page.locator('[data-day-details]');
+  await expect(details.locator('[data-activity-index="1"] img')).toHaveAttribute('alt', 'Museum');
+  await expect(details.locator('[data-activity-index="2"] img')).toHaveCount(0);
+  await expect(details.locator('[data-activity-index="2"] [data-photo-unavailable]')).toContainText('Finding a photo for Heritage walk.');
+});
+
 test('day map, visit, budget edit, activity edit, reorder, remove, add, save and reopen retain original handlers', async ({ page, context }) => {
   const state = await setup(page, context);
   await page.locator('[data-daily-card]').first().getByRole('button', { name: 'View day itinerary', exact: true }).click();
